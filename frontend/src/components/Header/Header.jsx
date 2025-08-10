@@ -1,21 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
 import styles from "./Header.module.css";
 
-const Header = () => {
+export default function Header() {
   const location = useLocation();
 
   return (
     <header className={styles.header}>
       <div className={styles.container}>
-        <div className={styles.logo}>
-          <h1>.Net AI Developers</h1>
-        </div>
-
         <nav className={styles.navigation}>
           <Link
-            to="/chat"
+            to="/chat/new"
             className={`${styles.navLink} ${
-              location.pathname === "/chat" || location.pathname === "/"
+              location.pathname.startsWith("/chat") || location.pathname === "/"
                 ? styles.active
                 : ""
             }`}
@@ -34,6 +30,4 @@ const Header = () => {
       </div>
     </header>
   );
-};
-
-export default Header;
+}

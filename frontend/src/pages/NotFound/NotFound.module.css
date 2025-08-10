@@ -1,0 +1,13 @@
+.notFound {
+  padding: 2rem;
+  text-align: center;
+
+  h2 {
+    margin-bottom: 1rem;
+    color: #334155;
+  }
+
+  p {
+    color: #64748b;
+  }
+}
