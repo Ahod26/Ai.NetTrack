@@ -14,19 +14,22 @@ public class AuthController(ILogger<AuthController> logger, IAuthService authSer
     try
     {
       var result = await authService.RegisterAsync(registerDTO);
-      if (result)
+
+      if (result.Success)
       {
         logger.LogInformation("Registration successful for email: {Email}", registerDTO.Email);
-        return Ok("user created");
+        return Ok(result);
       }
 
-      logger.LogWarning("Registration failed for email: {Email}", registerDTO.Email);
-      return BadRequest();
+      logger.LogWarning("Registration failed for email: {Email}. Errors: {Errors}",
+          registerDTO.Email, string.Join(", ", result.Errors));
+
+      return BadRequest(result);
     }
     catch (Exception ex)
     {
       logger.LogError(ex, "Registration error for email: {Email}", registerDTO.Email);
-      return BadRequest();
+      return StatusCode(500, new { message = "An error occurred during registration" });
     }
   }
 
@@ -38,19 +41,19 @@ public class AuthController(ILogger<AuthController> logger, IAuthService authSer
     try
     {
       var result = await authService.LoginAsync(loginDTO);
-      if (result != "")
+      if (result.Success)
       {
         logger.LogInformation("Login successful for email: {Email}", loginDTO.Email);
-        return Ok("logged in");
+        return Ok(result);
       }
 
       logger.LogWarning("Login failed for email: {Email}", loginDTO.Email);
-      return BadRequest();
+      return Unauthorized(new { message = result.Message });
     }
     catch (Exception ex)
     {
       logger.LogError(ex, "Login error for email: {Email}", loginDTO.Email);
-      return BadRequest();
+      return StatusCode(500, new { message = "An error occurred during login" });
     }
   }
 
@@ -58,7 +61,21 @@ public class AuthController(ILogger<AuthController> logger, IAuthService authSer
   [Authorize]
   public IActionResult UserStatusCheck()
   {
-    return Ok();
+    try
+    {
+      var userInfo = authService.GetCurrentUserFromClaims(User);
+
+      return Ok(new
+      {
+        isAuthenticated = true,
+        user = userInfo
+      });
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Error getting user status");
+      return BadRequest(new { message = "Error retrieving user information" });
+    }
   }
 
   [HttpPost("logout")]

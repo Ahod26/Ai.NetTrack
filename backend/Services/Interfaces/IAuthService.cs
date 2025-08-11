@@ -1,5 +1,8 @@
+using System.Security.Claims;
+
 public interface IAuthService
 {
-  Task<string> LoginAsync(LoginDTO loginDTO);
-  Task<bool> RegisterAsync(RegisterDTO registerDTO);
+  Task<LoginResponseDTO> LoginAsync(LoginDTO loginDTO);
+  Task<RegisterResponseDTO> RegisterAsync(RegisterDTO registerDTO);
+  UserInfoDTO GetCurrentUserFromClaims(ClaimsPrincipal user);
 }

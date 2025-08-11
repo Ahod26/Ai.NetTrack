@@ -11,7 +11,8 @@ public class TokenService(IConfiguration configuration) : ITokenService
     var claims = new List<Claim>
     {
       new Claim(ClaimTypes.NameIdentifier, user.Id),
-      new Claim(ClaimTypes.Email, user.Email!)
+      new Claim(ClaimTypes.Email, user.Email!),
+      new Claim(ClaimTypes.Name, user.UserName!)
     };
 
     foreach (var role in roles)
