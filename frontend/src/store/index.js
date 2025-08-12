@@ -1,8 +1,12 @@
-import {configureStore} from "@reduxjs/toolkit"
-import userAuthReducer from "./userAuth"
+import { configureStore } from "@reduxjs/toolkit";
+import userAuthReducer from "./userAuth";
+import chatReducer from "./chat";
 
 const store = configureStore({
-  reducer: {userAuth: userAuthReducer}
-})
+  reducer: {
+    userAuth: userAuthReducer,
+    chat: chatReducer,
+  },
+});
 
-export default store
+export default store;

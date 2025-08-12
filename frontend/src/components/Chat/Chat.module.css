@@ -83,13 +83,14 @@
 }
 
 .message.user .messageContent {
-  background: var(--accent);
-  color: white;
+  background: #2a2a2a;
+  color: #f0f0f0;
   border-bottom-right-radius: 0.25rem;
+  border: 1px solid #3a3a3a;
 }
 
 .message.ai .messageContent {
-  background: var(--bg-secondary);
+  background: transparent;
   color: var(--text-primary);
   border: 1px solid var(--border);
   border-bottom-left-radius: 0.25rem;
@@ -231,4 +232,49 @@
   .message {
     max-width: 85%;
   }
+}
+
+/* Chat header */
+.chatHeader {
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.chatTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Loading and error states */
+.loadingMessage,
+.errorMessage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.errorMessage {
+  color: var(--error, #ef4444);
+}
+
+/* Message time */
+.messageTime {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  text-align: right;
+}
+
+.message.user .messageTime {
+  text-align: right;
+}
+
+.message.ai .messageTime {
+  text-align: left;
 }

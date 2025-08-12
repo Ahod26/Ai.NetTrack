@@ -102,6 +102,23 @@
   background: var(--bg-tertiary);
 }
 
+.activeChatItem {
+  border-left: 3px solid var(--accent) !important;
+  background: transparent !important;
+}
+
+.activeChatItem .chatTitle {
+  color: var(--text-primary) !important;
+}
+
+.activeChatItem .chatTime {
+  color: var(--text-muted) !important;
+}
+
+.activeChatItem:hover {
+  background: var(--bg-tertiary) !important;
+}
+
 .chatTitle {
   font-size: 0.875rem;
   font-weight: 500;

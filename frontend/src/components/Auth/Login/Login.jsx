@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { validateLoginForm } from "../../../utils/validation";
 import { loginUser } from "../../../api/auth";
 import { userAuthSliceAction } from "../../../store/userAuth";
+import chatHubService from "../../../api/chatHub";
 import styles from "./Login.module.css";
 
 export default function Login() {
@@ -75,10 +76,19 @@ export default function Login() {
         const response = await loginUser(formData);
 
         if (response.success) {
-          // Update Redux store with user data
           dispatch(userAuthSliceAction.setUserLoggedIn(response.user));
 
-          // Navigate directly to chat
+          // Initialize SignalR connection after successful login
+          try {
+            await chatHubService.startConnection();
+            console.log("SignalR connected after login");
+          } catch (signalRError) {
+            console.error(
+              "Failed to connect SignalR after login:",
+              signalRError
+            );
+          }
+          
           navigate("/chat/new");
         } else {
           setApiError(response.message || "Login failed");

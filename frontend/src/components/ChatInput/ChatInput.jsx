@@ -4,11 +4,13 @@ import styles from "./ChatInput.module.css";
 export default function ChatInput({
   onSendMessage,
   placeholder = "Ask anything...",
+  disabled = false,
 }) {
   const [message, setMessage] = useState("");
   const textareaRef = useRef(null);
 
   const handleMessageChange = (e) => {
+    if (disabled) return;
     setMessage(e.target.value);
 
     // Auto-resize textarea
@@ -19,6 +21,7 @@ export default function ChatInput({
   };
 
   const handleKeyDown = (e) => {
+    if (disabled) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage(e);
@@ -27,18 +30,18 @@ export default function ChatInput({
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (message.trim()) {
-      onSendMessage(message.trim());
-      setMessage("");
+    if (disabled || !message.trim()) return;
 
-      // Reset textarea height to original size after DOM update
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.style.height = "";
-          textareaRef.current.style.height = "auto";
-        }
-      }, 0);
-    }
+    onSendMessage(message.trim());
+    setMessage("");
+
+    // Reset textarea height to original size after DOM update
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "";
+        textareaRef.current.style.height = "auto";
+      }
+    }, 0);
   };
 
   return (
@@ -53,11 +56,12 @@ export default function ChatInput({
             placeholder={placeholder}
             className={styles.messageInput}
             rows={1}
+            disabled={disabled}
           />
           <button
             type="submit"
             className={styles.sendButton}
-            disabled={!message.trim()}
+            disabled={disabled || !message.trim()}
           >
             <svg
               width="16"

@@ -1,4 +1,3 @@
-// Use HTTP for development to avoid certificate issues
 export const API_BASE_URL = "http://localhost:5170";
 
 export const API_ENDPOINTS = {
@@ -7,5 +6,11 @@ export const API_ENDPOINTS = {
     LOGIN: "/auth/login",
     LOGOUT: "/auth/logout",
     STATUS: "/auth/status",
+  },
+  CHAT: {
+    CHATHUB: "/chathub",
+    CREATECHAT: "/chat",
+    GETCHATS: "/chat",
+    GETCHATBYID: "/chat", // Base route, append /{chatId} when calling
   },
 };

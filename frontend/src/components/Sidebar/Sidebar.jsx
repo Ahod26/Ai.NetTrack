@@ -1,55 +1,79 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { userAuthSliceAction } from "../../store/userAuth";
 import { logoutUser } from "../../api/auth";
+import { getUserChats } from "../../api/chat";
 import styles from "./Sidebar.module.css";
 
 export default function Sidebar() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { chatId: currentChatId } = useParams(); // Get current chat ID from URL
   const { isUserLoggedIn } = useSelector((state) => state.userAuth);
+  const { refreshTrigger } = useSelector((state) => state.chat);
 
-  const [chats, setChats] = useState([
-    {
-      id: 1,
-      title: "React Development Tips",
-      time: "2 hours ago",
-    },
-    {
-      id: 2,
-      title: "CSS Grid Layout",
-      time: "Yesterday",
-    },
-    {
-      id: 3,
-      title: "JavaScript Async/Await",
-      time: "2 days ago",
-    },
-    {
-      id: 4,
-      title: "Node.js Best Practices",
-      time: "3 days ago",
-    },
-    {
-      id: 5,
-      title: "Database Design",
-      time: "1 week ago",
-    },
-  ]);
+  const [chats, setChats] = useState([]);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
+
+  // Fetch user chats when component mounts or user logs in
+  useEffect(() => {
+    const fetchUserChats = async () => {
+      try {
+        setIsLoadingChats(true);
+        const userChats = await getUserChats();
+        console.log("Fetched chats:", userChats);
+
+        // Transform the data to match the sidebar format
+        const formattedChats = userChats.map((chat) => ({
+          id: chat.Id || chat.id,
+          title: chat.Title || chat.title,
+          time: formatChatTime(chat.CreatedAt || chat.createdAt),
+        }));
+
+        setChats(formattedChats);
+      } catch (error) {
+        console.error("Error fetching chats:", error);
+      } finally {
+        setIsLoadingChats(false);
+      }
+    };
+
+    if (isUserLoggedIn) {
+      fetchUserChats();
+    } else {
+      setChats([]);
+    }
+  }, [isUserLoggedIn, refreshTrigger]);
+
+  const formatChatTime = (dateString) => {
+    if (!dateString) return "Unknown";
+
+    const chatDate = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now - chatDate) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) {
+      return "Just now";
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
+    } else if (diffInHours < 48) {
+      return "Yesterday";
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24);
+      return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
+    }
+  };
 
   const handleNewChat = () => {
-    const newChat = {
-      id: Date.now(),
-      title: "New Chat",
-      time: "Just now",
-    };
-    setChats([newChat, ...chats]);
+    navigate("/chat/new");
   };
 
   const handleLogout = async () => {
     try {
       await logoutUser();
       dispatch(userAuthSliceAction.setUserLoggedOut());
+      navigate("/chat/new");
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -59,34 +83,54 @@ export default function Sidebar() {
     <div className={styles.sidebar}>
       <div className={styles.header}>
         <h1 className={styles.title}>.NET AI Developer Hub</h1>
-        <button className={styles.newChatBtn} onClick={handleNewChat}>
-          <div className={styles.newChatIcon}>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </div>
-          New Chat
-        </button>
+        {isUserLoggedIn && (
+          <button className={styles.newChatBtn} onClick={handleNewChat}>
+            <div className={styles.newChatIcon}>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </div>
+            New Chat
+          </button>
+        )}
       </div>
 
-      <div className={styles.chatHistory}>
-        <div className={styles.sectionTitle}>Recent Chats</div>
-        <div className={styles.chatList}>
-          {chats.map((chat) => (
-            <div key={chat.id} className={styles.chatItem}>
-              <div className={styles.chatTitle}>{chat.title}</div>
-              <div className={styles.chatTime}>{chat.time}</div>
-            </div>
-          ))}
+      {isUserLoggedIn && (
+        <div className={styles.chatHistory}>
+          <div className={styles.sectionTitle}>Recent Chats</div>
+          <div className={styles.chatList}>
+            {isLoadingChats ? (
+              <div className={styles.loadingChats}>Loading chats...</div>
+            ) : chats.length > 0 ? (
+              chats.map((chat) => (
+                <Link
+                  key={chat.id}
+                  to={`/chat/${chat.id}`}
+                  className={`${styles.chatItem} ${
+                    currentChatId === chat.id.toString()
+                      ? styles.activeChatItem
+                      : ""
+                  }`}
+                >
+                  <div className={styles.chatTitle}>{chat.title}</div>
+                  <div className={styles.chatTime}>{chat.time}</div>
+                </Link>
+              ))
+            ) : (
+              <div className={styles.noChats}>
+                No chats yet. Start a new conversation!
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={styles.userSection}>
         <div className={styles.sectionTitle}>Account</div>

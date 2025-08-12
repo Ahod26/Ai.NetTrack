@@ -1,5 +1,11 @@
 {
   "cSpell.words": [
-    "Hmac"
+    "chathub",
+    "CREATECHAT",
+    "GETCHATBYID",
+    "GETCHATS",
+    "Hmac",
+    "onreconnected",
+    "signalr"
   ]
 }

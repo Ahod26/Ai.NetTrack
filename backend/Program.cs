@@ -1,8 +1,11 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OpenAI;
+using OpenAI.Chat;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +30,37 @@ builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();
 builder.Services.AddAutoMapper(typeof(AutoMappersProfiles));
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IChatRepo, ChatRepo>();
+
+// Configure JSON serialization to handle circular references
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        options.PayloadSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
+
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var apiKey = builder.Configuration["OpenAI:ApiKey"]
+                 ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+    return new OpenAIClient(apiKey);
+});
+
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var openAIClient = serviceProvider.GetRequiredService<OpenAIClient>();
+    var model = builder.Configuration["OpenAI:Model"] ?? "gpt-4o-mini";
+    return openAIClient.GetChatClient(model);
+});
+
+builder.Services.AddScoped<IOpenAIService, OpenAIService>();
+
 
 builder.Services.AddIdentity<ApiUser, IdentityRole>(options =>
 {
@@ -106,6 +140,8 @@ app.UseHttpsRedirection();
 app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/chathub");
 
 app.MapControllers();
 
