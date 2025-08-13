@@ -6,7 +6,7 @@
 }
 
 .inputForm {
-  max-width: 800px;
+  max-width: 800px; /* Reverted back to original */
   margin: 0 auto;
 }
 

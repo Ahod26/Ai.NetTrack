@@ -1,5 +1,5 @@
 import Sidebar from "../../components/Sidebar/Sidebar";
-import InitialChat from "../../components/InitialChat/InitialChat";
+import  InitialChat from "../../components/Chat/InitialChat/InitialChat";
 import styles from "./InitialChatPage.module.css";
 
 export default function InitialChatPage() {

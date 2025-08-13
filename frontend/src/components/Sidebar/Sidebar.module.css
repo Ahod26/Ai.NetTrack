@@ -12,6 +12,33 @@
   z-index: 150;
 }
 
+/* Fixed toggle button positioned outside sidebar */
+.fixedToggleSidebarBtn {
+  position: fixed;
+  top: 20px;
+  left: 260px; /* 240px sidebar width + 20px margin */
+  background: rgba(139, 90, 159, 0.1); /* Light purple background */
+  border: 1px solid rgba(139, 90, 159, 0.3); /* Purple border */
+  color: #8b5a9f; /* Purple color */
+  cursor: pointer;
+  padding: 0.75rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 160; /* Higher than sidebar */
+  box-shadow: 0 2px 8px rgba(139, 90, 159, 0.15); /* Subtle purple shadow */
+}
+
+.fixedToggleSidebarBtn:hover {
+  background: rgba(139, 90, 159, 0.2); /* Darker purple background on hover */
+  color: #9148ae; /* Lighter purple on hover */
+  border-color: rgba(139, 90, 159, 0.5); /* Stronger border on hover */
+  box-shadow: 0 4px 12px rgba(139, 90, 159, 0.25); /* Enhanced shadow on hover */
+  transform: translateY(-1px); /* Subtle lift effect */
+}
+
 .header {
   padding: 1.5rem 1rem 1rem 1rem;
   border-bottom: 1px solid var(--border);
@@ -89,17 +116,111 @@
   gap: 2px;
 }
 
+.chatItemWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.chatItemWrapper:hover {
+  background: var(--bg-tertiary);
+}
+
 .chatItem {
+  flex: 1;
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-radius: 0;
-  margin: 0 0.5rem;
   border-radius: 6px;
+  display: flex;
+  align-items: center;
+  text-decoration: none !important; /* Force remove underline */
 }
 
+/* Force remove underline on hover for all states */
 .chatItem:hover {
+  text-decoration: none !important;
+}
+
+.chatContent {
+  flex: 1;
+  min-width: 0; /* Allow content to shrink */
+}
+
+.chatActions {
+  position: relative;
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+.moreButton {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.chatItemWrapper:hover .moreButton {
+  opacity: 1;
+}
+
+.moreButton:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 120px;
+  overflow: hidden;
+}
+
+.dropdownItem {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease;
+}
+
+.dropdownItem:hover {
   background: var(--bg-tertiary);
+  color: #ef4444; /* Red color for delete action */
+}
+
+.dropdownItem svg {
+  flex-shrink: 0;
+}
+
+.loadingChats,
+.noChats {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
 }
 
 .activeChatItem {
@@ -116,7 +237,11 @@
 }
 
 .activeChatItem:hover {
-  background: var(--bg-tertiary) !important;
+  background: transparent !important;
+}
+
+.activeChatItem + .chatActions .moreButton {
+  opacity: 1; /* Always show more button for active chat */
 }
 
 .chatTitle {
@@ -127,6 +252,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 0.2s ease; /* Smooth color transition */
+}
+
+/* Purple text color on hover, no underline - works for ALL chats */
+.chatItemWrapper:hover .chatTitle {
+  color: #b794d1 !important; /* Lighter purple color with !important to override active state */
+  text-decoration: none !important; /* Ensure no underline */
+}
+
+/* Make sure active chat can also change color on hover */
+.activeChatItem:hover .chatTitle {
+  color: #b794d1 !important; /* Same lighter purple for active chat hover */
+  text-decoration: none !important;
 }
 
 .chatPreview {
@@ -336,5 +474,119 @@
 
   .sidebar.open {
     transform: translateX(0);
+  }
+
+  .fixedToggleSidebarBtn {
+    top: 20px;
+    right: 20px; /* Position from right edge on mobile */
+    left: auto; /* Override left positioning */
+  }
+}
+
+/* Delete Confirmation Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.2s ease;
+}
+
+.modalHeader {
+  padding: 1.5rem 1.5rem 0 1.5rem;
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modalContent {
+  padding: 1rem 1.5rem;
+}
+
+.modalText {
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  justify-content: flex-end;
+}
+
+.modalCancelBtn {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modalCancelBtn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.modalDeleteBtn {
+  padding: 0.75rem 1.5rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modalDeleteBtn:hover {
+  background: #b91c1c;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }

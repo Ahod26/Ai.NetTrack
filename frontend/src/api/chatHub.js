@@ -24,30 +24,25 @@ class ChatHubService {
 
     // Set up event handlers
     this.connection.on("ReceiveMessage", (message) => {
-      console.log("Received message:", message);
       this.messageHandlers.forEach((handler) => handler(message));
     });
 
     this.connection.on("ChatJoined", (chatId, title, messages) => {
-      console.log("Chat joined:", { chatId, title, messages });
       this.chatJoinedHandlers.forEach((handler) =>
         handler(chatId, title, messages)
       );
     });
 
     this.connection.on("Error", (error) => {
-      console.error("Hub error:", error);
       this.errorHandlers.forEach((handler) => handler(error));
     });
 
     this.connection.onclose(() => {
       this.isConnected = false;
-      console.log("SignalR connection closed");
     });
 
     this.connection.onreconnected(() => {
       this.isConnected = true;
-      console.log("SignalR connection reconnected");
     });
   }
 
@@ -60,11 +55,9 @@ class ChatHubService {
       if (this.connection.state === SignalR.HubConnectionState.Disconnected) {
         await this.connection.start();
         this.isConnected = true;
-        console.log("SignalR connection established successfully");
       }
     } catch (err) {
       this.isConnected = false;
-      console.error("Failed to start SignalR connection:", err);
       throw err;
     }
   }
@@ -76,7 +69,6 @@ class ChatHubService {
     ) {
       await this.connection.stop();
       this.isConnected = false;
-      console.log("SignalR connection stopped");
     }
   }
 
@@ -86,7 +78,6 @@ class ChatHubService {
         throw new Error("Connection not established");
       }
       await this.connection.invoke("SendMessage", chatId, content);
-      console.log("Message sent successfully");
     } catch (err) {
       console.error("Failed to send message:", err);
       throw err;
@@ -99,7 +90,6 @@ class ChatHubService {
         throw new Error("Connection not established");
       }
       await this.connection.invoke("JoinChat", chatId);
-      console.log("Joined chat successfully");
     } catch (err) {
       console.error("Failed to join chat:", err);
       throw err;

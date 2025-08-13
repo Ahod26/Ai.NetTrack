@@ -1,7 +1,5 @@
 import { API_BASE_URL, API_ENDPOINTS } from "./config";
 
-
-
 // Create a new chat
 export async function createChat(title) {
   try {
@@ -76,6 +74,30 @@ export async function getChatById(chatId) {
     return data;
   } catch (error) {
     console.error("Error getting chat by ID:", error);
+    throw error;
+  }
+}
+
+// Delete specific chat by ID
+export async function deleteChatById(chatId) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}${API_ENDPOINTS.CHAT.DELETECHATBYID}/${chatId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("Chat not found");
+      }
+      throw new Error(`Failed to delete chat: ${response.status}`);
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting chat:", error);
     throw error;
   }
 }

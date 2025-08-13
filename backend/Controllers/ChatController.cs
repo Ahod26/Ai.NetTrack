@@ -62,4 +62,27 @@ public class ChatController(IChatService chatService, ILogger<ChatController> lo
       return StatusCode(500, "Error retrieving chat");
     }
   }
+
+  [HttpDelete("{chatId}")]
+  public async Task<IActionResult> DeleteChat(Guid chatId)
+  {
+    try
+    {
+      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+      var chat = await chatService.GetUserChatAsync(chatId, userId);
+      if (chat == null)
+      {
+        return NotFound("Chat not found");
+      }
+
+      await chatService.DeleteChatByIdAsync(chatId);
+
+      return Ok(new { message = "Chat deleted successfully" });
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Error deleting chat {ChatId}", chatId);
+      return StatusCode(500, "Error deleting chat");
+    }
+  }
 }

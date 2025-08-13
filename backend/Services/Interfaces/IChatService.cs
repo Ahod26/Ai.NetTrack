@@ -6,4 +6,5 @@ public interface IChatService
   Task<ChatMessage> AddMessageAsync(Guid chatId, string content, MessageType type);
   Task<List<ChatMessage>> GetChatMessagesAsync(Guid chatId);
   Task<ChatMessage> ProcessUserMessageAsync(Guid chatId, string content);
+  Task DeleteChatByIdAsync(Guid chatId);
 }

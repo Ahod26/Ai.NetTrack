@@ -1,5 +1,5 @@
 import Sidebar from "../../components/Sidebar/Sidebar";
-import Chat from "../../components/Chat/Chat";
+import MainChat from "../../components/Chat/MainChat/MainChat";
 import styles from "./ChatPage.module.css";
 
 export default function ChatPage() {
@@ -7,7 +7,7 @@ export default function ChatPage() {
     <div className={styles.chatPage}>
       <Sidebar />
       <div className={styles.chatContent}>
-        <Chat />
+        <MainChat />
       </div>
     </div>
   );

@@ -4,8 +4,7 @@ import ChatPage from "../pages/ChatPage/ChatPage";
 import InitialChatPage from "../pages/InitialChatPage/InitialChatPage";
 import TimelinePage from "../pages/TimelinePage/TimelinePage";
 import NotFound from "../pages/NotFound/NotFound";
-import Login from "../components/Auth/Login/Login";
-import Signup from "../components/Auth/Signup/Signup";
+import { Login, Signup } from "../components/Auth";
 
 export const router = createBrowserRouter([
   {

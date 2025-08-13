@@ -12,5 +12,6 @@ export const API_ENDPOINTS = {
     CREATECHAT: "/chat",
     GETCHATS: "/chat",
     GETCHATBYID: "/chat", // Base route, append /{chatId} when calling
+    DELETECHATBYID: "/chat" // Base route, append /{chatId} when calling
   },
 };

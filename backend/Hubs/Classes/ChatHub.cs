@@ -33,15 +33,7 @@ public class ChatHub(IChatService chatService) : Hub<IChatClient>
       await Clients.Caller.Error("Access denied");
       return;
     }
-
-    // Send user message to group immediately
-    await Clients.Group($"Chat_{chatId}").ReceiveMessage(new
-    {
-      Type = "User",
-      Content = content,
-      CreatedAt = DateTime.UtcNow
-    });
-
+    
     // Process user message and get AI response
     var aiMessage = await chatService.ProcessUserMessageAsync(Guid.Parse(chatId), content);
 

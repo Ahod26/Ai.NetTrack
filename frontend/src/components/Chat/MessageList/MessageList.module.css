@@ -1,0 +1,89 @@
+.messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  padding-top: calc(
+    120px + 2rem
+  ); /* Account for header height + normal padding */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-height: 0;
+  max-width: 1200px; /* Match header container max-width */
+  margin: 0 auto; /* Center like header */
+  width: 100%;
+}
+
+.message {
+  display: flex;
+  width: 100%;
+  max-width: 800px; /* Reverted back to match input form container */
+  margin: 0 auto; /* Center like input field */
+}
+
+.message.user {
+  justify-content: flex-start; /* Align user messages to start like AI messages */
+}
+
+.message.ai {
+  justify-content: center; /* Center AI messages too */
+}
+
+.messageContent {
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  line-height: 1.5;
+  font-size: 0.95rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal; /* Changed from pre-wrap to normal for markdown */
+  width: 100%; /* Take full width like the input field */
+  max-width: none; /* Remove width restriction */
+}
+
+.message.user .messageContent {
+  background: #2a2a2a;
+  color: #f0f0f0;
+  border-bottom-right-radius: 0.25rem;
+  border: 1px solid #3a3a3a;
+  white-space: pre-wrap; /* Keep pre-wrap for user messages */
+  width: auto; /* Fit content width for user messages */
+  display: inline-block; /* Allow width to shrink to content */
+  max-width: 70%; /* Prevent too wide messages */
+}
+
+.message.ai .messageContent,
+.message.assistant .messageContent {
+  background: transparent;
+  color: var(--text-primary);
+  border-bottom-left-radius: 0.25rem;
+}
+
+/* Scrollbar styling */
+.messagesContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messagesContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messagesContainer::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.messagesContainer::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .messagesContainer {
+    padding: 1rem;
+  }
+
+  .message {
+    max-width: 85%;
+  }
+}

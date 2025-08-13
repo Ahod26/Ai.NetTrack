@@ -7,4 +7,5 @@ public interface IChatRepo
   Task<ChatMessage> AddMessageAsync(ChatMessage message);
   Task<List<ChatMessage>> GetMessagesAsync(Guid chatId, int count = 50);
   Task<Chat?> GetChatByIdAsync(Guid chatId);
+  Task DeleteChatAsync(Guid chatId);
 }

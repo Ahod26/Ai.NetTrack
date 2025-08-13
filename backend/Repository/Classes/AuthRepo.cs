@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 public class AuthRepo(UserManager<ApiUser> userManager) : IAuthRepo
 {
@@ -94,5 +95,4 @@ public class AuthRepo(UserManager<ApiUser> userManager) : IAuthRepo
   {
     return await userManager.FindByNameAsync(username);
   }
-
 }

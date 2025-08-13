@@ -70,4 +70,9 @@ public class ChatService(IChatRepo chatRepo, IOpenAIService openAIService) : ICh
 
     return aiMessage;
   }
+
+  public async Task DeleteChatByIdAsync(Guid chatId)
+  {
+    await chatRepo.DeleteChatAsync(chatId);
+  }
 }

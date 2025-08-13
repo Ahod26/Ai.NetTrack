@@ -8,4 +8,5 @@ public interface IAuthRepo
   Task<IdentityResult> CreateAsync(ApiUser user, string password);
   Task<IdentityResult> AddToRoleAsync(ApiUser user, string role);
   Task<ApiUser?> FindByUsernameAsync(string username);
+  
 }

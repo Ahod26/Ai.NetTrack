@@ -1,0 +1,80 @@
+.chatContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+  /* Remove sidebar margins - let the content center naturally */
+}
+
+.welcomeScreen {
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem;
+  padding-top: 12%;
+  overflow: hidden;
+  position: fixed; /* Position relative to viewport, not container */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50; /* Below sidebar */
+  transition: transform 0.3s ease;
+}
+
+/* When sidebar is open, shift content to center in remaining space */
+.welcomeScreen.sidebarOpen {
+  transform: translateX(120px); /* Half of sidebar width (240px / 2) */
+}
+
+.welcomeContent {
+  text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 120px; /* Account for header height */
+}
+
+.welcomeTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  letter-spacing: -0.025em;
+}
+
+.welcomeInputContainer {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 680px; /* 15% smaller than 800px (800 * 0.85 = 680) */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .chatContainer {
+    margin-left: 0; /* No sidebar margin on mobile */
+  }
+
+  .chatContainer.sidebarClosed {
+    margin-left: 0;
+  }
+
+  .welcomeTitle {
+    font-size: 1.75rem;
+  }
+
+  .welcomeScreen {
+    padding: 1rem;
+    padding-top: 5%;
+  }
+
+  .welcomeInputContainer {
+    width: 100%;
+    margin-left: 0;
+  }
+}

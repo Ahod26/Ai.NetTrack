@@ -1,0 +1,199 @@
+/* Base markdown container */
+.markdown {
+  line-height: 1.6;
+  color: var(--text-primary);
+  word-wrap: break-word;
+}
+
+/* Paragraphs */
+.paragraph {
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+}
+
+.paragraph:last-child {
+  margin-bottom: 0;
+}
+
+/* Headings */
+.heading1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem 0;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.heading2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.75rem 0;
+  color: var(--text-primary);
+}
+
+.heading3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+/* Code blocks */
+.codeBlock {
+  margin: 1rem 0;
+  border-radius: 8px;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  overflow: hidden;
+}
+
+.codeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: #2d2d2d;
+  border-bottom: 1px solid #333;
+}
+
+.codeLanguage {
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: 500;
+  text-transform: lowercase;
+}
+
+.copyButton {
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.copyButton:hover {
+  background: #404040;
+  color: #fff;
+}
+
+/* Inline code */
+.inlineCode {
+  background: rgba(139, 90, 159, 0.1); /* Light purple background */
+  border: 1px solid rgba(139, 90, 159, 0.2); /* Subtle purple border */
+  border-radius: 4px;
+  padding: 0.125rem 0.4rem;
+  font-size: 0.9em;
+  font-family: "Fira Code", "Monaco", "Cascadia Code", "Roboto Mono", monospace;
+  color: #bb86fc; /* Purple accent color for visibility */
+  font-weight: 500;
+  white-space: nowrap; /* Prevent wrapping of inline code */
+}
+
+/* Lists */
+.unorderedList {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.orderedList {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.listItem {
+  margin: 0.25rem 0;
+  line-height: 1.5;
+}
+
+/* Links */
+.link {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.link:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* Blockquotes */
+.blockquote {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--accent);
+  background: var(--bg-secondary);
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.blockquote p {
+  margin: 0;
+}
+
+/* Text formatting */
+.strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.emphasis {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* Tables (if needed) */
+.markdown table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  width: 100%;
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.markdown th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+}
+
+/* Horizontal rules */
+.markdown hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5rem 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .codeHeader {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .codeLanguage {
+    font-size: 0.7rem;
+  }
+
+  .copyButton {
+    padding: 0.125rem;
+  }
+
+  .heading1 {
+    font-size: 1.25rem;
+  }
+
+  .heading2 {
+    font-size: 1.1rem;
+  }
+}

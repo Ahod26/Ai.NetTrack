@@ -14,8 +14,15 @@ export default function AuthProvider({ children }) {
         const authStatus = await checkAuthStatus();
 
         if (authStatus.isAuthenticated && authStatus.user) {
+          // Convert UserInfo class instance to plain object before dispatching
+          const userPlainObject = {
+            userName: authStatus.user.userName,
+            email: authStatus.user.email,
+            roles: authStatus.user.roles,
+          };
+
           // Update Redux store
-          dispatch(userAuthSliceAction.setUserLoggedIn(authStatus.user));
+          dispatch(userAuthSliceAction.setUserLoggedIn(userPlainObject));
 
           // Initialize SignalR connection for existing session
           try {

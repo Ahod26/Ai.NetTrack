@@ -11,7 +11,20 @@ const userAuthSlice = createSlice({
   reducers: {
     setUserLoggedIn(state, action) {
       state.isUserLoggedIn = true;
-      state.user = action.payload; // Expecting user object with userName, email, etc.
+      // Convert UserInfo class instance to plain object for Redux serialization
+      const userPayload = action.payload;
+
+      // Handle both plain objects and UserInfo class instances
+      if (userPayload && typeof userPayload === "object") {
+        state.user = {
+          userName: userPayload.userName,
+          email: userPayload.email,
+          roles: Array.isArray(userPayload.roles) ? [...userPayload.roles] : [],
+        };
+      } else {
+        state.user = null;
+      }
+
       console.log("User logged in:", state.user);
     },
     setUserLoggedOut(state) {

@@ -76,7 +76,14 @@ export default function Login() {
         const response = await loginUser(formData);
 
         if (response.success) {
-          dispatch(userAuthSliceAction.setUserLoggedIn(response.user));
+          // Convert UserInfo class instance to plain object before dispatching
+          const userPlainObject = {
+            userName: response.user.userName,
+            email: response.user.email,
+            roles: response.user.roles,
+          };
+
+          dispatch(userAuthSliceAction.setUserLoggedIn(userPlainObject));
 
           // Initialize SignalR connection after successful login
           try {
@@ -88,7 +95,7 @@ export default function Login() {
               signalRError
             );
           }
-          
+
           navigate("/chat/new");
         } else {
           setApiError(response.message || "Login failed");
