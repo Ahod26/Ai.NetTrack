@@ -1,6 +1,9 @@
-public class ChatService(IChatRepo chatRepo, IOpenAIService openAIService) : IChatService
+using System.Runtime.CompilerServices;
+using AutoMapper;
+
+public class ChatService(IChatRepo chatRepo, IOpenAIService openAIService, IMapper mapper) : IChatService
 {
-  public async Task<Chat> CreateChatAsync(string userId, string? title = null)
+  public async Task<ChatMetaDataDto> CreateChatAsync(string userId, string? title = null, int? timezoneOffset = null)
   {
     var chat = new Chat
     {
@@ -11,17 +14,56 @@ public class ChatService(IChatRepo chatRepo, IOpenAIService openAIService) : ICh
       LastMessageAt = DateTime.UtcNow
     };
 
-    return await chatRepo.CreateChatAsync(chat);
+    var chatCreated = await chatRepo.CreateChatAsync(chat);
+    var chatDto = mapper.Map<ChatMetaDataDto>(chatCreated);
+
+    // Apply timezone conversion if offset is provided
+    if (timezoneOffset.HasValue)
+    {
+      chatDto.CreatedAt = chatDto.CreatedAt.AddMinutes(-timezoneOffset.Value);
+      chatDto.LastMessageAt = chatDto.LastMessageAt.AddMinutes(-timezoneOffset.Value);
+    }
+
+    return chatDto;
   }
 
-  public async Task<Chat?> GetUserChatAsync(Guid chatId, string userId)
+  public async Task<ChatMetaDataDto?> GetUserChatAsync(Guid chatId, string userId, int? timezoneOffset = null)
   {
-    return await chatRepo.GetChatByIdAndUserIdAsync(chatId, userId);
+    var chat = await chatRepo.GetChatByIdAndUserIdAsync(chatId, userId);
+
+    if (chat == null)
+    {
+      return null;
+    }
+
+    var chatDto = mapper.Map<ChatMetaDataDto>(chat);
+
+    // Apply timezone conversion if offset is provided
+    if (timezoneOffset.HasValue)
+    {
+      chatDto.CreatedAt = chatDto.CreatedAt.AddMinutes(-timezoneOffset.Value);
+      chatDto.LastMessageAt = chatDto.LastMessageAt.AddMinutes(-timezoneOffset.Value);
+    }
+
+    return chatDto;
   }
 
-  public async Task<List<Chat>> GetUserChatsAsync(string userId)
+  public async Task<List<ChatMetaDataDto>> GetUserChatsAsync(string userId, int? timezoneOffset = null)
   {
-    return await chatRepo.GetChatByUserIdAsync(userId);
+    var chats = await chatRepo.GetChatsByUserIdAsync(userId);
+    var chatDtos = mapper.Map<List<ChatMetaDataDto>>(chats);
+
+    // Apply timezone conversion if offset is provided
+    if (timezoneOffset.HasValue)
+    {
+      foreach (var chatDto in chatDtos)
+      {
+        chatDto.CreatedAt = chatDto.CreatedAt.AddMinutes(-timezoneOffset.Value);
+        chatDto.LastMessageAt = chatDto.LastMessageAt.AddMinutes(-timezoneOffset.Value);
+      }
+    }
+
+    return chatDtos;
   }
 
   public async Task<ChatMessage> AddMessageAsync(Guid chatId, string content, MessageType type)
@@ -74,5 +116,10 @@ public class ChatService(IChatRepo chatRepo, IOpenAIService openAIService) : ICh
   public async Task DeleteChatByIdAsync(Guid chatId)
   {
     await chatRepo.DeleteChatAsync(chatId);
+  }
+
+  public async Task ChangeChatTitle(Guid chatId, string newTitle)
+  {
+    await chatRepo.ChangeChatTitleAsync(chatId, newTitle);
   }
 }

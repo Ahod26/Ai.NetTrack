@@ -15,7 +15,7 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
         .FirstOrDefaultAsync(c => c.Id == chatId && c.UserId == userId);
   }
 
-  public async Task<List<Chat>> GetChatByUserIdAsync(string userId)
+  public async Task<List<Chat>> GetChatsByUserIdAsync(string userId)
   {
     return await dbContext.Chats
         .Where(c => c.UserId == userId)
@@ -58,6 +58,17 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
     if (chat != null)
     {
       dbContext.Chats.Remove(chat);
+      await dbContext.SaveChangesAsync();
+    }
+  }
+
+  public async Task ChangeChatTitleAsync(Guid chatId, string newTitle)
+  {
+    var chat = await dbContext.Chats.FindAsync(chatId);
+
+    if (chat != null)
+    {
+      chat.Title = newTitle;
       await dbContext.SaveChangesAsync();
     }
   }

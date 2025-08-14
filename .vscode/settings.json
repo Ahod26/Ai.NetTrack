@@ -1,9 +1,11 @@
 {
   "cSpell.words": [
     "Blockquotes",
+    "CHANGECHATTITLE",
     "chathub",
     "CREATECHAT",
     "DELETECHATBYID",
+    "Dtos",
     "GETCHATBYID",
     "GETCHATS",
     "Hmac",

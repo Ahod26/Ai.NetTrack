@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { chatSliceActions } from "../store/chat";
 import chatHubService from "../api/chatHub";
 
 export function useSignalRChat(chatId, isUserLoggedIn) {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
@@ -149,6 +152,9 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
 
       // Send message via SignalR
       await chatHubService.sendMessage(chatId, messageText);
+
+      // Trigger sidebar refresh to update chat order and last message time
+      dispatch(chatSliceActions.triggerChatRefresh());
     } catch (error) {
       console.error("Error sending message:", error);
       setIsSendingMessage(false);

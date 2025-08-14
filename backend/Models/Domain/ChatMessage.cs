@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 public class ChatMessage
 {
   public Guid Id { get; set; }
@@ -8,6 +10,7 @@ public class ChatMessage
   public int TokenCount { get; set; } = 0;
 
   //navigation properties
+  [JsonIgnore]
   public Chat Chat { get; set; } = null!;
 }
 

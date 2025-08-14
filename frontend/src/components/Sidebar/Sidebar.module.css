@@ -179,42 +179,6 @@
   color: var(--text-primary);
 }
 
-.dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  min-width: 120px;
-  overflow: hidden;
-}
-
-.dropdownItem {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  transition: background-color 0.2s ease;
-}
-
-.dropdownItem:hover {
-  background: var(--bg-tertiary);
-  color: #ef4444; /* Red color for delete action */
-}
-
-.dropdownItem svg {
-  flex-shrink: 0;
-}
-
 .loadingChats,
 .noChats {
   padding: 1rem;
@@ -569,6 +533,68 @@
 
 .modalDeleteBtn:hover {
   background: #b91c1c;
+}
+
+.modalSaveBtn {
+  padding: 0.75rem 1.5rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modalSaveBtn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.modalSaveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.renameInput {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.renameInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.1);
+}
+
+.renameInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.inputError {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+}
+
+.errorMessage {
+  margin-top: 0.5rem;
+  color: #ef4444;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.characterCount {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: right;
 }
 
 @keyframes fadeIn {

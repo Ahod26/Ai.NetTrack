@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "Hd+CaqN4s9Q=",
+  "dgSpecHash": "kPHemoa6Aw4=",
   "success": true,
   "projectFilePath": "/Users/arbelhodesman/Desktop/Ai Track/backend/backend.csproj",
   "expectedPackageFiles": [
-    "/Users/arbelhodesman/.nuget/packages/automapper/15.0.1/automapper.15.0.1.nupkg.sha512",
+    "/Users/arbelhodesman/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/google.protobuf/3.21.9/google.protobuf.3.21.9.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
@@ -85,18 +85,6 @@
       "warningLevel": 1,
       "filePath": "/Users/arbelhodesman/Desktop/Ai Track/backend/backend.csproj",
       "libraryId": "Microsoft.Extensions.Identity.Core",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    },
-    {
-      "code": "NU1608",
-      "level": "Warning",
-      "message": "Detected package version outside of dependency constraint: AutoMapper.Extensions.Microsoft.DependencyInjection 12.0.1 requires AutoMapper (= 12.0.1) but version AutoMapper 15.0.1 was resolved.",
-      "projectPath": "/Users/arbelhodesman/Desktop/Ai Track/backend/backend.csproj",
-      "warningLevel": 1,
-      "filePath": "/Users/arbelhodesman/Desktop/Ai Track/backend/backend.csproj",
-      "libraryId": "AutoMapper",
       "targetGraphs": [
         "net10.0"
       ]

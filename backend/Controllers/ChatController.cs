@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,12 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 public class ChatController(IChatService chatService, ILogger<ChatController> logger) : ControllerBase
 {
   [HttpPost]
-  public async Task<IActionResult> CreateChat([FromBody] CreateChatDTO createChatDTO)
+  public async Task<IActionResult> CreateChat([FromBody] CreateChatDTO createChatDTO, [FromQuery] int? timezoneOffset = null)
   {
     try
     {
       var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-      var chat = await chatService.CreateChatAsync(userId, createChatDTO.Title);
+      var chat = await chatService.CreateChatAsync(userId, createChatDTO.Title, timezoneOffset);
 
       return Ok(chat);
     }
@@ -25,12 +26,12 @@ public class ChatController(IChatService chatService, ILogger<ChatController> lo
   }
 
   [HttpGet]
-  public async Task<IActionResult> GetUserChats()
+  public async Task<IActionResult> GetUserChatsMetaData([FromQuery] int? timezoneOffset = null)
   {
     try
     {
       var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-      var chats = await chatService.GetUserChatsAsync(userId);
+      var chats = await chatService.GetUserChatsAsync(userId, timezoneOffset);
 
       return Ok(chats);
     }
@@ -42,12 +43,12 @@ public class ChatController(IChatService chatService, ILogger<ChatController> lo
   }
 
   [HttpGet("{chatId}")]
-  public async Task<IActionResult> GetChat(Guid chatId)
+  public async Task<IActionResult> GetChat(Guid chatId, [FromQuery] int? timezoneOffset = null)
   {
     try
     {
       var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-      var chat = await chatService.GetUserChatAsync(chatId, userId);
+      var chat = await chatService.GetUserChatAsync(chatId, userId, timezoneOffset);
 
       if (chat == null)
       {
@@ -83,6 +84,33 @@ public class ChatController(IChatService chatService, ILogger<ChatController> lo
     {
       logger.LogError(ex, "Error deleting chat {ChatId}", chatId);
       return StatusCode(500, "Error deleting chat");
+    }
+  }
+
+  [HttpPatch("{chatId}/title")]
+  public async Task<IActionResult> ChangeChatTitle(Guid chatId,
+  [FromBody]
+  [Required(ErrorMessage = "Title is required")]
+  [StringLength(20, MinimumLength = 1, ErrorMessage = "Title must be between 1 and 20 characters")]
+  string title)
+  {
+    try
+    {
+      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+      var chat = await chatService.GetUserChatAsync(chatId, userId);
+      if (chat == null)
+      {
+        return NotFound("Chat not found");
+      }
+
+      await chatService.ChangeChatTitle(chatId, title);
+
+      return Ok(new { message = "Title changed successfully" });
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Error changing title for chat {ChatId}", chatId);
+      return StatusCode(500, "Error changing title");
     }
   }
 }
