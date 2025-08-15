@@ -7,6 +7,7 @@ export default function MessageList({
   messagesContainerRef,
   onScroll,
 }) {
+  const hasChunkMessage = messages.some((msg) => msg.isChunkMessage);
   return (
     <div
       className={styles.messagesContainer}
@@ -24,7 +25,7 @@ export default function MessageList({
           </div>
         </div>
       ))}
-      {isSendingMessage && (
+      {isSendingMessage && !hasChunkMessage && (
         <div className={`${styles.message} ${styles.assistant}`}>
           <div className={styles.messageContent}>Thinking...</div>
         </div>

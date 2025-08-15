@@ -96,7 +96,7 @@ public class ChatService(IChatRepo chatRepo, IOpenAIService openAIService, IMapp
     return await chatRepo.GetMessagesAsync(chatId);
   }
 
-  public async Task<ChatMessage> ProcessUserMessageAsync(Guid chatId, string content)
+  public async Task<ChatMessage> ProcessUserMessageAsync(Guid chatId, string content, Func<string, Task>? onChunkReceived = null)
   {
     // 1. Save user message
     var userMessage = await AddMessageAsync(chatId, content, MessageType.User);
@@ -104,10 +104,10 @@ public class ChatService(IChatRepo chatRepo, IOpenAIService openAIService, IMapp
     // 2. Get chat context (recent messages)
     var context = await GetChatMessagesAsync(chatId);
 
-    // 3. Generate AI response
-    var aiResponse = await openAIService.GenerateResponseAsync(content, context);
+    // 3. Generate AI response (streaming)
+    var aiResponse = await openAIService.GenerateResponseAsync(content, context, onChunkReceived);
 
-    // 4. Save AI message
+    // 4. Save AI message (full response)
     var aiMessage = await AddMessageAsync(chatId, aiResponse, MessageType.Assistant);
 
     return aiMessage;

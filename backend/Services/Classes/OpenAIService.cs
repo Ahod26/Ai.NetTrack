@@ -1,10 +1,11 @@
+using System.Text;
 using OpenAI.Chat;
 
 public class OpenAIService(
   ChatClient chatClient, IConfiguration configuration, ILogger<OpenAIService> logger
 ) : IOpenAIService
 {
-  public async Task<string> GenerateResponseAsync(string userMessage, List<ChatMessage> context)
+  public async Task<string> GenerateResponseAsync(string userMessage, List<ChatMessage> context, Func<string, Task>? onChunkReceived = null)
   {
     try
     {
@@ -16,7 +17,7 @@ public class OpenAIService(
       };
 
       // Add context (previous messages)
-      foreach (var msg in context.TakeLast(10))
+      foreach (var msg in context)
       {
         if (msg.Type == MessageType.User)
         {
@@ -38,10 +39,29 @@ public class OpenAIService(
         Temperature = float.Parse(configuration["OpenAI:Temperature"] ?? "0.7")
       };
 
-      // Call OpenAI with new API
-      var completion = await chatClient.CompleteChatAsync(messages, options);
+      // Use streaming API
+      var completionUpdates = chatClient.CompleteChatStreamingAsync(messages, options);
+      var responseBuilder = new StringBuilder();
 
-      return completion.Value.Content[0].Text;
+      await foreach (var update in completionUpdates)
+      {
+        if (update.ContentUpdate.Count > 0)
+        {
+          var chunk = update.ContentUpdate[0].Text;
+          if (!string.IsNullOrEmpty(chunk))
+          {
+            responseBuilder.Append(chunk);
+
+            // Send chunk to callback 
+            if (onChunkReceived != null)
+            {
+              await onChunkReceived(chunk);
+            }
+          }
+        }
+      }
+
+      return responseBuilder.ToString();
     }
     catch (Exception ex)
     {

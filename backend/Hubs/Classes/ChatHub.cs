@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -33,15 +34,25 @@ public class ChatHub(IChatService chatService) : Hub<IChatClient>
       await Clients.Caller.Error("Access denied");
       return;
     }
-    
-    // Process user message and get AI response
-    var aiMessage = await chatService.ProcessUserMessageAsync(Guid.Parse(chatId), content);
 
-    // Send AI response to group
-    await Clients.Group($"Chat_{chatId}").ReceiveMessage(new
+    // Stream AI response chunks to client
+    var aiMessage = await chatService.ProcessUserMessageAsync(
+        Guid.Parse(chatId),
+        content,
+        async (chunk) =>
+        {
+          await Clients.Group($"Chat_{chatId}").ReceiveMessage(new ChunkMessageDto
+          {
+            Content = chunk
+          });
+        }
+    );
+
+    // After streaming, send the final message with the real DB ID
+    await Clients.Group($"Chat_{chatId}").ReceiveMessage(new FullMessageDto
     {
       Id = aiMessage.Id,
-      Type = "Assistant",
+      Type = MessageType.Assistant,
       Content = aiMessage.Content,
       CreatedAt = aiMessage.CreatedAt
     });

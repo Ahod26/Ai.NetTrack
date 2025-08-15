@@ -14,27 +14,44 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
   const [error, setError] = useState(null);
 
   // Handle incoming messages from SignalR
-  const handleMessageReceived = useCallback((message) => {
-    const messageId = message.id;
-
+  const handleFullMessageReceived = useCallback((message) => {
+    // Final message from backend, replace any temp/streaming message
     setMessages((prev) => {
-      // Prevent duplicate messages by checking if ID already exists
-      const exists = prev.some((msg) => msg.id === messageId);
-      if (exists) {
-        return prev;
-      }
-
+      // Remove any chunk messages
+      const filtered = prev.filter((msg) => !msg.isChunkMessage);
+      // Add the full message
       return [
-        ...prev,
+        ...filtered,
         {
           content: message.content,
           type: message.type === "User" ? "user" : "assistant",
           createdAt: message.createdAt,
-          id: messageId,
+          id: message.id,
+          isChunkMessage: false,
         },
       ];
     });
     setIsSendingMessage(false);
+  }, []);
+
+  const handleChunkMessageReceived = useCallback((chunkMessage) => {
+    // Streaming chunk from backend, accumulate chunk content
+    setMessages((prev) => {
+      // Find previous chunk message (if any)
+      const lastChunk = prev.find((msg) => msg.isChunkMessage);
+      const filtered = prev.filter((msg) => !msg.isChunkMessage);
+      const newContent = lastChunk
+        ? lastChunk.content + chunkMessage.content
+        : chunkMessage.content;
+      return [
+        ...filtered,
+        {
+          content: newContent,
+          type: "assistant",
+          isChunkMessage: true,
+        },
+      ];
+    });
   }, []);
 
   // Handle chat joined event
@@ -51,9 +68,7 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
     setIsLoading(false);
 
     // Scroll to bottom when chat loads
-    setTimeout(() => {
-      // This will be handled by the useAutoScroll hook
-    }, 100);
+    setTimeout(() => {}, 100);
   }, []);
 
   // Handle SignalR errors
@@ -71,7 +86,10 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
       return;
     }
 
-    let unsubscribeMessage, unsubscribeChatJoined, unsubscribeError;
+    let unsubscribeFullMessage,
+      unsubscribeChunkMessage,
+      unsubscribeChatJoined,
+      unsubscribeError;
 
     const initializeChat = async () => {
       try {
@@ -82,8 +100,11 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
         await chatHubService.startConnection();
 
         // Set up SignalR event handlers
-        unsubscribeMessage = chatHubService.onMessageReceived(
-          handleMessageReceived
+        unsubscribeFullMessage = chatHubService.onFullMessageReceived(
+          handleFullMessageReceived
+        );
+        unsubscribeChunkMessage = chatHubService.onChunkMessageReceived(
+          handleChunkMessageReceived
         );
         unsubscribeChatJoined = chatHubService.onChatJoined(handleChatJoined);
         unsubscribeError = chatHubService.onError(handleSignalRError);
@@ -119,7 +140,8 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
 
     // Cleanup function - runs on unmount or when dependencies change
     return () => {
-      if (unsubscribeMessage) unsubscribeMessage();
+      if (unsubscribeFullMessage) unsubscribeFullMessage();
+      if (unsubscribeChunkMessage) unsubscribeChunkMessage();
       if (unsubscribeChatJoined) unsubscribeChatJoined();
       if (unsubscribeError) unsubscribeError();
     };
@@ -127,7 +149,8 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
     chatId,
     isUserLoggedIn,
     navigate,
-    handleMessageReceived,
+    handleFullMessageReceived,
+    handleChunkMessageReceived,
     handleChatJoined,
     handleSignalRError,
     location.state,
@@ -141,7 +164,7 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
     setIsSendingMessage(true);
 
     try {
-      // Add user message to UI immediately
+      // Add user message to UI immediately - optimistic update
       const userMessage = {
         content: messageText,
         type: "user",

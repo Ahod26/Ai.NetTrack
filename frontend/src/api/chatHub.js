@@ -5,7 +5,8 @@ class ChatHubService {
   constructor() {
     this.connection = null;
     this.isConnected = false;
-    this.messageHandlers = new Set();
+    this.fullMessageHandlers = new Set();
+    this.chunkMessageHandlers = new Set();
     this.chatJoinedHandlers = new Set();
     this.errorHandlers = new Set();
   }
@@ -24,7 +25,11 @@ class ChatHubService {
 
     // Set up event handlers
     this.connection.on("ReceiveMessage", (message) => {
-      this.messageHandlers.forEach((handler) => handler(message));
+      if (message.isChunkMessage) {
+        this.chunkMessageHandlers.forEach((handler) => handler(message));
+      } else {
+        this.fullMessageHandlers.forEach((handler) => handler(message));
+      }
     });
 
     this.connection.on("ChatJoined", (chatId, title, messages) => {
@@ -98,8 +103,18 @@ class ChatHubService {
 
   // Event handler management
   onMessageReceived(handler) {
-    this.messageHandlers.add(handler);
-    return () => this.messageHandlers.delete(handler);
+    this.fullMessageHandlers.add(handler);
+    return () => this.fullMessageHandlers.delete(handler);
+  }
+
+  onFullMessageReceived(handler) {
+    this.fullMessageHandlers.add(handler);
+    return () => this.fullMessageHandlers.delete(handler);
+  }
+
+  onChunkMessageReceived(handler) {
+    this.chunkMessageHandlers.add(handler);
+    return () => this.chunkMessageHandlers.delete(handler);
   }
 
   onChatJoined(handler) {
