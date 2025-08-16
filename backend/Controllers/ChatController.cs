@@ -14,7 +14,7 @@ public class ChatController(IChatService chatService, ILogger<ChatController> lo
     try
     {
       var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-      var chat = await chatService.CreateChatAsync(userId, createChatDTO.Title, timezoneOffset);
+      var chat = await chatService.CreateChatAsync(userId, createChatDTO.FirstMessage, timezoneOffset);
 
       return Ok(chat);
     }

@@ -69,4 +69,47 @@ public class OpenAIService(
       return "Sorry, I'm having trouble responding right now. Please try again.";
     }
   }
+
+  public async Task<string> GenerateChatTitle(string firstMessage)
+  {
+    try
+    {
+      var messages = new List<OpenAI.Chat.ChatMessage>
+    {
+      new SystemChatMessage(@"You are a helpful assistant that generates concise, descriptive titles for chat conversations. 
+Generate a short, clear title (20 characters max, include spaces) that captures the main topic or question from the user's first message. 
+Do not use quotes around the title. Examples:
+- 'How to learn Python?' -> 'Python Learning Guide'
+- 'Recipe for chocolate cake' -> 'Chocolate Cake Recipe'
+- 'Fix my computer issue' -> 'Computer Troubleshooting'
+- 'Plan vacation to Japan' -> 'Japan Vacation Planning'"),
+
+      new UserChatMessage($"Generate a title for this conversation: {firstMessage}")
+    };
+
+      var options = new ChatCompletionOptions
+      {
+        MaxOutputTokenCount = 50, 
+        Temperature = 0.3f // Lower temperature for more consistent, focused titles
+      };
+
+      var completion = await chatClient.CompleteChatAsync(messages, options);
+
+      var title = completion.Value.Content[0].Text?.Trim();
+
+      // Fallback if AI returns empty or very long title
+      if (string.IsNullOrWhiteSpace(title) || title.Length > 20)
+      {
+        return "New chat";
+      }
+
+      return title;
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Error generating chat title with OpenAI API");
+      return "New chat";
+    }
+  }
+
 }

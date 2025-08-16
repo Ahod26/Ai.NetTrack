@@ -25,12 +25,8 @@ export function useInitialChatLogic() {
     setIsCreatingChat(true);
 
     try {
-      // Generate a simple title for now - you can make this AI-generated later
-      const chatCounter = Date.now() % 1000;
-      const chatTitle = `Chat ${chatCounter}`;
-
       // Create new chat via REST API
-      const newChat = await createChat(chatTitle);
+      const newChat = await createChat(messageText);
       console.log("Created new chat:", newChat);
 
       // Navigate to the new chat immediately to show the UI, passing the initial message

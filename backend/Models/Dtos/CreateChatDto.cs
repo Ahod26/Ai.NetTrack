@@ -1,4 +1,4 @@
 public class CreateChatDTO
 {
-  public string? Title{ get; set; }
+  public string FirstMessage { get; set; } = "new chat";
 }

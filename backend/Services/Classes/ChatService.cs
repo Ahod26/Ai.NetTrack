@@ -3,13 +3,15 @@ using AutoMapper;
 
 public class ChatService(IChatRepo chatRepo, IOpenAIService openAIService, IMapper mapper) : IChatService
 {
-  public async Task<ChatMetaDataDto> CreateChatAsync(string userId, string? title = null, int? timezoneOffset = null)
+  public async Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null)
   {
+    string title = await openAIService.GenerateChatTitle(firstMessage);
+
     var chat = new Chat
     {
       Id = Guid.NewGuid(),
       UserId = userId,
-      Title = title ?? "New Chat",
+      Title = title,
       CreatedAt = DateTime.UtcNow,
       LastMessageAt = DateTime.UtcNow
     };

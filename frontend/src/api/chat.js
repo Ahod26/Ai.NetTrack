@@ -6,7 +6,7 @@ const getTimezoneOffset = () => {
 };
 
 // Create a new chat
-export async function createChat(title) {
+export async function createChat(firstMessage) {
   try {
     const timezoneOffset = getTimezoneOffset();
     const response = await fetch(
@@ -18,7 +18,7 @@ export async function createChat(title) {
         },
         credentials: "include",
         body: JSON.stringify({
-          title: title,
+          firstMessage: firstMessage,
         }),
       }
     );
