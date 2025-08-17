@@ -11,6 +11,7 @@ export function useInitialChatLogic() {
   const dispatch = useDispatch();
   const { isUserLoggedIn, user } = useSelector((state) => state.userAuth);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Open sidebar when component mounts
   useEffect(() => {
@@ -46,6 +47,10 @@ export function useInitialChatLogic() {
     } catch (error) {
       console.error("Error creating chat or sending message:", error);
       setIsCreatingChat(false);
+      // Show error message in top right for 3 seconds
+      let msg = error?.message || "Failed to create chat";
+      setErrorMessage(msg);
+      setTimeout(() => setErrorMessage(""), 5000);
     }
   };
 
@@ -72,5 +77,6 @@ export function useInitialChatLogic() {
     isCreatingChat,
     handleSendMessage,
     getPersonalizedGreeting,
+    errorMessage,
   };
 }

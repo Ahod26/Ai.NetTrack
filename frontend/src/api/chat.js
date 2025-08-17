@@ -24,7 +24,9 @@ export async function createChat(firstMessage) {
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to create chat: ${response.status}`);
+      const errorData = await response.json();
+      const errorMessage = errorData.error;
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();

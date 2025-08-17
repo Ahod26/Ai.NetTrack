@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 public class ChatController(IChatService chatService, ILogger<ChatController> logger) : ControllerBase
 {
   [HttpPost]
+  [TypeFilter(typeof(MaxChatsAttribute))]
   public async Task<IActionResult> CreateChat([FromBody] CreateChatDTO createChatDTO, [FromQuery] int? timezoneOffset = null)
   {
     try

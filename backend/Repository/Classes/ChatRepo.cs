@@ -72,4 +72,9 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
       await dbContext.SaveChangesAsync();
     }
   }
+
+  public async Task<int> GetUserChatCountAsync(string userId)
+  {
+    return await dbContext.Chats.CountAsync(c => c.UserId == userId);
+  }
 }

@@ -11,6 +11,7 @@ export default function InitialChat() {
     isCreatingChat,
     handleSendMessage,
     getPersonalizedGreeting,
+    errorMessage,
   } = useInitialChatLogic();
 
   if (!isUserLoggedIn) {
@@ -23,6 +24,12 @@ export default function InitialChat() {
         !isSidebarOpen ? styles.sidebarClosed : ""
       }`}
     >
+      {errorMessage && (
+        <div className={styles.errorBox}>
+          {errorMessage}
+          <div className={styles.timerBar}></div>
+        </div>
+      )}
       <WelcomeMessage
         greeting={getPersonalizedGreeting()}
         onSendMessage={handleSendMessage}
