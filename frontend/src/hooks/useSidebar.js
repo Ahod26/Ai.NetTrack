@@ -4,7 +4,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { userAuthSliceAction } from "../store/userAuth";
 import { chatSliceActions } from "../store/chat";
 import { logoutUser } from "../api/auth";
-import { getUserChats, deleteChatById, changeChatTitle } from "../api/chat";
+import {
+  getUserChatsMetaData,
+  deleteChatById,
+  changeChatTitle,
+} from "../api/chat";
 
 export const useSidebar = () => {
   const dispatch = useDispatch();
@@ -78,7 +82,7 @@ export const useSidebar = () => {
     const fetchUserChats = async () => {
       try {
         setIsLoadingChats(true);
-        const userChats = await getUserChats();
+        const userChats = await getUserChatsMetaData();
 
         const formattedChats = userChats.map((chat) => ({
           id: chat.Id || chat.id,
@@ -202,7 +206,6 @@ export const useSidebar = () => {
   }, []);
 
   return {
-    // States
     chats,
     isLoadingChats,
     openDropdown,
@@ -211,7 +214,6 @@ export const useSidebar = () => {
     currentChatId,
     isUserLoggedIn,
 
-    // Handlers
     handleNewChat,
     handleLogout,
     handleDeleteChat,

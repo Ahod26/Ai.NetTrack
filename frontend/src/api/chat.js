@@ -38,7 +38,7 @@ export async function createChat(firstMessage) {
 }
 
 // Get all user chats
-export async function getUserChats() {
+export async function getUserChatsMetaData() {
   try {
     const timezoneOffset = getTimezoneOffset();
     const response = await fetch(

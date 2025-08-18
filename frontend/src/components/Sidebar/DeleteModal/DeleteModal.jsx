@@ -6,6 +6,7 @@ export default function DeleteModal({ isOpen, onConfirm, onCancel }) {
   return (
     <div className={styles.modalOverlay} onClick={onCancel}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        {/* stop propagation prevent the click in the modal effecting the background */}
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>Delete chat</h3>
         </div>

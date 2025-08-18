@@ -43,7 +43,7 @@ public class ChatController(IChatService chatService, ILogger<ChatController> lo
     }
   }
 
-  [HttpGet("{chatId}")]
+  [HttpGet("{chatId:guid:required}")]
   public async Task<IActionResult> GetChat(Guid chatId, [FromQuery] int? timezoneOffset = null)
   {
     try
@@ -65,7 +65,7 @@ public class ChatController(IChatService chatService, ILogger<ChatController> lo
     }
   }
 
-  [HttpDelete("{chatId}")]
+  [HttpDelete("{chatId:guid:required}")]
   public async Task<IActionResult> DeleteChat(Guid chatId)
   {
     try
@@ -88,7 +88,7 @@ public class ChatController(IChatService chatService, ILogger<ChatController> lo
     }
   }
 
-  [HttpPatch("{chatId}/title")]
+  [HttpPatch("{chatId:guid:required}/title")]
   public async Task<IActionResult> ChangeChatTitle(Guid chatId,
   [FromBody]
   [Required(ErrorMessage = "Title is required")]
