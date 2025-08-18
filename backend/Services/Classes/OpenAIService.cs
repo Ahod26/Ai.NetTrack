@@ -13,7 +13,7 @@ public class OpenAIService(
       var messages = new List<OpenAI.Chat.ChatMessage>
       {
           // Generic system message
-        new SystemChatMessage("You are a helpful AI assistant.")
+        new SystemChatMessage(PromptConstants.SYSTEM_PROMPT)
       };
 
       // Add context (previous messages)
@@ -35,8 +35,7 @@ public class OpenAIService(
       // Create completion options
       var options = new ChatCompletionOptions
       {
-        MaxOutputTokenCount = int.Parse(configuration["OpenAI:MaxTokens"] ?? "4096"),
-        Temperature = float.Parse(configuration["OpenAI:Temperature"] ?? "0.7")
+        MaxOutputTokenCount = int.Parse(configuration["OpenAI:MaxTokens"] ?? "4096")
       };
 
       // Use streaming API
@@ -76,13 +75,7 @@ public class OpenAIService(
     {
       var messages = new List<OpenAI.Chat.ChatMessage>
     {
-      new SystemChatMessage(@"You are a helpful assistant that generates concise, descriptive titles for chat conversations. 
-Generate a short, clear title (20 characters max, include spaces) that captures the main topic or question from the user's first message. 
-Do not use quotes around the title. Examples:
-- 'How to learn Python?' -> 'Python Learning Guide'
-- 'Recipe for chocolate cake' -> 'Chocolate Cake Recipe'
-- 'Fix my computer issue' -> 'Computer Troubleshooting'
-- 'Plan vacation to Japan' -> 'Japan Vacation Planning'"),
+      new SystemChatMessage(PromptConstants.GET_TITLE_SYSTEM_PROMPT),
 
       new UserChatMessage($"Generate a title for this conversation: {firstMessage}")
     };

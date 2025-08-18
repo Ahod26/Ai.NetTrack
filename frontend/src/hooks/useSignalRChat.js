@@ -13,7 +13,7 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [error, setError] = useState(null);
 
-  // Handle incoming messages from SignalR
+  // Handle full message from SignalR
   const handleFullMessageReceived = useCallback((message) => {
     // Final message from backend, replace any temp/streaming message
     setMessages((prev) => {
@@ -34,8 +34,8 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
     setIsSendingMessage(false);
   }, []);
 
+  // Handle chunk message
   const handleChunkMessageReceived = useCallback((chunkMessage) => {
-    // Streaming chunk from backend, accumulate chunk content
     setMessages((prev) => {
       // Find previous chunk message (if any)
       const lastChunk = prev.find((msg) => msg.isChunkMessage);
@@ -52,6 +52,9 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
         },
       ];
     });
+    //filtered return the messages array without the chunk message
+    //if there is any chunk message before, append the new chunk, otherwise start with the new chunk
+    //returning the original array without the chunked message, with the current chunk message
   }, []);
 
   // Handle chat joined event

@@ -36,15 +36,12 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
     return message;
   }
 
-  public async Task<List<ChatMessage>> GetMessagesAsync(Guid chatId, int count = 50)
+  public async Task<List<ChatMessage>> GetMessagesAsync(Guid chatId)
   {
-    //get the most recent messages, then reverse them back for chronological char order
     return await dbContext.ChatMessages
-        .Where(m => m.ChatId == chatId)
-        .OrderByDescending(m => m.CreatedAt)
-        .Take(count)
-        .OrderBy(m => m.CreatedAt)
-        .ToListAsync();
+    .Where(m => m.ChatId == chatId)
+    .OrderBy(m => m.CreatedAt)  // Chronological order
+    .ToListAsync();
   }
 
   public async Task<Chat?> GetChatByIdAsync(Guid chatId)
