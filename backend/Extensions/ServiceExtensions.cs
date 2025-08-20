@@ -7,6 +7,8 @@ public static class ServiceExtensions
     services.AddScoped<ICookieService, CookieService>();
     services.AddScoped<ITokenService, TokenService>();
     services.AddScoped<IOpenAIService, OpenAIService>();
+    services.AddSingleton<ILLMCacheService, LLMCacheService>();
+    services.AddSingleton<ICacheService, CacheService>();
     return services;
   }
 }

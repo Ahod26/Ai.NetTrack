@@ -2,11 +2,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 
 [ApiController]
 [Route("[controller]")]
 [Authorize]
-public class ChatController(IChatService chatService, ILogger<ChatController> logger) : ControllerBase
+public class ChatController
+(IChatService chatService, ILogger<ChatController> logger) : ControllerBase
 {
   [HttpPost]
   [TypeFilter(typeof(MaxChatsAttribute))]

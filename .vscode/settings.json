@@ -10,6 +10,8 @@
     "GETCHATBYID",
     "GETCHATS",
     "Hmac",
+    "HNSW",
+    "ILLM",
     "onreconnected",
     "signalr"
   ]

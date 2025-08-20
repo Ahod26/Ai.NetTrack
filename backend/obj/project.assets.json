@@ -845,6 +845,22 @@
           }
         }
       },
+      "NRedisStack/1.1.0": {
+        "type": "package",
+        "dependencies": {
+          "StackExchange.Redis": "2.8.58"
+        },
+        "compile": {
+          "lib/net8.0/NRedisStack.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/NRedisStack.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "OpenAI/2.3.0": {
         "type": "package",
         "dependencies": {
@@ -1070,18 +1086,18 @@
           "lib/net7.0/Serilog.Sinks.MySQL.dll": {}
         }
       },
-      "StackExchange.Redis/2.7.27": {
+      "StackExchange.Redis/2.8.58": {
         "type": "package",
         "dependencies": {
           "Pipelines.Sockets.Unofficial": "2.2.8"
         },
         "compile": {
-          "lib/net6.0/StackExchange.Redis.dll": {
+          "lib/net8.0/StackExchange.Redis.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net6.0/StackExchange.Redis.dll": {
+          "lib/net8.0/StackExchange.Redis.dll": {
             "related": ".xml"
           }
         }
@@ -2998,6 +3014,29 @@
         "packageIcon.png"
       ]
     },
+    "NRedisStack/1.1.0": {
+      "sha512": "yXAaqhKT2hkapUBdpMEz7evNRwSGPP0KDd6E1GEIWPyLfnlTEHgEE8bsOD0I21ZHLvoMvKwbE4ibuOuVkOEE2Q==",
+      "type": "package",
+      "path": "nredisstack/1.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "Redis.png",
+        "lib/net481/NRedisStack.dll",
+        "lib/net481/NRedisStack.xml",
+        "lib/net6.0/NRedisStack.dll",
+        "lib/net6.0/NRedisStack.xml",
+        "lib/net7.0/NRedisStack.dll",
+        "lib/net7.0/NRedisStack.xml",
+        "lib/net8.0/NRedisStack.dll",
+        "lib/net8.0/NRedisStack.xml",
+        "lib/netstandard2.0/NRedisStack.dll",
+        "lib/netstandard2.0/NRedisStack.xml",
+        "nredisstack.1.1.0.nupkg.sha512",
+        "nredisstack.nuspec"
+      ]
+    },
     "OpenAI/2.3.0": {
       "sha512": "z+fNKKSEsIelpR3swPJe+yFLlD1z+PGvpfbQgRWP1g1A++C5QvoGMnCtCj+H+0gw2E+VYIjt9G0fk3oixpvWrQ==",
       "type": "package",
@@ -3290,24 +3329,27 @@
         "serilog.sinks.mysql.nuspec"
       ]
     },
-    "StackExchange.Redis/2.7.27": {
-      "sha512": "Uqc2OQHglqj9/FfGQ6RkKFkZfHySfZlfmbCl+hc+u2I/IqunfelQ7QJi7ZhvAJxUtu80pildVX6NPLdDaUffOw==",
+    "StackExchange.Redis/2.8.58": {
+      "sha512": "0XGRE2UoF/n2/qhCpcyBBZovpGhHu4hRtkdsx4fZFu1H5Q/Z8Q+U/z/nWwnosWDRJnEasntNatd9Mf+Isc8plg==",
       "type": "package",
-      "path": "stackexchange.redis/2.7.27",
+      "path": "stackexchange.redis/2.8.58",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
+        "README.md",
         "lib/net461/StackExchange.Redis.dll",
         "lib/net461/StackExchange.Redis.xml",
         "lib/net472/StackExchange.Redis.dll",
         "lib/net472/StackExchange.Redis.xml",
         "lib/net6.0/StackExchange.Redis.dll",
         "lib/net6.0/StackExchange.Redis.xml",
+        "lib/net8.0/StackExchange.Redis.dll",
+        "lib/net8.0/StackExchange.Redis.xml",
         "lib/netcoreapp3.1/StackExchange.Redis.dll",
         "lib/netcoreapp3.1/StackExchange.Redis.xml",
         "lib/netstandard2.0/StackExchange.Redis.dll",
         "lib/netstandard2.0/StackExchange.Redis.xml",
-        "stackexchange.redis.2.7.27.nupkg.sha512",
+        "stackexchange.redis.2.8.58.nupkg.sha512",
         "stackexchange.redis.nuspec"
       ]
     },
@@ -3725,11 +3767,13 @@
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.8",
       "Microsoft.Extensions.Caching.StackExchangeRedis >= 9.0.8",
       "Microsoft.Extensions.Identity.Core >= 9.0.8",
+      "NRedisStack >= 1.1.0",
       "OpenAI >= 2.3.0",
       "Pomelo.EntityFrameworkCore.MySql >= 9.0.0-rc.1.efcore.9.0.0",
       "Serilog.AspNetCore >= 9.0.0",
       "Serilog.Settings.Configuration >= 9.0.0",
-      "Serilog.Sinks.MySQL >= 5.0.0"
+      "Serilog.Sinks.MySQL >= 5.0.0",
+      "StackExchange.Redis >= 2.8.58"
     ]
   },
   "packageFolders": {
@@ -3819,6 +3863,10 @@
             "target": "Package",
             "version": "[9.0.8, )"
           },
+          "NRedisStack": {
+            "target": "Package",
+            "version": "[1.1.0, )"
+          },
           "OpenAI": {
             "target": "Package",
             "version": "[2.3.0, )"
@@ -3838,6 +3886,10 @@
           "Serilog.Sinks.MySQL": {
             "target": "Package",
             "version": "[5.0.0, )"
+          },
+          "StackExchange.Redis": {
+            "target": "Package",
+            "version": "[2.8.58, )"
           }
         },
         "imports": [

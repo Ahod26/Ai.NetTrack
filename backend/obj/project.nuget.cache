@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "kPHemoa6Aw4=",
+  "dgSpecHash": "8F9lCg/utkQ=",
   "success": true,
   "projectFilePath": "/Users/arbelhodesman/Desktop/Ai Track/backend/backend.csproj",
   "expectedPackageFiles": [
@@ -45,6 +45,7 @@
     "/Users/arbelhodesman/.nuget/packages/mysql.data/8.0.33/mysql.data.8.0.33.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/mysqlconnector/2.4.0/mysqlconnector.2.4.0.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512",
+    "/Users/arbelhodesman/.nuget/packages/nredisstack/1.1.0/nredisstack.1.1.0.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/openai/2.3.0/openai.2.3.0.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/pipelines.sockets.unofficial/2.2.8/pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/pomelo.entityframeworkcore.mysql/9.0.0-rc.1.efcore.9.0.0/pomelo.entityframeworkcore.mysql.9.0.0-rc.1.efcore.9.0.0.nupkg.sha512",
@@ -59,7 +60,7 @@
     "/Users/arbelhodesman/.nuget/packages/serilog.sinks.debug/3.0.0/serilog.sinks.debug.3.0.0.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/serilog.sinks.file/6.0.0/serilog.sinks.file.6.0.0.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/serilog.sinks.mysql/5.0.0/serilog.sinks.mysql.5.0.0.nupkg.sha512",
-    "/Users/arbelhodesman/.nuget/packages/stackexchange.redis/2.7.27/stackexchange.redis.2.7.27.nupkg.sha512",
+    "/Users/arbelhodesman/.nuget/packages/stackexchange.redis/2.8.58/stackexchange.redis.2.8.58.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/system.clientmodel/1.5.1/system.clientmodel.1.5.1.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/system.codedom/6.0.0/system.codedom.6.0.0.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/system.composition/7.0.0/system.composition.7.0.0.nupkg.sha512",

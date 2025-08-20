@@ -1,4 +1,5 @@
 using OpenAI;
+using StackExchange.Redis;
 
 public static class ExternalServicesExtensions
 {
@@ -16,6 +17,14 @@ public static class ExternalServicesExtensions
       var model = configuration["OpenAI:Model"] ?? "gpt-4o-mini";
       return openAIClient.GetChatClient(model);
     });
+
+    services.AddStackExchangeRedisCache(options =>
+    {
+      options.Configuration = configuration["Redis:ConnectionString"];
+    });
+
+    services.AddSingleton<IConnectionMultiplexer>(provider =>
+          ConnectionMultiplexer.Connect(configuration["Redis:ConnectionString"]!));
 
     return services;
   }
