@@ -5,8 +5,9 @@ public static class ServiceExtensions
     services.AddScoped<IChatService, ChatService>();
     services.AddScoped<IAuthService, AuthService>();
     services.AddScoped<ICookieService, CookieService>();
-    services.AddScoped<ITokenService, TokenService>();
-    services.AddScoped<IOpenAIService, OpenAIService>();
+
+    services.AddSingleton<IOpenAIService, OpenAIService>();
+    services.AddSingleton<ITokenService, TokenService>();
     services.AddSingleton<ILLMCacheService, LLMCacheService>();
     services.AddSingleton<ICacheService, CacheService>();
     return services;

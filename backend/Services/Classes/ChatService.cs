@@ -1,7 +1,8 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 
-public class ChatService(IChatRepo chatRepo, IOpenAIService openAIService, IMapper mapper) : IChatService
+public class ChatService
+(IChatRepo chatRepo, IOpenAIService openAIService, IMapper mapper, ILLMCacheService cacheService) : IChatService
 {
   public async Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null)
   {
@@ -106,11 +107,23 @@ public class ChatService(IChatRepo chatRepo, IOpenAIService openAIService, IMapp
     // 2. Get chat context (recent messages)
     var context = await GetChatMessagesAsync(chatId);
 
-    // 3. Generate AI response (streaming)
+    // 3. Check cache first (before calling OpenAI)
+    var cachedResponse = await cacheService.GetCachedResponseAsync(content, context);
+    if (cachedResponse != null)
+    {
+      // Cache hit - save AI message and return early
+      var cachedAiMessage = await AddMessageAsync(chatId, cachedResponse, MessageType.Assistant);
+      return cachedAiMessage;
+    }
+
+    // 4. Cache miss - Generate AI response (streaming)
     var aiResponse = await openAIService.GenerateResponseAsync(content, context, onChunkReceived);
 
-    // 4. Save AI message (full response)
+    // 5. Save AI message (full response)
     var aiMessage = await AddMessageAsync(chatId, aiResponse, MessageType.Assistant);
+
+    // 6. Cache the response for future use
+    await cacheService.SetCachedResponseAsync(content, context, aiResponse);
 
     return aiMessage;
   }

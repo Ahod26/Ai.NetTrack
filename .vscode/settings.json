@@ -13,6 +13,7 @@
     "HNSW",
     "ILLM",
     "onreconnected",
-    "signalr"
+    "signalr",
+    "Timespan"
   ]
 }

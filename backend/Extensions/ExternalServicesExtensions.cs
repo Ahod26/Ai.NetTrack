@@ -1,4 +1,5 @@
 using OpenAI;
+using OpenAI.Embeddings;
 using StackExchange.Redis;
 
 public static class ExternalServicesExtensions
@@ -17,6 +18,9 @@ public static class ExternalServicesExtensions
       var model = configuration["OpenAI:Model"] ?? "gpt-4o-mini";
       return openAIClient.GetChatClient(model);
     });
+
+    services.AddSingleton(provider => 
+    new EmbeddingClient("text-embedding-3-small", configuration["OpenAI:ApiKey"]));
 
     services.AddStackExchangeRedisCache(options =>
     {
