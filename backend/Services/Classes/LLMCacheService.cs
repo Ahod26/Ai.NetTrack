@@ -21,8 +21,9 @@ public class LLMCacheService : ILLMCacheService
   private const string EXACT_CACHE_PREFIX = "exact:cache:";
   private const string SEMANTIC_CACHE_PREFIX = "semantic:cache:";
   private const string EMBEDDINGS_INDEX_NAME = "embeddings_idx";
-  private const int MAX_CACHEABLE_MESSAGE_COUNT = 10;
-  private const float SEMANTIC_SIMILARITY_THRESHOLD = 0.50f;
+  private const int MAX_CACHEABLE_MESSAGE_COUNT_SEMANTIC = 7;
+  private const int MAX_CACHEABLE_MESSAGE_COUNT_EXACT = 2;
+  private const float SEMANTIC_SIMILARITY_THRESHOLD = 0.75f; // Realistic threshold 0.7-0.85
 
   public LLMCacheService(
       IConnectionMultiplexer redis,
@@ -37,76 +38,60 @@ public class LLMCacheService : ILLMCacheService
     _topicExtractor = new TopicExtractor();
 
     // Initialize Redis index on startup
-    _ = Task.Run(InitializeRedisIndexAsync);
+    InitializeRedisIndexAsync().Wait();
   }
 
   #region Public Interface Methods
 
-  public async Task SetCachedResponseAsync(string cacheKey, string response, TimeSpan? expiration = null)
-  {
-    // Exact cache only
-    await _distributedCache.SetStringAsync(EXACT_CACHE_PREFIX + cacheKey, response, new DistributedCacheEntryOptions
-    {
-      AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromHours(1)
-    });
-  }
-
-  // Main method for LLM caching (exact + semantic in separate storage)
+  // Main method for exact + semantic
   public async Task SetCachedResponseAsync(string userMessage, List<ChatMessage> context, string response)
   {
     try
     {
       // Skip caching for conversations too long
-      if (context.Count > MAX_CACHEABLE_MESSAGE_COUNT)
+      if (context.Count > MAX_CACHEABLE_MESSAGE_COUNT_SEMANTIC)
       {
-        _logger.LogDebug("Skipping cache for conversation with {MessageCount} messages (max: {MaxCount})",
-            context.Count, MAX_CACHEABLE_MESSAGE_COUNT);
+        _logger.LogDebug("Skipping cache for conversation with {MessageCount} messages (max: {MaxCount})", context.Count, MAX_CACHEABLE_MESSAGE_COUNT_SEMANTIC);
         return;
       }
-
-      // Build cache key and get expiration
-      var exactCacheKey = GenerateCacheKey(userMessage, context);
+      
       var expiration = CalculateExpiration(context.Count);
 
-      // 1. Store exact cache (simple string)
-      await _distributedCache.SetStringAsync(EXACT_CACHE_PREFIX + exactCacheKey, response, new DistributedCacheEntryOptions
+      // Exact key cache
+      if (context.Count <= MAX_CACHEABLE_MESSAGE_COUNT_EXACT)
       {
-        AbsoluteExpirationRelativeToNow = expiration
-      });
+        var exactCacheKey = GenerateCacheKey(userMessage, context);
 
-      // 2. Store semantic cache (structured data for vector search)
+        await _distributedCache.SetStringAsync(EXACT_CACHE_PREFIX + exactCacheKey, response, new DistributedCacheEntryOptions
+        {
+          AbsoluteExpirationRelativeToNow = expiration
+        });
+      }
+
       await SetSemanticCacheAsync(userMessage, context, response, expiration);
 
-      _logger.LogDebug("Cached response for {MessageCount} messages with {ExpirationDays} days expiration",
-          context.Count, expiration.TotalDays);
+      _logger.LogDebug("Cached response for {MessageCount} messages with {ExpirationDays} days expiration", context.Count, expiration.TotalDays);
     }
     catch (Exception ex)
     {
       _logger.LogError(ex, "Failed to cache LLM response");
-      // Don't throw - caching failures shouldn't break the application
     }
   }
 
-  public async Task<string?> GetCachedResponseAsync(string cacheKey)
-  {
-    // Exact lookup by key
-    return await _distributedCache.GetStringAsync(EXACT_CACHE_PREFIX + cacheKey);
-  }
-
-  // Main method for getting cached responses (exact + semantic)
+  // Getting cached responses (exact + semantic)
   public async Task<string?> GetCachedResponseAsync(string userMessage, List<ChatMessage> context)
   {
     try
     {
       // Skip semantic search for conversations too long
-      if (context.Count > MAX_CACHEABLE_MESSAGE_COUNT)
+      if (context.Count > MAX_CACHEABLE_MESSAGE_COUNT_SEMANTIC)
       {
         return null;
       }
 
-      // 1. Try exact cache first (fastest)
+      // 1. Exact cache first (fastest)
       var exactCacheKey = GenerateCacheKey(userMessage, context);
-      var exactResult = await GetCachedResponseAsync(exactCacheKey);
+      var exactResult = await GetExactCachedResponseAsync(exactCacheKey);
       if (exactResult != null)
       {
         _logger.LogDebug("Exact cache hit for key: {CacheKey}", exactCacheKey);
@@ -127,31 +112,7 @@ public class LLMCacheService : ILLMCacheService
     catch (Exception ex)
     {
       _logger.LogError(ex, "Failed to retrieve cached response");
-      return null; // Don't break the application on cache failures
-    }
-  }
-
-  public string GenerateCacheKey(string prompt, List<ChatMessage> context)
-  {
-    var contextString = BuildContextString(prompt, context);
-    return ComputeSha256Hash(contextString);
-  }
-
-  public async Task RemoveCachedResponseAsync(string cacheKey)
-  {
-    await _distributedCache.RemoveAsync(EXACT_CACHE_PREFIX + cacheKey);
-    // Note: Semantic cache cleanup happens via TTL
-  }
-
-  public async Task RemoveByPatternAsync(string pattern)
-  {
-    // For pattern-based removal, we'll use Redis directly
-    var server = _database.Multiplexer.GetServer(_database.Multiplexer.GetEndPoints()[0]);
-    var keys = server.Keys(pattern: EXACT_CACHE_PREFIX + pattern + "*");
-
-    foreach (var key in keys)
-    {
-      await _database.KeyDeleteAsync(key);
+      return null;
     }
   }
 
@@ -176,40 +137,41 @@ public class LLMCacheService : ILLMCacheService
     _logger.LogInformation("Cleared all cache entries");
   }
 
-  // Invalidate cache by topics (for MCP server integration)
-  public async Task InvalidateByTopicsAsync(params string[] topics)
-  {
-    try
-    {
-      var ft = _database.FT();
+  // Could be used later with MCP redis server for delete integration
 
-      // Build query to find entries with any of the specified topics
-      var topicQueries = topics.Select(topic => $"@topics:{{{topic}}}");
-      var queryString = string.Join("|", topicQueries);
+  // public async Task InvalidateByTopicsAsync(params string[] topics)
+  // {
+  //   try
+  //   {
+  //     var ft = _database.FT();
 
-      var query = new Query(queryString);
-      var results = await ft.SearchAsync(EMBEDDINGS_INDEX_NAME, query);
+  //     // Build query to find entries with any of the specified topics
+  //     var topicQueries = topics.Select(topic => $"@topics:{{{topic}}}");
+  //     var queryString = string.Join("|", topicQueries);
 
-      foreach (var doc in results.Documents)
-      {
-        await _database.KeyDeleteAsync(doc.Id);
-        _logger.LogDebug("Invalidated cache entry: {CacheKey}", doc.Id);
-      }
+  //     var query = new Query(queryString);
+  //     var results = await ft.SearchAsync(EMBEDDINGS_INDEX_NAME, query);
 
-      _logger.LogInformation("Invalidated {Count} cache entries for topics: {Topics}",
-          results.TotalResults, string.Join(", ", topics));
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Failed to invalidate cache by topics: {Topics}", string.Join(", ", topics));
-    }
-  }
+  //     foreach (var doc in results.Documents)
+  //     {
+  //       await _database.KeyDeleteAsync(doc.Id);
+  //       _logger.LogDebug("Invalidated cache entry: {CacheKey}", doc.Id);
+  //     }
+
+  //     _logger.LogInformation("Invalidated {Count} cache entries for topics: {Topics}",
+  //         results.TotalResults, string.Join(", ", topics));
+  //   }
+  //   catch (Exception ex)
+  //   {
+  //     _logger.LogError(ex, "Failed to invalidate cache by topics: {Topics}", string.Join(", ", topics));
+  //   }
+  // }
 
   #endregion
 
   #region Index Management Methods
 
-  // Recreate index (useful for migrations or fixing issues)
+  // Recreate index
   public async Task RecreateIndexAsync()
   {
     try
@@ -228,154 +190,20 @@ public class LLMCacheService : ILLMCacheService
     await InitializeRedisIndexAsync();
   }
 
-  // Force reindex existing data (fixes the "0 entries" issue)
-  public async Task ForceReindexAsync()
-  {
-    try
-    {
-      var ft = _database.FT();
-
-      // Drop and recreate index to force reindexing
-      try
-      {
-        await ft.DropIndexAsync(EMBEDDINGS_INDEX_NAME);
-        _logger.LogInformation("Dropped existing index for reindexing");
-        await Task.Delay(1000);
-      }
-      catch (Exception ex)
-      {
-        _logger.LogDebug("Could not drop index: {Error}", ex.Message);
-      }
-
-      // Recreate the index - this will automatically index existing keys with the prefix
-      await ft.CreateAsync(EMBEDDINGS_INDEX_NAME, new FTCreateParams()
-          .On(IndexDataType.HASH)
-          .Prefix(SEMANTIC_CACHE_PREFIX),
-          new Schema()
-              .AddVectorField("embedding", VectorField.VectorAlgo.HNSW, new Dictionary<string, object>
-              {
-                ["TYPE"] = "FLOAT32",
-                ["DIM"] = 1536,
-                ["DISTANCE_METRIC"] = "COSINE"
-              })
-              .AddNumericField("message_count")
-              .AddTagField("topics")
-              .AddNumericField("cached_at"));
-
-      _logger.LogInformation("Recreated index - should now index existing data");
-
-      // Wait for indexing to complete
-      await Task.Delay(3000);
-
-      // Test the indexing
-      await TestIndexingAsync();
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Failed to force reindex");
-    }
-  }
-
-  // Clear everything and start fresh
+  // Complete fresh start
   public async Task RefreshIndexAsync()
   {
     try
     {
       // Clear all cache and recreate
       await ClearAllCacheAsync();
-      await ForceReindexAsync();
+      await RecreateIndexAsync();
 
       _logger.LogInformation("Refreshed index and cleared cache - ready for new data");
     }
     catch (Exception ex)
     {
       _logger.LogError(ex, "Failed to refresh index");
-    }
-  }
-
-  #endregion
-
-  #region Debugging and Testing Methods
-
-  // Test if indexing is working properly
-  public async Task TestIndexingAsync()
-  {
-    try
-    {
-      var ft = _database.FT();
-
-      // Try different search approaches
-      _logger.LogWarning("=== Testing Index Functionality ===");
-
-      // Test 1: Search for any documents
-      var allDocs = await ft.SearchAsync(EMBEDDINGS_INDEX_NAME, new Query("*"));
-      _logger.LogWarning("Test 1 - All documents: {Count}", allDocs.TotalResults);
-
-      // Test 2: Search by message count
-      var messageCountSearch = await ft.SearchAsync(EMBEDDINGS_INDEX_NAME, new Query("@message_count:[1 1]"));
-      _logger.LogWarning("Test 2 - Message count search: {Count}", messageCountSearch.TotalResults);
-
-      // Test 3: Search by topics
-      var topicsSearch = await ft.SearchAsync(EMBEDDINGS_INDEX_NAME, new Query("@topics:{signalr}"));
-      _logger.LogWarning("Test 3 - Topics search: {Count}", topicsSearch.TotalResults);
-
-      // Test 4: Check index configuration
-      var indexInfo = await ft.InfoAsync(EMBEDDINGS_INDEX_NAME);
-      _logger.LogWarning("Test 4 - Index info: {Info}", indexInfo);
-
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Index testing failed");
-    }
-  }
-
-  public async Task DebugIndexAsync()
-  {
-    try
-    {
-      var ft = _database.FT();
-
-      // Check index info
-      var indexInfo = await ft.InfoAsync(EMBEDDINGS_INDEX_NAME);
-      _logger.LogWarning("Index info: {IndexInfo}", indexInfo);
-
-      // Check what keys exist with our prefix
-      var server = _database.Multiplexer.GetServer(_database.Multiplexer.GetEndPoints()[0]);
-      var semanticKeys = server.Keys(pattern: SEMANTIC_CACHE_PREFIX + "*").Take(5).ToList();
-      _logger.LogWarning("Found semantic keys: {Keys}", string.Join(", ", semanticKeys));
-
-      // Try to search ALL data in index (no filters)
-      var allResults = await ft.SearchAsync(EMBEDDINGS_INDEX_NAME, new Query("*").Limit(0, 10));
-      _logger.LogWarning("Index contains {Count} total entries", allResults.TotalResults);
-
-      // Check specific key format
-      if (semanticKeys.Any())
-      {
-        var firstKey = semanticKeys.First();
-        // Use HashGetAllAsync for HASH storage
-        var data = await _database.HashGetAllAsync(firstKey);
-        var displayData = data.Where(d => d.Name != "embedding").Select(d => $"{d.Name}={d.Value}");
-        var embeddingSize = data.FirstOrDefault(d => d.Name == "embedding").Value.Length();
-
-        _logger.LogWarning("Sample key {Key} contains: {Data}, embedding_bytes={EmbeddingSize}",
-          firstKey, string.Join(", ", displayData), embeddingSize);
-
-        // Try to manually verify the key is indexed
-        try
-        {
-          var manualSearch = await ft.SearchAsync(EMBEDDINGS_INDEX_NAME, new Query($"@message_count:[1 1]"));
-          _logger.LogWarning("Manual search for message_count=1 found {Count} results", manualSearch.TotalResults);
-        }
-        catch (Exception ex)
-        {
-          _logger.LogError(ex, "Manual search failed");
-        }
-      }
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Debug failed");
     }
   }
 
@@ -398,9 +226,8 @@ public class LLMCacheService : ILLMCacheService
     // Store in Redis as HASH with individual fields
     var semanticKey = SEMANTIC_CACHE_PREFIX + Guid.NewGuid().ToString();
 
-    // Convert embedding to byte array for storage (Vector search requires specific format)
-    var embeddingBytes = new byte[embedding.Length * 4]; // 4 bytes per float
-    Buffer.BlockCopy(embedding, 0, embeddingBytes, 0, embeddingBytes.Length);
+    // Convert embedding to byte array
+    var embeddingBytes = embedding.SelectMany(BitConverter.GetBytes).ToArray();
 
     var hashFields = new HashEntry[]
     {
@@ -408,7 +235,7 @@ public class LLMCacheService : ILLMCacheService
       new("embedding", embeddingBytes),
       new("message_count", context.Count),
       new("topics", string.Join(",", topics)),
-      new("cached_at", DateTimeOffset.UtcNow.ToUnixTimeSeconds()),
+      new("cached_at", DateTimeOffset.UtcNow.ToUnixTimeSeconds()), //seconds from january 1 1970 utc 
       new("context_hash", ComputeSha256Hash(fullContext))
     };
 
@@ -431,43 +258,39 @@ public class LLMCacheService : ILLMCacheService
 
     // Search for similar vectors with message count filter
     var ft = _database.FT();
-    var query = new Query($"@message_count:[{context.Count} {context.Count}]=>[KNN 5 @embedding $vector]")
+    var query = new Query($"@message_count:[{context.Count} {context.Count}]=>[KNN 1 @embedding $vector]")
         .AddParam("vector", queryVector)
         .SetSortBy("__embedding_score")
-        .Limit(0, 5)
         .Dialect(2);
 
     var results = await ft.SearchAsync(EMBEDDINGS_INDEX_NAME, query);
 
     // Find results above similarity threshold
-    foreach (var doc in results.Documents)
-    {
-      // Get the similarity score
-      var scoreProperty = doc.GetProperties().FirstOrDefault(p => p.Key == "__embedding_score");
-      if (scoreProperty.Key != null && !scoreProperty.Value.IsNull && float.TryParse(scoreProperty.Value.ToString(), out var score))
-      {
-        // Note: Lower scores are better for cosine distance
-        var similarity = 1.0f - score; // Convert distance to similarity
+    var bestMatch = results.Documents.FirstOrDefault();
 
-        if (similarity >= SEMANTIC_SIMILARITY_THRESHOLD)
-        {
-          // Get the response from the hash
-          var responseValue = await _database.HashGetAsync(doc.Id, "response");
-          if (responseValue.HasValue)
-          {
-            _logger.LogDebug("Semantic cache hit with similarity: {Similarity} (score: {Score})", similarity, score);
-            return responseValue.ToString();
-          }
-        }
+    if (bestMatch != null)
+    {
+      var score = float.Parse(bestMatch["__embedding_score"].ToString());
+      var similarity = 1.0f - score;
+
+      if (similarity >= SEMANTIC_SIMILARITY_THRESHOLD)
+      {
+        var response = await _database.HashGetAsync(bestMatch.Id, "response");
+        return response.ToString();
       }
     }
-
-    _logger.LogDebug("No semantic cache hits. Found {Count} results with scores: {Scores}",
-        results.Documents.Count(),
-        string.Join(", ", results.Documents.Select(d =>
-            d.GetProperties().FirstOrDefault(p => p.Key == "__embedding_score").Value.ToString() ?? "unknown")));
-
     return null;
+  }
+
+  private string GenerateCacheKey(string prompt, List<ChatMessage> context)
+  {
+    var contextString = BuildContextString(prompt, context);
+    return ComputeSha256Hash(contextString);
+  }
+
+  private async Task<string?> GetExactCachedResponseAsync(string cacheKey)
+  {
+    return await _distributedCache.GetStringAsync(EXACT_CACHE_PREFIX + cacheKey);
   }
 
   private async Task InitializeRedisIndexAsync()
@@ -489,7 +312,6 @@ public class LLMCacheService : ILLMCacheService
       }
 
       await ft.CreateAsync(EMBEDDINGS_INDEX_NAME, new FTCreateParams()
-          .On(IndexDataType.HASH)
           .Prefix(SEMANTIC_CACHE_PREFIX),
           new Schema()
               .AddVectorField("embedding", VectorField.VectorAlgo.HNSW, new Dictionary<string, object>
@@ -535,10 +357,13 @@ public class LLMCacheService : ILLMCacheService
 
   private TimeSpan CalculateExpiration(int messageCount)
   {
-    // Lifetime decreases as message count increases
-    // 1 message: 30 days, 10 messages: 1 day
-    var lifetimeDays = Math.Max(1, 31 - (messageCount * 3));
+    var baseDays = 21; // Base lifetime
+    var decayFactor = Math.Pow(0.7, messageCount - 1);
+    var lifetimeDays = Math.Max(1, (int)(baseDays * decayFactor));
+
     return TimeSpan.FromDays(lifetimeDays);
+    
+    // Results: 1 - 21 days, 2 - 15, 3 - 10, 4 - 7, 5 - 5, 6,7 - 3,4
   }
 
   #endregion
