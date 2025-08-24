@@ -13,6 +13,9 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [error, setError] = useState(null);
 
+  // useCallback for functions that are passed as event handler to signalr. I do not want resubscribe every render
+
+
   // Handle full message from SignalR
   const handleFullMessageReceived = useCallback((message) => {
     // Final message from backend, replace any temp/streaming message

@@ -1,22 +1,19 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 using NRedisStack;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
-using NRedisStack.Search.Literals.Enums;
 using OpenAI.Embeddings;
 using StackExchange.Redis;
 using static NRedisStack.Search.Schema;
 
 public class LLMCacheService : ILLMCacheService
 {
-  private readonly IDatabase _database;
-  private readonly IDistributedCache _distributedCache;
   private readonly EmbeddingClient _embeddingClient;
   private readonly ILogger<LLMCacheService> _logger;
   private readonly TopicExtractor _topicExtractor;
+  private readonly ILLMCacheRepo _LLMCacheRepo;
 
   private const string EXACT_CACHE_PREFIX = "exact:cache:";
   private const string SEMANTIC_CACHE_PREFIX = "semantic:cache:";
@@ -26,19 +23,17 @@ public class LLMCacheService : ILLMCacheService
   private const float SEMANTIC_SIMILARITY_THRESHOLD = 0.75f; // Realistic threshold 0.7-0.85
 
   public LLMCacheService(
-      IConnectionMultiplexer redis,
-      IDistributedCache distributedCache,
       EmbeddingClient embeddingClient,
+      ILLMCacheRepo LLMCacheRepo,
       ILogger<LLMCacheService> logger)
   {
-    _database = redis.GetDatabase();
-    _distributedCache = distributedCache;
     _embeddingClient = embeddingClient;
+    _LLMCacheRepo = LLMCacheRepo;
     _logger = logger;
     _topicExtractor = new TopicExtractor();
 
     // Initialize Redis index on startup
-    InitializeRedisIndexAsync().Wait();
+    _LLMCacheRepo.InitializeRedisIndexAsync().Wait();
   }
 
   #region Public Interface Methods
@@ -62,10 +57,7 @@ public class LLMCacheService : ILLMCacheService
       {
         var exactCacheKey = GenerateCacheKey(userMessage, context);
 
-        await _distributedCache.SetStringAsync(EXACT_CACHE_PREFIX + exactCacheKey, response, new DistributedCacheEntryOptions
-        {
-          AbsoluteExpirationRelativeToNow = expiration
-        });
+        await _LLMCacheRepo.StoreExactCacheAsync(exactCacheKey, response, expiration);
       }
 
       await SetSemanticCacheAsync(userMessage, context, response, expiration);
@@ -91,7 +83,7 @@ public class LLMCacheService : ILLMCacheService
 
       // 1. Exact cache first (fastest)
       var exactCacheKey = GenerateCacheKey(userMessage, context);
-      var exactResult = await GetExactCachedResponseAsync(exactCacheKey);
+      var exactResult = await _LLMCacheRepo.GetExactCachedResponseAsync(exactCacheKey);
       if (exactResult != null)
       {
         _logger.LogDebug("Exact cache hit for key: {CacheKey}", exactCacheKey);
@@ -114,27 +106,6 @@ public class LLMCacheService : ILLMCacheService
       _logger.LogError(ex, "Failed to retrieve cached response");
       return null;
     }
-  }
-
-  public async Task ClearAllCacheAsync()
-  {
-    var server = _database.Multiplexer.GetServer(_database.Multiplexer.GetEndPoints()[0]);
-
-    // Clear exact cache
-    var exactKeys = server.Keys(pattern: EXACT_CACHE_PREFIX + "*");
-    foreach (var key in exactKeys)
-    {
-      await _database.KeyDeleteAsync(key);
-    }
-
-    // Clear semantic cache
-    var semanticKeys = server.Keys(pattern: SEMANTIC_CACHE_PREFIX + "*");
-    foreach (var key in semanticKeys)
-    {
-      await _database.KeyDeleteAsync(key);
-    }
-
-    _logger.LogInformation("Cleared all cache entries");
   }
 
   // Could be used later with MCP redis server for delete integration
@@ -169,46 +140,6 @@ public class LLMCacheService : ILLMCacheService
 
   #endregion
 
-  #region Index Management Methods
-
-  // Recreate index
-  public async Task RecreateIndexAsync()
-  {
-    try
-    {
-      var ft = _database.FT();
-      await ft.DropIndexAsync(EMBEDDINGS_INDEX_NAME);
-      _logger.LogInformation("Dropped existing index");
-    }
-    catch (Exception ex)
-    {
-      _logger.LogDebug("Index didn't exist or couldn't be dropped: {Error}", ex.Message);
-    }
-
-    // Wait a moment for cleanup
-    await Task.Delay(1000);
-    await InitializeRedisIndexAsync();
-  }
-
-  // Complete fresh start
-  public async Task RefreshIndexAsync()
-  {
-    try
-    {
-      // Clear all cache and recreate
-      await ClearAllCacheAsync();
-      await RecreateIndexAsync();
-
-      _logger.LogInformation("Refreshed index and cleared cache - ready for new data");
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Failed to refresh index");
-    }
-  }
-
-  #endregion
-
   #region Private Implementation Methods
 
   private async Task SetSemanticCacheAsync(string userMessage, List<ChatMessage> context, string response, TimeSpan expiration)
@@ -223,27 +154,10 @@ public class LLMCacheService : ILLMCacheService
     // Extract topics for cache invalidation
     var topics = _topicExtractor.ExtractTopics(fullContext);
 
-    // Store in Redis as HASH with individual fields
-    var semanticKey = SEMANTIC_CACHE_PREFIX + Guid.NewGuid().ToString();
-
     // Convert embedding to byte array
     var embeddingBytes = embedding.SelectMany(BitConverter.GetBytes).ToArray();
 
-    var hashFields = new HashEntry[]
-    {
-      new("response", response),
-      new("embedding", embeddingBytes),
-      new("message_count", context.Count),
-      new("topics", string.Join(",", topics)),
-      new("cached_at", DateTimeOffset.UtcNow.ToUnixTimeSeconds()), //seconds from january 1 1970 utc 
-      new("context_hash", ComputeSha256Hash(fullContext))
-    };
-
-    await _database.HashSetAsync(semanticKey, hashFields);
-    await _database.KeyExpireAsync(semanticKey, expiration);
-
-    _logger.LogDebug("Stored semantic cache with key: {Key}, embedding length: {Length}, topics: {Topics}",
-      semanticKey, embedding.Length, string.Join(",", topics));
+    await _LLMCacheRepo.StoreSemanticCacheAsync(response, embeddingBytes, context.Count, topics, expiration, fullContext);
   }
 
   private async Task<string?> GetSemanticCacheAsync(string userMessage, List<ChatMessage> context)
@@ -256,27 +170,15 @@ public class LLMCacheService : ILLMCacheService
     // Convert float array to byte array for Redis
     var queryVector = queryEmbedding.SelectMany(BitConverter.GetBytes).ToArray();
 
-    // Search for similar vectors with message count filter
-    var ft = _database.FT();
-    var query = new Query($"@message_count:[{context.Count} {context.Count}]=>[KNN 1 @embedding $vector]")
-        .AddParam("vector", queryVector)
-        .SetSortBy("__embedding_score")
-        .Dialect(2);
+    var searchResult = await _LLMCacheRepo.SearchSemanticCacheAsync(queryVector, context.Count());
 
-    var results = await ft.SearchAsync(EMBEDDINGS_INDEX_NAME, query);
-
-    // Find results above similarity threshold
-    var bestMatch = results.Documents.FirstOrDefault();
-
-    if (bestMatch != null)
+    if (searchResult.HasValue)
     {
-      var score = float.Parse(bestMatch["__embedding_score"].ToString());
-      var similarity = 1.0f - score;
+      var similarity = 1.0f - searchResult.Value.Score;
 
       if (similarity >= SEMANTIC_SIMILARITY_THRESHOLD)
       {
-        var response = await _database.HashGetAsync(bestMatch.Id, "response");
-        return response.ToString();
+        return await _LLMCacheRepo.GetResponseFromSemanticMatchAsync(searchResult.Value.DocumentId);
       }
     }
     return null;
@@ -286,53 +188,6 @@ public class LLMCacheService : ILLMCacheService
   {
     var contextString = BuildContextString(prompt, context);
     return ComputeSha256Hash(contextString);
-  }
-
-  private async Task<string?> GetExactCachedResponseAsync(string cacheKey)
-  {
-    return await _distributedCache.GetStringAsync(EXACT_CACHE_PREFIX + cacheKey);
-  }
-
-  private async Task InitializeRedisIndexAsync()
-  {
-    try
-    {
-      var ft = _database.FT();
-
-      // Check if index already exists
-      try
-      {
-        var indexInfo = await ft.InfoAsync(EMBEDDINGS_INDEX_NAME);
-        _logger.LogDebug("Redis index {IndexName} already exists", EMBEDDINGS_INDEX_NAME);
-        return;
-      }
-      catch
-      {
-        // Index doesn't exist, create it
-      }
-
-      await ft.CreateAsync(EMBEDDINGS_INDEX_NAME, new FTCreateParams()
-          .Prefix(SEMANTIC_CACHE_PREFIX),
-          new Schema()
-              .AddVectorField("embedding", VectorField.VectorAlgo.HNSW, new Dictionary<string, object>
-              {
-                ["TYPE"] = "FLOAT32",
-                ["DIM"] = 1536, // OpenAI text-embedding-3-small dimension
-                ["DISTANCE_METRIC"] = "COSINE"
-              })
-              .AddNumericField("message_count")
-              .AddTagField("topics")
-              .AddNumericField("cached_at"));
-
-      _logger.LogInformation("Created Redis search index: {IndexName}", EMBEDDINGS_INDEX_NAME);
-
-      // Wait for index to be ready
-      await Task.Delay(2000);
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError(ex, "Failed to create Redis search index");
-    }
   }
 
   private string BuildContextString(string userMessage, List<ChatMessage> context)
