@@ -19,7 +19,7 @@ public class ChatHub(IChatService chatService) : Hub<IChatClient>
 
     await Groups.AddToGroupAsync(Context.ConnectionId, $"Chat_{chatId}");
 
-    var messages = await chatService.GetAllChatMessagesAsync(Guid.Parse(chatId));
+    var messages = await chatService.GetAllChatMessagesAsync(Guid.Parse(chatId), userId);
     await Clients.Caller.ChatJoined(chatId, chat.Title, messages);
   }
 
@@ -39,6 +39,7 @@ public class ChatHub(IChatService chatService) : Hub<IChatClient>
     var aiMessage = await chatService.ProcessUserMessageAsync(
         Guid.Parse(chatId),
         content,
+        userId,
         async (chunk) =>
         {
           await Clients.Group($"Chat_{chatId}").ReceiveMessage(new ChunkMessageDto { Content = chunk });

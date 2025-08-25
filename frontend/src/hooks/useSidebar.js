@@ -15,10 +15,10 @@ export const useSidebar = () => {
   const navigate = useNavigate();
   const { chatId: currentChatId } = useParams();
   const { isUserLoggedIn } = useSelector((state) => state.userAuth);
-  const { refreshTrigger } = useSelector((state) => state.chat);
+  const { chats, isLoading: isLoadingChats } = useSelector(
+    (state) => state.chat
+  );
 
-  const [chats, setChats] = useState([]);
-  const [isLoadingChats, setIsLoadingChats] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
@@ -77,33 +77,35 @@ export const useSidebar = () => {
     }
   };
 
-  // Fetch user chats
+  // Fetch user chats only once when user logs in
   useEffect(() => {
     const fetchUserChats = async () => {
       try {
-        setIsLoadingChats(true);
+        dispatch(chatSliceActions.setLoading(true));
         const userChats = await getUserChatsMetaData();
 
         const formattedChats = userChats.map((chat) => ({
           id: chat.Id || chat.id,
           title: chat.Title || chat.title,
           time: formatChatTime(chat.LastMessageAt || chat.lastMessageAt),
+          lastMessageAt: chat.LastMessageAt || chat.lastMessageAt,
         }));
 
-        setChats(formattedChats);
+        dispatch(chatSliceActions.setChats(formattedChats));
       } catch (error) {
         console.error("Error fetching chats:", error);
-      } finally {
-        setIsLoadingChats(false);
+        dispatch(chatSliceActions.setLoading(false));
       }
     };
 
-    if (isUserLoggedIn) {
+    if (isUserLoggedIn && chats.length === 0) {
+      // Only fetch if we don't have chats already
       fetchUserChats();
-    } else {
-      setChats([]);
+    } else if (!isUserLoggedIn) {
+      // Clear chats when user logs out
+      dispatch(chatSliceActions.setChats([]));
     }
-  }, [isUserLoggedIn, refreshTrigger]);
+  }, [isUserLoggedIn, dispatch, chats.length]);
 
   // Navigation handlers
   const handleNewChat = () => {
@@ -147,13 +149,14 @@ export const useSidebar = () => {
     try {
       await changeChatTitle(chatId, newTitle.trim());
 
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
-          chat.id === chatId ? { ...chat, title: newTitle.trim() } : chat
-        )
+      // Update chat in Redux store
+      dispatch(
+        chatSliceActions.updateChat({
+          chatId,
+          updates: { title: newTitle.trim() },
+        })
       );
 
-      dispatch(chatSliceActions.triggerChatRefresh());
       setRenameModal({ isOpen: false, chatId: null, chatTitle: "" });
     } catch (error) {
       console.error("Error renaming chat:", error);
@@ -175,7 +178,8 @@ export const useSidebar = () => {
         navigate("/chat/new");
       }
 
-      dispatch(chatSliceActions.triggerChatRefresh());
+      // Remove chat from Redux store
+      dispatch(chatSliceActions.removeChat(chatId));
       setDeleteModal({ isOpen: false, chatId: null });
     } catch (error) {
       console.error("Error deleting chat:", error);

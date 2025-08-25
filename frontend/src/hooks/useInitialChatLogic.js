@@ -30,6 +30,18 @@ export function useInitialChatLogic() {
       const newChat = await createChat(messageText);
       console.log("Created new chat:", newChat);
 
+      // Add chat optimistically to Redux store
+      dispatch(
+        chatSliceActions.addChat({
+          id: newChat.id,
+          title:
+            newChat.title ||
+            messageText.slice(0, 50) + (messageText.length > 50 ? "..." : ""),
+          time: "Just now",
+          lastMessageAt: new Date().toISOString(),
+        })
+      );
+
       // Navigate to the new chat immediately to show the UI, passing the initial message
       navigate(`/chat/${newChat.id}`, {
         replace: true,
@@ -41,9 +53,6 @@ export function useInitialChatLogic() {
 
       // Send the initial message (this will be shown in the chat UI)
       await chatHubService.sendMessage(newChat.id, messageText);
-
-      // Trigger chat list refresh in sidebar
-      dispatch(chatSliceActions.triggerChatRefresh());
     } catch (error) {
       console.error("Error creating chat or sending message:", error);
       setIsCreatingChat(false);

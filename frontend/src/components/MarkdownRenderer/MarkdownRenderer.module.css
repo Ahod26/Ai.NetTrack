@@ -1,3 +1,50 @@
+/* Slick table wrapper with padding and shadow */
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin: 2rem 0;
+  padding: 1rem;
+  background: transparent;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+/* Slick table */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--bg-primary, #2a2a2a);
+  color: var(--text-primary, #e4e4e4);
+  font-size: 0.95rem;
+}
+/* Header row */
+.tableHead th {
+  padding: 0.75rem 1rem;
+  background: var(--accent, #7f5af0);
+  color: #fff;
+  font-weight: 600;
+  border-bottom: 2px solid var(--accent-dark, #5e3fa8);
+}
+/* Body rows */
+.tableBody tr {
+  transition: background 0.2s;
+}
+.tableBody tr:nth-child(even) {
+  background: rgba(127, 90, 240, 0.05);
+}
+.tableBody tr:hover {
+  background: rgba(127, 90, 240, 0.1);
+}
+/* Cells */
+.tableCell {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border, #333);
+  text-align: left;
+}
+/* Last cell remove border */
+.tableCell:last-child {
+  border-right: none;
+}
 /* Base markdown container */
 .markdown {
   line-height: 1.6;

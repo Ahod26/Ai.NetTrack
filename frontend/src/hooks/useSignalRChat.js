@@ -15,7 +15,6 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
 
   // useCallback for functions that are passed as event handler to signalr. I do not want resubscribe every render
 
-
   // Handle full message from SignalR
   const handleFullMessageReceived = useCallback((message) => {
     // Final message from backend, replace any temp/streaming message
@@ -182,8 +181,8 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
       // Send message via SignalR
       await chatHubService.sendMessage(chatId, messageText);
 
-      // Trigger sidebar refresh to update chat order and last message time
-      dispatch(chatSliceActions.triggerChatRefresh());
+      // Update chat order in Redux (move to top with updated time)
+      dispatch(chatSliceActions.updateChatOrder(chatId));
     } catch (error) {
       console.error("Error sending message:", error);
       setIsSendingMessage(false);

@@ -61,33 +61,6 @@ export async function getUserChatsMetaData() {
   }
 }
 
-// Get specific chat by ID
-export async function getChatById(chatId) {
-  try {
-    const timezoneOffset = getTimezoneOffset();
-    const response = await fetch(
-      `${API_BASE_URL}${API_ENDPOINTS.CHAT.GETCHATBYID}/${chatId}?timezoneOffset=${timezoneOffset}`,
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error("Chat not found");
-      }
-      throw new Error(`Failed to get chat: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error getting chat by ID:", error);
-    throw error;
-  }
-}
-
 // Delete specific chat by ID
 export async function deleteChatById(chatId) {
   try {

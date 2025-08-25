@@ -1,5 +1,5 @@
 public class CachedChatData
 {
-  public required ChatMetaDataDto Metadata { get; set; }
-  public required List<ChatMessage> messages { get; set; }
+  public ChatMetaDataDto? Metadata { get; set; }
+  public List<ChatMessage>? Messages { get; set; }
 }

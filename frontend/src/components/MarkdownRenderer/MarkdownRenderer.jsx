@@ -1,4 +1,5 @@
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import styles from "./MarkdownRenderer.module.css";
@@ -15,7 +16,31 @@ const MarkdownRenderer = ({ content }) => {
   return (
     <div className={styles.markdown}>
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         components={{
+          // Tables
+          table({ children }) {
+            return (
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>{children}</table>
+              </div>
+            );
+          },
+          thead({ children }) {
+            return <thead className={styles.tableHead}>{children}</thead>;
+          },
+          tbody({ children }) {
+            return <tbody className={styles.tableBody}>{children}</tbody>;
+          },
+          tr({ children }) {
+            return <tr className={styles.tableRow}>{children}</tr>;
+          },
+          th({ children }) {
+            return <th className={styles.tableHeaderCell}>{children}</th>;
+          },
+          td({ children }) {
+            return <td className={styles.tableCell}>{children}</td>;
+          },
           // Code blocks (```language)
           code({ inline, className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || "");

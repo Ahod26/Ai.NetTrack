@@ -11,7 +11,6 @@ export const API_ENDPOINTS = {
     CHATHUB: "/chathub",
     CREATECHAT: "/chat",
     GETCHATS: "/chat",
-    GETCHATBYID: "/chat", // Base route, append /{chatId} when calling
     DELETECHATBYID: "/chat", // Base route, append /{chatId} when calling
     CHANGECHATTITLE: "/chat" // Base route, append /{chatId}/title when calling
   },

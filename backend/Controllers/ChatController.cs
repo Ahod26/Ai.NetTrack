@@ -34,7 +34,7 @@ public class ChatController
     try
     {
       var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-      var chats = await chatService.GetUserChatsAsync(userId, timezoneOffset);
+      var chats = await chatService.GetUserChatsMetadataAsync(userId, timezoneOffset);
 
       return Ok(chats);
     }
@@ -57,7 +57,7 @@ public class ChatController
         return NotFound("Chat not found");
       }
 
-      await chatService.DeleteChatByIdAsync(chatId);
+      await chatService.DeleteChatByIdAsync(chatId, userId);
 
       return Ok(new { message = "Chat deleted successfully" });
     }
@@ -84,7 +84,7 @@ public class ChatController
         return NotFound("Chat not found");
       }
 
-      await chatService.ChangeChatTitle(chatId, title);
+      await chatService.ChangeChatTitle(chatId, title, userId);
 
       return Ok(new { message = "Title changed successfully" });
     }
