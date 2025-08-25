@@ -69,37 +69,13 @@ public class ChatService
     return chatDtos;
   }
 
-  public async Task<ChatMessage> AddMessageAsync(Guid chatId, string content, MessageType type)
+  public async Task<List<FullMessageDto>> GetAllChatMessagesAsync(Guid chatId)
   {
-    var message = new ChatMessage
-    {
-      Id = Guid.NewGuid(),
-      ChatId = chatId,
-      Content = content,
-      Type = type,
-      CreatedAt = DateTime.UtcNow
-    };
-
-    var savedMessage = await chatRepo.AddMessageAsync(message);
-
-    // Update chat's last message time
-    var chat = await chatRepo.GetChatByIdAsync(chatId);
-    if (chat != null)
-    {
-      chat.LastMessageAt = DateTime.UtcNow;
-      chat.MessageCount++;
-      await chatRepo.UpdateChatAsync(chat);
-    }
-
-    return savedMessage;
+    var messages = await chatRepo.GetMessagesAsync(chatId);
+    return mapper.Map<List<FullMessageDto>>(messages);
   }
 
-  public async Task<List<ChatMessage>> GetChatMessagesAsync(Guid chatId)
-  {
-    return await chatRepo.GetMessagesAsync(chatId);
-  }
-
-  public async Task<ChatMessage> ProcessUserMessageAsync(Guid chatId, string content, Func<string, Task>? onChunkReceived = null)
+  public async Task<FullMessageDto> ProcessUserMessageAsync(Guid chatId, string content, Func<string, Task>? onChunkReceived = null)
   {
     // 1. Save user message
     var userMessage = await AddMessageAsync(chatId, content, MessageType.User);
@@ -136,5 +112,36 @@ public class ChatService
   public async Task ChangeChatTitle(Guid chatId, string newTitle)
   {
     await chatRepo.ChangeChatTitleAsync(chatId, newTitle);
+  }
+
+  private async Task<FullMessageDto> AddMessageAsync(Guid chatId, string content, MessageType type)
+  {
+    var message = new ChatMessage
+    {
+      Id = Guid.NewGuid(),
+      ChatId = chatId,
+      Content = content,
+      Type = type,
+      CreatedAt = DateTime.UtcNow
+    };
+
+    var savedMessage = await chatRepo.AddMessageAsync(message);
+
+    // Update chat's last message time
+    var chat = await chatRepo.GetChatByIdAsync(chatId);
+    if (chat != null)
+    {
+      chat.LastMessageAt = DateTime.UtcNow;
+      chat.MessageCount++;
+      await chatRepo.UpdateChatAsync(chat);
+    }
+
+    var fullMessage = mapper.Map<FullMessageDto>(savedMessage);
+    return fullMessage;
+  }
+
+  private async Task<List<ChatMessage>> GetChatMessagesAsync(Guid chatId)
+  {
+    return await chatRepo.GetMessagesAsync(chatId);
   }
 }

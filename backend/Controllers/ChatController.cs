@@ -45,28 +45,6 @@ public class ChatController
     }
   }
 
-  [HttpGet("{chatId:guid:required}")]
-  public async Task<IActionResult> GetChat(Guid chatId, [FromQuery] int? timezoneOffset = null)
-  {
-    try
-    {
-      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-      var chat = await chatService.GetUserChatAsync(chatId, userId, timezoneOffset);
-
-      if (chat == null)
-      {
-        return NotFound("Chat not found");
-      }
-
-      return Ok(chat);
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Error getting chat");
-      return StatusCode(500, "Error retrieving chat");
-    }
-  }
-
   [HttpDelete("{chatId:guid:required}")]
   public async Task<IActionResult> DeleteChat(Guid chatId)
   {

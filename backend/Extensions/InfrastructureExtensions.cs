@@ -18,6 +18,8 @@ public static class InfrastructureExtensions
       options.PayloadSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
+    services.AddMemoryCache();
+
     services.AddCors(options =>
     {
       options.AddPolicy("AllowReactApp", policy =>

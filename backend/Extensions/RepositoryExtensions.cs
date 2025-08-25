@@ -4,6 +4,8 @@ public static class RepositoryExtensions
   {
     services.AddScoped<IChatRepo, ChatRepo>();
     services.AddScoped<IAuthRepo, AuthRepo>();
+
+    services.AddSingleton<ILLMCacheRepo, LLMCacheRepo>();
     return services;
   }
 }

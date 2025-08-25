@@ -19,7 +19,7 @@ public class ChatHub(IChatService chatService) : Hub<IChatClient>
 
     await Groups.AddToGroupAsync(Context.ConnectionId, $"Chat_{chatId}");
 
-    var messages = await chatService.GetChatMessagesAsync(Guid.Parse(chatId));
+    var messages = await chatService.GetAllChatMessagesAsync(Guid.Parse(chatId));
     await Clients.Caller.ChatJoined(chatId, chat.Title, messages);
   }
 
@@ -41,20 +41,10 @@ public class ChatHub(IChatService chatService) : Hub<IChatClient>
         content,
         async (chunk) =>
         {
-          await Clients.Group($"Chat_{chatId}").ReceiveMessage(new ChunkMessageDto
-          {
-            Content = chunk
-          });
+          await Clients.Group($"Chat_{chatId}").ReceiveMessage(new ChunkMessageDto { Content = chunk });
         }
     );
 
-    // After streaming, send the final message with the real DB ID
-    await Clients.Group($"Chat_{chatId}").ReceiveMessage(new FullMessageDto
-    {
-      Id = aiMessage.Id,
-      Type = MessageType.Assistant,
-      Content = aiMessage.Content,
-      CreatedAt = aiMessage.CreatedAt
-    });
+    await Clients.Group($"Chat_{chatId}").ReceiveMessage(aiMessage);
   }
 }
