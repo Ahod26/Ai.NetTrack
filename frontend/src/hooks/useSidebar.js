@@ -19,6 +19,7 @@ export const useSidebar = () => {
     (state) => state.chat
   );
 
+  const [hasInitiallyFetched, setHasInitiallyFetched] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
@@ -92,20 +93,22 @@ export const useSidebar = () => {
         }));
 
         dispatch(chatSliceActions.setChats(formattedChats));
+        setHasInitiallyFetched(true);
       } catch (error) {
         console.error("Error fetching chats:", error);
         dispatch(chatSliceActions.setLoading(false));
       }
     };
 
-    if (isUserLoggedIn && chats.length === 0) {
-      // Only fetch if we don't have chats already
+    if (isUserLoggedIn && !hasInitiallyFetched) {
+      // Only fetch if we haven't fetched yet for this login session
       fetchUserChats();
     } else if (!isUserLoggedIn) {
-      // Clear chats when user logs out
+      // Clear chats and reset fetch flag when user logs out
       dispatch(chatSliceActions.setChats([]));
+      setHasInitiallyFetched(false);
     }
-  }, [isUserLoggedIn, dispatch, chats.length]);
+  }, [isUserLoggedIn, dispatch, hasInitiallyFetched]);
 
   // Navigation handlers
   const handleNewChat = () => {
