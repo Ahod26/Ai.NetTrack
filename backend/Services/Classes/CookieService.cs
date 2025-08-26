@@ -1,11 +1,14 @@
-public class CookieService(IHttpContextAccessor httpContextAccessor, IConfiguration configuration) : ICookieService
+using Microsoft.Extensions.Options;
+
+public class CookieService(IHttpContextAccessor httpContextAccessor, IOptions<JwtSettings> options) : ICookieService
 {
+  private readonly JwtSettings settings = options.Value;
   public void SetAuthCookie(string token)
   {
     var response = httpContextAccessor.HttpContext?.Response;
     if (response != null)
     {
-      var expirationMinutes = int.Parse(configuration["JwtSettings:ExpirationInMinutes"] ?? "1440");
+      var expirationMinutes = settings.ExpirationInMinutes;
       var cookieOptions = new CookieOptions
       {
         HttpOnly = true,

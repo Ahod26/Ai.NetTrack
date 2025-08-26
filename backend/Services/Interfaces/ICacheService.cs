@@ -1,4 +1,4 @@
-public interface IChatCacheService
+public interface ICacheService
 {
   CachedChatData? GetCachedChat(string userId, Guid chatId);
   void SetCachedChat(string userId, Guid chatId, CachedChatData data);

@@ -1,10 +1,12 @@
 using System.Text;
+using Microsoft.Extensions.Options;
 using OpenAI.Chat;
 
 public class OpenAIService(
-  ChatClient chatClient, IConfiguration configuration, ILogger<OpenAIService> logger
+  ChatClient chatClient, IOptions<OpenAISettings> options, ILogger<OpenAIService> logger
 ) : IOpenAIService
 {
+  private readonly OpenAISettings settings = options.Value;
   public async Task<string> GenerateResponseAsync(string userMessage, List<ChatMessage> context, Func<string, Task>? onChunkReceived = null)
   {
     try
@@ -32,10 +34,11 @@ public class OpenAIService(
       // Add current user message
       messages.Add(new UserChatMessage(userMessage));
 
+      logger.LogWarning("MaxToken from settings: {MaxToken}", settings.MaxToken);
       // Create completion options
       var options = new ChatCompletionOptions
       {
-        MaxOutputTokenCount = int.Parse(configuration["OpenAI:MaxTokens"] ?? "4096")
+        MaxOutputTokenCount = settings.MaxToken
       };
 
       // Use streaming API

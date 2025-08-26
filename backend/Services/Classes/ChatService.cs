@@ -5,7 +5,7 @@ public class ChatService
 IOpenAIService openAIService,
 IMapper mapper,
 ILLMCacheService LLMCacheService,
-IChatCacheService cacheService) : IChatService
+ICacheService cacheService) : IChatService
 {
   public async Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null)
   {
@@ -131,9 +131,12 @@ IChatCacheService cacheService) : IChatService
     // 5. Save AI message (full response)
     var aiMessage = await AddMessageAsync(chatId, aiResponse, MessageType.Assistant, userId);
 
-    // 6. Cache the response for future use
-    await LLMCacheService.SetCachedResponseAsync(content, context, aiResponse);
-
+    if (aiResponse != "Sorry, I'm having trouble responding right now. Please try again.")
+    {
+      // 6. Cache the response for future use
+      await LLMCacheService.SetCachedResponseAsync(content, context, aiResponse);
+    }
+    
     return aiMessage;
   }
 
