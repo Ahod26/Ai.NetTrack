@@ -86,10 +86,10 @@ export const useSidebar = () => {
         const userChats = await getUserChatsMetaData();
 
         const formattedChats = userChats.map((chat) => ({
-          id: chat.Id || chat.id,
-          title: chat.Title || chat.title,
-          time: formatChatTime(chat.LastMessageAt || chat.lastMessageAt),
-          lastMessageAt: chat.LastMessageAt || chat.lastMessageAt,
+          id: chat.id,
+          title: chat.title,
+          time: formatChatTime(chat.lastMessageAt),
+          lastMessageAt: chat.lastMessageAt,
         }));
 
         dispatch(chatSliceActions.setChats(formattedChats));

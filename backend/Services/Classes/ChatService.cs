@@ -5,7 +5,7 @@ public class ChatService
 IOpenAIService openAIService,
 IMapper mapper,
 ILLMCacheService LLMCacheService,
-ICacheService cacheService) : IChatService
+IChatCacheService cacheService) : IChatService
 {
   public async Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null)
   {

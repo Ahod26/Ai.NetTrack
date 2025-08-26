@@ -3,16 +3,11 @@ using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System.Collections.Concurrent;
 
-public class CacheService : ICacheService
+public class ChatCacheService(
+  IMemoryCache memoryCache,
+  ILogger<ChatCacheService> logger) : IChatCacheService
 {
-  private readonly IMemoryCache memoryCache;
-  private readonly ILogger<CacheService> logger;
 
-  public CacheService(IMemoryCache memoryCache, ILogger<CacheService> logger)
-  {
-    this.memoryCache = memoryCache;
-    this.logger = logger;
-  }
   // Cache duration settings
   private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(2);
   private static readonly TimeSpan SlidingExpiration = TimeSpan.FromMinutes(30);

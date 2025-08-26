@@ -9,7 +9,7 @@ public static class ServiceExtensions
     services.AddSingleton<IOpenAIService, OpenAIService>();
     services.AddSingleton<ITokenService, TokenService>();
     services.AddSingleton<ILLMCacheService, LLMCacheService>();
-    services.AddSingleton<ICacheService, CacheService>();
+    services.AddSingleton<IChatCacheService, ChatCacheService>();
     return services;
   }
 }
