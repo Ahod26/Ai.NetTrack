@@ -15,15 +15,8 @@ export default function MainChat() {
   const isSidebarOpen = useSelector((state) => state.sidebar.isOpen);
 
   // Custom hooks for chat functionality
-  const {
-    messages,
-    isLoading,
-    error,
-    isSendingMessage,
-    sendMessage,
-    streamingMessage,
-    isStreaming,
-  } = useSignalRChat(chatId, isUserLoggedIn);
+  const { messages, isLoading, error, isSendingMessage, sendMessage } =
+    useSignalRChat(chatId, isUserLoggedIn);
 
   const { messagesContainerRef, handleScroll } = useAutoScroll(messages);
 
@@ -67,17 +60,13 @@ export default function MainChat() {
         isSendingMessage={isSendingMessage}
         messagesContainerRef={messagesContainerRef}
         onScroll={handleScroll}
-        streamingMessage={streamingMessage}
-        isStreaming={isStreaming}
       />
       <ChatInput
         onSendMessage={sendMessage}
-        disabled={isSendingMessage || isStreaming}
+        disabled={isSendingMessage}
         placeholder={
           isSendingMessage
             ? "Wait for the response to finish"
-            : isStreaming
-            ? "Streaming..."
             : "Type your message..."
         }
       />

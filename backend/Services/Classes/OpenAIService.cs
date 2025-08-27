@@ -7,16 +7,15 @@ public class OpenAIService(
 ) : IOpenAIService
 {
   private readonly OpenAISettings settings = options.Value;
-  public async Task<string> GenerateResponseAsync(string userMessage, List<ChatMessage> context, Func<string, Task>? onChunkReceived = null)
+  public async Task<string> GenerateResponseAsync(string userMessage, List<ChatMessage> context, CancellationToken cancellationToken, Func<string, Task>? onChunkReceived = null)
   {
     try
     {
       // Build messages list using new message types
       var messages = new List<OpenAI.Chat.ChatMessage>
-      {
-          // Generic system message
-        new SystemChatMessage(PromptConstants.SYSTEM_PROMPT)
-      };
+       {
+           new SystemChatMessage(PromptConstants.SYSTEM_PROMPT)
+       };
 
       // Add context (previous messages)
       foreach (var msg in context)
@@ -34,18 +33,16 @@ public class OpenAIService(
       // Add current user message
       messages.Add(new UserChatMessage(userMessage));
 
-      logger.LogWarning("MaxToken from settings: {MaxToken}", settings.MaxToken);
       // Create completion options
       var options = new ChatCompletionOptions
       {
         MaxOutputTokenCount = settings.MaxToken
       };
 
-      // Use streaming API
-      var completionUpdates = chatClient.CompleteChatStreamingAsync(messages, options);
       var responseBuilder = new StringBuilder();
 
-      await foreach (var update in completionUpdates)
+      // Use streaming API
+      await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, options, cancellationToken))
       {
         if (update.ContentUpdate.Count > 0)
         {
@@ -53,8 +50,6 @@ public class OpenAIService(
           if (!string.IsNullOrEmpty(chunk))
           {
             responseBuilder.Append(chunk);
-
-            // Send chunk to callback 
             if (onChunkReceived != null)
             {
               await onChunkReceived(chunk);
@@ -64,6 +59,11 @@ public class OpenAIService(
       }
 
       return responseBuilder.ToString();
+    }
+    catch (OperationCanceledException)
+    {
+      logger.LogInformation("OpenAI streaming was cancelled");
+      throw;
     }
     catch (Exception ex)
     {
@@ -85,7 +85,7 @@ public class OpenAIService(
 
       var options = new ChatCompletionOptions
       {
-        MaxOutputTokenCount = 50, 
+        MaxOutputTokenCount = 50,
         Temperature = 0.3f // Lower temperature for more consistent, focused titles
       };
 

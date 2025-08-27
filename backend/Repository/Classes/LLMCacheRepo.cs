@@ -36,7 +36,8 @@ public class LLMCacheRepo : ILLMCacheRepo
 
   public async Task<string?> GetExactCachedResponseAsync(string cacheKey)
   {
-    return await _distributedCache.GetStringAsync(EXACT_CACHE_PREFIX + cacheKey);
+    var result = await _distributedCache.GetStringAsync(EXACT_CACHE_PREFIX + cacheKey);
+    return result;
   }
 
   public async Task ClearAllCacheAsync()
@@ -68,7 +69,6 @@ public class LLMCacheRepo : ILLMCacheRepo
       try
       {
         var indexInfo = await ft.InfoAsync(EMBEDDINGS_INDEX_NAME);
-        _logger.LogDebug("Redis index {IndexName} already exists", EMBEDDINGS_INDEX_NAME);
         return;
       }
       catch
@@ -89,12 +89,11 @@ public class LLMCacheRepo : ILLMCacheRepo
               .AddTagField("topics")
               .AddNumericField("cached_at"));
 
-      _logger.LogInformation("Created Redis search index: {IndexName}", EMBEDDINGS_INDEX_NAME);
 
       // Wait for index to be ready
       await Task.Delay(2000);
     }
-    catch (Exception ex)
+    catch(Exception ex)
     {
       _logger.LogError(ex, "Failed to create Redis search index");
     }
@@ -149,11 +148,10 @@ public class LLMCacheRepo : ILLMCacheRepo
     {
       var ft = _database.FT();
       await ft.DropIndexAsync(EMBEDDINGS_INDEX_NAME);
-      _logger.LogInformation("Dropped existing index");
     }
     catch (Exception ex)
     {
-      _logger.LogDebug("Index didn't exist or couldn't be dropped: {Error}", ex.Message);
+      _logger.LogError(ex, "Failed to recreate index");
     }
 
     // Wait a moment for cleanup
@@ -168,10 +166,8 @@ public class LLMCacheRepo : ILLMCacheRepo
       // Clear all cache and recreate
       await ClearAllCacheAsync();
       await RecreateIndexAsync();
-
-      _logger.LogInformation("Refreshed index and cleared cache - ready for new data");
     }
-    catch (Exception ex)
+    catch(Exception ex)
     {
       _logger.LogError(ex, "Failed to refresh index");
     }

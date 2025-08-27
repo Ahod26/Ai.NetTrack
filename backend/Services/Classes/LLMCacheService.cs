@@ -46,10 +46,9 @@ public class LLMCacheService : ILLMCacheService
       // Skip caching for conversations too long
       if (context.Count > MAX_CACHEABLE_MESSAGE_COUNT_SEMANTIC)
       {
-        _logger.LogDebug("Skipping cache for conversation with {MessageCount} messages (max: {MaxCount})", context.Count, MAX_CACHEABLE_MESSAGE_COUNT_SEMANTIC);
         return;
       }
-      
+
       var expiration = CalculateExpiration(context.Count);
 
       // Exact key cache
@@ -61,12 +60,10 @@ public class LLMCacheService : ILLMCacheService
       }
 
       await SetSemanticCacheAsync(userMessage, context, response, expiration);
-
-      _logger.LogDebug("Cached response for {MessageCount} messages with {ExpirationDays} days expiration", context.Count, expiration.TotalDays);
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Failed to cache LLM response");
+      _logger.LogError(ex, "Error in SetCachedResponseAsync for message {UserMessage}", userMessage);
     }
   }
 
@@ -86,7 +83,6 @@ public class LLMCacheService : ILLMCacheService
       var exactResult = await _LLMCacheRepo.GetExactCachedResponseAsync(exactCacheKey);
       if (exactResult != null)
       {
-        _logger.LogDebug("Exact cache hit for key: {CacheKey}", exactCacheKey);
         return exactResult;
       }
 
@@ -94,16 +90,13 @@ public class LLMCacheService : ILLMCacheService
       var semanticResult = await GetSemanticCacheAsync(userMessage, context);
       if (semanticResult != null)
       {
-        _logger.LogDebug("Semantic cache hit with similarity above threshold");
         return semanticResult;
       }
-
-      _logger.LogDebug("Cache miss for {MessageCount} messages", context.Count);
       return null;
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Failed to retrieve cached response");
+      _logger.LogError(ex, "Error in GetCachedResponseAsync for message {UserMessage}", userMessage);
       return null;
     }
   }
@@ -217,7 +210,7 @@ public class LLMCacheService : ILLMCacheService
     var lifetimeDays = Math.Max(1, (int)(baseDays * decayFactor));
 
     return TimeSpan.FromDays(lifetimeDays);
-    
+
     // Results: 1 - 21 days, 2 - 15, 3 - 10, 4 - 7, 5 - 5, 6,7 - 3,4
   }
 

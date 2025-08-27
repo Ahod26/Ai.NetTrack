@@ -23,7 +23,6 @@ class ChatHubService {
       .withAutomaticReconnect()
       .build();
 
-    // Set up event handlers
     this.connection.on("ReceiveMessage", (message) => {
       if (message.isChunkMessage) {
         this.chunkMessageHandlers.forEach((handler) => handler(message));
@@ -101,12 +100,7 @@ class ChatHubService {
     }
   }
 
-  // Event handler management
-  onMessageReceived(handler) {
-    this.fullMessageHandlers.add(handler);
-    return () => this.fullMessageHandlers.delete(handler);
-  }
-
+  // Event handlers
   onFullMessageReceived(handler) {
     this.fullMessageHandlers.add(handler);
     return () => this.fullMessageHandlers.delete(handler);
@@ -134,7 +128,5 @@ class ChatHubService {
   }
 }
 
-// Create singleton instance
 const chatHubService = new ChatHubService();
-
 export default chatHubService;

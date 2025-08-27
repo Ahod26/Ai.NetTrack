@@ -44,6 +44,11 @@ export default function ChatInput({
     }, 0);
   };
 
+  const handleButtonClick = (e) => {
+    e.preventDefault();
+    handleSendMessage(e);
+  };
+
   return (
     <div className={styles.inputContainer}>
       <form onSubmit={handleSendMessage} className={styles.inputForm}>
@@ -59,10 +64,12 @@ export default function ChatInput({
             disabled={disabled}
           />
           <button
-            type="submit"
+            type="button"
             className={styles.sendButton}
+            onClick={handleButtonClick}
             disabled={disabled || !message.trim()}
           >
+            {/* Send icon - arrow */}
             <svg
               width="16"
               height="16"

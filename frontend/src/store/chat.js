@@ -4,6 +4,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   chats: [], // Array of chat metadata objects
   isLoading: false,
+  hasInitialized: false, // Track if I fetched initial data
   lastUpdated: null,
 };
 
@@ -15,9 +16,13 @@ const chatSlice = createSlice({
       state.chats = action.payload;
       state.lastUpdated = Date.now();
       state.isLoading = false;
+      state.hasInitialized = true;
     },
     setLoading(state, action) {
       state.isLoading = action.payload;
+    },
+    resetInitialization(state) {
+      state.hasInitialized = false;
     },
     addChat(state, action) {
       // Optimistically add new chat to the beginning of the list

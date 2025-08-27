@@ -4,7 +4,7 @@ public interface IChatService
   Task<ChatMetaDataDto?> GetUserChatAsync(Guid chatId, string userId, int? timezoneOffset = null);
   Task<List<ChatMetaDataDto>> GetUserChatsMetadataAsync(string userId, int? timezoneOffset = null);
   Task<List<FullMessageDto>> GetAllChatMessagesAsync(Guid chatId, string userId);
-  Task<FullMessageDto> ProcessUserMessageAsync(Guid chatId, string content, string userId, Func<string, Task>? onChunkReceived = null);
+  Task<FullMessageDto> ProcessUserMessageAsync(Guid chatId, string content, string userId, CancellationToken cancellationToken, Func<string, Task>? onChunkReceived = null);
   Task DeleteChatByIdAsync(Guid chatId, string userId);
   Task ChangeChatTitle(Guid chatId, string newTitle, string userId);
 }

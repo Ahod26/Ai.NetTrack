@@ -1,11 +1,10 @@
-using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 [Authorize]
 public class ChatHub(IChatService chatService) : Hub<IChatClient>
 {
-  //reconnecting for user that created chats/groups already 
+
   public async Task JoinChat(string chatId)
   {
     var userId = Context.UserIdentifier!;
@@ -27,7 +26,6 @@ public class ChatHub(IChatService chatService) : Hub<IChatClient>
   {
     var userId = Context.UserIdentifier!;
 
-    // Security check
     var chat = await chatService.GetUserChatAsync(Guid.Parse(chatId), userId);
     if (chat == null)
     {
@@ -35,17 +33,24 @@ public class ChatHub(IChatService chatService) : Hub<IChatClient>
       return;
     }
 
-    // Stream AI response chunks to client
-    var aiMessage = await chatService.ProcessUserMessageAsync(
-        Guid.Parse(chatId),
-        content,
-        userId,
-        async (chunk) =>
-        {
-          await Clients.Group($"Chat_{chatId}").ReceiveMessage(new ChunkMessageDto { Content = chunk });
-        }
-    );
+    try
+    {
+      var aiMessage = await chatService.ProcessUserMessageAsync(
+          Guid.Parse(chatId),
+          content,
+          userId,
+          CancellationToken.None,
+          async (chunk) =>
+          {
+            await Clients.Group($"Chat_{chatId}").ReceiveMessage(new ChunkMessageDto { Content = chunk });
+          }
+      );
 
-    await Clients.Group($"Chat_{chatId}").ReceiveMessage(aiMessage);
+      await Clients.Group($"Chat_{chatId}").ReceiveMessage(aiMessage);
+    }
+    catch
+    {
+      await Clients.Caller.Error("Failed to process message");
+    }
   }
 }

@@ -11,6 +11,7 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
+
   const [error, setError] = useState(null);
 
   // useCallback for functions that are passed as event handler to signalr. I do not want resubscribe every render
@@ -54,9 +55,6 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
         },
       ];
     });
-    //filtered return the messages array without the chunk message
-    //if there is any chunk message before, append the new chunk, otherwise start with the new chunk
-    //returning the original array without the chunked message, with the current chunk message
   }, []);
 
   // Handle chat joined event

@@ -15,11 +15,12 @@ export const useSidebar = () => {
   const navigate = useNavigate();
   const { chatId: currentChatId } = useParams();
   const { isUserLoggedIn } = useSelector((state) => state.userAuth);
-  const { chats, isLoading: isLoadingChats } = useSelector(
-    (state) => state.chat
-  );
+  const {
+    chats,
+    isLoading: isLoadingChats,
+    hasInitialized,
+  } = useSelector((state) => state.chat);
 
-  const [hasInitiallyFetched, setHasInitiallyFetched] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
@@ -93,22 +94,21 @@ export const useSidebar = () => {
         }));
 
         dispatch(chatSliceActions.setChats(formattedChats));
-        setHasInitiallyFetched(true);
       } catch (error) {
         console.error("Error fetching chats:", error);
         dispatch(chatSliceActions.setLoading(false));
       }
     };
 
-    if (isUserLoggedIn && !hasInitiallyFetched) {
-      // Only fetch if we haven't fetched yet for this login session
+    if (isUserLoggedIn && !hasInitialized) {
+      // Only fetch if we haven't initialized yet for this session
       fetchUserChats();
     } else if (!isUserLoggedIn) {
-      // Clear chats and reset fetch flag when user logs out
+      // Clear chats and reset initialization flag when user logs out
       dispatch(chatSliceActions.setChats([]));
-      setHasInitiallyFetched(false);
+      dispatch(chatSliceActions.resetInitialization());
     }
-  }, [isUserLoggedIn, dispatch, hasInitiallyFetched]);
+  }, [isUserLoggedIn, dispatch, hasInitialized]);
 
   // Navigation handlers
   const handleNewChat = () => {

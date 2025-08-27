@@ -108,35 +108,39 @@ ICacheService cacheService) : IChatService
     return mapper.Map<List<FullMessageDto>>(messages);
   }
 
-  public async Task<FullMessageDto> ProcessUserMessageAsync(Guid chatId, string content, string userId, Func<string, Task>? onChunkReceived = null)
+  public async Task<FullMessageDto> ProcessUserMessageAsync(Guid chatId, string content, string userId, CancellationToken cancellationToken, Func<string, Task>? onChunkReceived = null)
   {
-    // 1. Save user message
-    var userMessage = await AddMessageAsync(chatId, content, MessageType.User, userId);
+    // 1. Get chat context
+    var contextFromCache = await GetChatMessagesAsync(chatId, userId);
+    // I should make copy for the context so i will work with the original context without the user message or the ai message. I get REFERENCE for the cached item
+    var context = new List<ChatMessage>(contextFromCache);
 
-    // 2. Get chat context (recent messages)
-    var context = await GetChatMessagesAsync(chatId, userId);
-
-    // 3. Check cache first (before calling OpenAI)
+    // 2. Check cache 
     var cachedResponse = await LLMCacheService.GetCachedResponseAsync(content, context);
     if (cachedResponse != null)
     {
-      // Cache hit - save AI message and return early
+      // Cache hit - save both user and AI messages and return
+      await AddMessageAsync(chatId, content, MessageType.User, userId);
       var cachedAiMessage = await AddMessageAsync(chatId, cachedResponse, MessageType.Assistant, userId);
       return cachedAiMessage;
     }
 
-    // 4. Cache miss - Generate AI response (streaming)
-    var aiResponse = await openAIService.GenerateResponseAsync(content, context, onChunkReceived);
+    // 3. Cache miss - save user message first
+    var userMessage = await AddMessageAsync(chatId, content, MessageType.User, userId);
 
-    // 5. Save AI message (full response)
+    // 4. Generate AI response using the original context (before user message was added)
+    var aiResponse = await openAIService.GenerateResponseAsync(content, context, cancellationToken, onChunkReceived);
+
+    // 5. Save AI message
     var aiMessage = await AddMessageAsync(chatId, aiResponse, MessageType.Assistant, userId);
 
-    if (aiResponse != "Sorry, I'm having trouble responding right now. Please try again.")
+    // 6. Cache the response using the original context (conversation history before user message)
+    if (!cancellationToken.IsCancellationRequested &&
+        aiResponse != "Sorry, I'm having trouble responding right now. Please try again.")
     {
-      // 6. Cache the response for future use
       await LLMCacheService.SetCachedResponseAsync(content, context, aiResponse);
     }
-    
+
     return aiMessage;
   }
 
@@ -189,4 +193,5 @@ ICacheService cacheService) : IChatService
     }
     return await chatRepo.GetMessagesAsync(chatId);
   }
+
 }
