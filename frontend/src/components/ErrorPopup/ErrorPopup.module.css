@@ -1,0 +1,58 @@
+.errorBox {
+  position: fixed;
+  top: 28px;
+  right: 28px;
+  background: #23272f;
+  color: #e0e0e0;
+  padding: 0.85rem 1.7rem 1.2rem 1.7rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  z-index: 9999;
+  min-width: 220px;
+  max-width: 340px;
+  border: 1px solid #444a57;
+  animation: fadeInOut 5s linear;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  pointer-events: none; /* Allow clicking through if needed */
+}
+
+.errorBox .timerBar {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #444a57 0%, #23272f 100%);
+  margin-top: 0.6rem;
+  animation: timerBarAnim 5s linear forwards;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes timerBarAnim {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}

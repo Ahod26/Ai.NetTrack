@@ -34,7 +34,9 @@ export function useInitialChatLogic() {
       dispatch(
         chatSliceActions.addChat({
           id: newChat.id,
-          title: newChat.title,
+          title:
+            newChat.title ||
+            messageText.slice(0, 50) + (messageText.length > 50 ? "..." : ""),
           time: "Just now",
           lastMessageAt: new Date().toISOString(),
         })

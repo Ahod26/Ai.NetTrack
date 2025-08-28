@@ -7,7 +7,7 @@ public class OpenAIService(
 ) : IOpenAIService
 {
   private readonly OpenAISettings settings = options.Value;
-  public async Task<string> GenerateResponseAsync(string userMessage, List<ChatMessage> context, CancellationToken cancellationToken, Func<string, Task>? onChunkReceived = null)
+  public async Task<(string response, int totalTokenUsed)> GenerateResponseAsync(string userMessage, List<ChatMessage> context, CancellationToken cancellationToken, Func<string, Task>? onChunkReceived = null)
   {
     try
     {
@@ -40,6 +40,7 @@ public class OpenAIService(
       };
 
       var responseBuilder = new StringBuilder();
+      int totalTokensUsed = 0;
 
       // Use streaming API
       await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, options, cancellationToken))
@@ -56,9 +57,12 @@ public class OpenAIService(
             }
           }
         }
+        if (update.Usage != null)
+        {
+          totalTokensUsed = update.Usage.TotalTokenCount;
+        }
       }
-
-      return responseBuilder.ToString();
+      return (responseBuilder.ToString(), totalTokensUsed);
     }
     catch (OperationCanceledException)
     {
@@ -68,7 +72,7 @@ public class OpenAIService(
     catch (Exception ex)
     {
       logger.LogError(ex, "Error calling OpenAI API");
-      return "Sorry, I'm having trouble responding right now. Please try again.";
+      return ("Sorry, I'm having trouble responding right now. Please try again.", 0);
     }
   }
 

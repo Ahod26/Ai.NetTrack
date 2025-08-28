@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { sidebarActions } from "../../../store/sidebarSlice";
 import { useSignalRChat } from "../../../hooks/useSignalRChat";
 import { useAutoScroll } from "../../../hooks/useAutoScroll";
+import ErrorPopup from "../../ErrorPopup";
 import ChatInput from "../ChatInput/ChatInput";
 import MessageList from "../MessageList/MessageList";
 import styles from "./MainChat.module.css";
@@ -15,8 +16,14 @@ export default function MainChat() {
   const isSidebarOpen = useSelector((state) => state.sidebar.isOpen);
 
   // Custom hooks for chat functionality
-  const { messages, isLoading, error, isSendingMessage, sendMessage } =
-    useSignalRChat(chatId, isUserLoggedIn);
+  const {
+    messages,
+    isLoading,
+    error,
+    isSendingMessage,
+    sendMessage,
+    errorMessage,
+  } = useSignalRChat(chatId, isUserLoggedIn);
 
   const { messagesContainerRef, handleScroll } = useAutoScroll(messages);
 
@@ -55,6 +62,7 @@ export default function MainChat() {
         isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
       }`}
     >
+      <ErrorPopup message={errorMessage} />
       <MessageList
         messages={messages}
         isSendingMessage={isSendingMessage}

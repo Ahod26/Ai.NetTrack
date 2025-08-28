@@ -70,6 +70,16 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
     }
   }
 
+  public async Task ChangeContextStatus(Guid chatId)
+  {
+    var chat = await dbContext.Chats.FindAsync(chatId);
+    if (chat != null)
+    {
+      chat.IsContextFull = true;
+      await dbContext.SaveChangesAsync();
+    }
+  }
+
   public async Task<int> GetUserChatCountAsync(string userId)
   {
     return await dbContext.Chats.CountAsync(c => c.UserId == userId);

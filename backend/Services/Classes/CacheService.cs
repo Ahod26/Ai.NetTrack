@@ -48,6 +48,17 @@ public class CacheService(IMemoryCache memoryCache) : ICacheService
     }
   }
 
+  public void ChangeCachedChatContextCountStatus(string userId, Guid chatId)
+  {
+    var cacheKey = GenerateCacheKey(userId, chatId);
+
+    if (memoryCache.TryGetValue(cacheKey, out CachedChatData? existingChat))
+    {
+      existingChat!.Metadata!.IsContextFull = true;
+      memoryCache.Set(cacheKey, existingChat, _cacheOptions);
+    }
+  }
+
   public void DeleteCachedChat(string userId, Guid chatId)
   {
     var key = GenerateCacheKey(userId, chatId);

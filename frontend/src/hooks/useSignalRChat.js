@@ -11,8 +11,8 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
-
   const [error, setError] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // useCallback for functions that are passed as event handler to signalr. I do not want resubscribe every render
 
@@ -76,8 +76,21 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
 
   // Handle SignalR errors
   const handleSignalRError = useCallback((error) => {
-    console.error("SignalR error in component:", error);
-    setError("Connection error occurred");
+    // Remove the last message (user's message that caused the error)
+    setMessages((prev) => {
+      if (prev.length > 0) {
+        const messagesWithoutLast = prev.slice(0, -1); // Remove last message
+        return messagesWithoutLast;
+      }
+      return prev;
+    });
+
+    // Show error message in popup for 5 seconds
+    setErrorMessage(error);
+    setTimeout(() => {
+      setErrorMessage("");
+    }, 5000);
+
     setIsLoading(false);
     setIsSendingMessage(false);
   }, []);
@@ -193,5 +206,6 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
     error,
     isSendingMessage,
     sendMessage,
+    errorMessage,
   };
 }

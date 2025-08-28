@@ -5,4 +5,5 @@ public class ChatMetaDataDto
   public DateTime CreatedAt { get; set; }
   public DateTime LastMessageAt { get; set; }
   public int MessageCount { get; set; } = 0;
+  public bool IsContextFull { get; set; }
 }

@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { useInitialChatLogic } from "../../../hooks/useInitialChatLogic";
+import ErrorPopup from "../../ErrorPopup";
 import WelcomeMessage from "./WelcomeMessage";
 import LoginPrompt from "./LoginPrompt";
 import styles from "./InitialChat.module.css";
@@ -24,12 +25,7 @@ export default function InitialChat() {
         !isSidebarOpen ? styles.sidebarClosed : ""
       }`}
     >
-      {errorMessage && (
-        <div className={styles.errorBox}>
-          {errorMessage}
-          <div className={styles.timerBar}></div>
-        </div>
-      )}
+      <ErrorPopup message={errorMessage} />
       <WelcomeMessage
         greeting={getPersonalizedGreeting()}
         onSendMessage={handleSendMessage}

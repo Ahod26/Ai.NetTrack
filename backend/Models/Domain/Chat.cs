@@ -6,6 +6,7 @@ public class Chat
   public DateTime CreatedAt { get; set; }
   public DateTime LastMessageAt { get; set; }
   public int MessageCount { get; set; } = 0;
+  public bool IsContextFull { get; set; } = false;
 
   //navigation properties
   public ApiUser User { get; set; } = null!;

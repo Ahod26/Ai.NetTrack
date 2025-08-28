@@ -132,13 +132,17 @@ ICacheService cacheService) : IChatService
     var aiResponse = await openAIService.GenerateResponseAsync(content, context, cancellationToken, onChunkReceived);
 
     // 5. Save AI message
-    var aiMessage = await AddMessageAsync(chatId, aiResponse, MessageType.Assistant, userId);
+    var aiMessage = await AddMessageAsync(chatId, aiResponse.response, MessageType.Assistant, userId);
 
     // 6. Cache the response using the original context (conversation history before user message)
     if (!cancellationToken.IsCancellationRequested &&
-        aiResponse != "Sorry, I'm having trouble responding right now. Please try again.")
+        aiResponse.response != "Sorry, I'm having trouble responding right now. Please try again.")
     {
-      await LLMCacheService.SetCachedResponseAsync(content, context, aiResponse);
+      await LLMCacheService.SetCachedResponseAsync(content, context, aiResponse.response);
+      if (aiResponse.totalTokenUsed >= 50000)
+      {
+        await ChangeContextStatus(chatId, userId);
+      }
     }
 
     return aiMessage;
@@ -154,6 +158,12 @@ ICacheService cacheService) : IChatService
   {
     cacheService.ChangeCachedChatTitle(userId, chatId, newTitle);
     await chatRepo.ChangeChatTitleAsync(chatId, newTitle);
+  }
+
+  private async Task ChangeContextStatus(Guid chatId, string userId)
+  {
+    cacheService.ChangeCachedChatContextCountStatus(userId, chatId);
+    await chatRepo.ChangeContextStatus(chatId);
   }
 
   private async Task<FullMessageDto> AddMessageAsync(Guid chatId, string content, MessageType type, string userId)

@@ -5,4 +5,5 @@ public interface ICacheService
   void AddMessageToCachedChat(string userId, Guid chatId, ChatMessage messageToAdd);
   void ChangeCachedChatTitle(string userId, Guid chatId, string newTitle);
   void DeleteCachedChat(string userId, Guid chatId);
+  void ChangeCachedChatContextCountStatus(string userId, Guid chatId);
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using MySqlX.XDevAPI;
 
 [Authorize]
 public class ChatHub(IChatService chatService) : Hub<IChatClient>
@@ -30,6 +31,12 @@ public class ChatHub(IChatService chatService) : Hub<IChatClient>
     if (chat == null)
     {
       await Clients.Caller.Error("Access denied");
+      return;
+    }
+
+    if (chat.IsContextFull)
+    {
+      await Clients.Caller.Error("Chat context is full");
       return;
     }
 
