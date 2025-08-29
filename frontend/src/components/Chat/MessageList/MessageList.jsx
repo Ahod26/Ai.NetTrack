@@ -1,7 +1,8 @@
+import { memo } from "react";
 import MarkdownRenderer from "../../MarkdownRenderer/MarkdownRenderer";
 import styles from "./MessageList.module.css";
 
-export default function MessageList({
+const MessageList = memo(function MessageList({
   messages,
   isSendingMessage,
   messagesContainerRef,
@@ -32,4 +33,6 @@ export default function MessageList({
       )}
     </div>
   );
-}
+});
+
+export default MessageList;

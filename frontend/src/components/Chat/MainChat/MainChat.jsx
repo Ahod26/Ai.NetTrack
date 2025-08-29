@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { sidebarActions } from "../../../store/sidebarSlice";
@@ -9,7 +9,7 @@ import ChatInput from "../ChatInput/ChatInput";
 import MessageList from "../MessageList/MessageList";
 import styles from "./MainChat.module.css";
 
-export default function MainChat() {
+const MainChat = memo(function MainChat() {
   const { chatId } = useParams();
   const dispatch = useDispatch();
   const { isUserLoggedIn } = useSelector((state) => state.userAuth);
@@ -25,12 +25,22 @@ export default function MainChat() {
     errorMessage,
   } = useSignalRChat(chatId, isUserLoggedIn);
 
-  const { messagesContainerRef, handleScroll } = useAutoScroll(messages);
+  const { messagesContainerRef, handleScroll, scrollToBottom } =
+    useAutoScroll(messages);
 
   // Open sidebar when Chat component mounts
   useEffect(() => {
     dispatch(sidebarActions.openSidebar());
   }, [dispatch]);
+
+  // Scroll to bottom when chat changes
+  useEffect(() => {
+    if (!isLoading && messages.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 50);
+    }
+  }, [chatId, isLoading, messages.length, scrollToBottom]);
 
   if (!isUserLoggedIn) {
     return (
@@ -80,4 +90,6 @@ export default function MainChat() {
       />
     </div>
   );
-}
+});
+
+export default MainChat;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { userAuthSliceAction } from "../store/userAuth";
@@ -33,7 +33,7 @@ export const useSidebar = () => {
   });
 
   // Format chat time utility
-  const formatChatTime = (dateString) => {
+  const formatChatTime = useCallback((dateString) => {
     if (!dateString) return "Unknown";
 
     const chatDate = new Date(dateString);
@@ -77,7 +77,7 @@ export const useSidebar = () => {
     } else {
       return "1 month ago"; // Max display is 1 month
     }
-  };
+  }, []);
 
   // Fetch user chats only once when user logs in
   useEffect(() => {
@@ -108,7 +108,7 @@ export const useSidebar = () => {
       dispatch(chatSliceActions.setChats([]));
       dispatch(chatSliceActions.resetInitialization());
     }
-  }, [isUserLoggedIn, dispatch, hasInitialized]);
+  }, [isUserLoggedIn, dispatch, hasInitialized, formatChatTime]);
 
   // Navigation handlers
   const handleNewChat = () => {
@@ -143,20 +143,22 @@ export const useSidebar = () => {
 
   const confirmRenameChat = async (newTitle) => {
     const { chatId } = renameModal;
+    const trimmedTitle = newTitle.trim();
+    const currentTitle = renameModal.chatTitle.trim();
 
-    if (!newTitle.trim() || newTitle.trim() === renameModal.chatTitle.trim()) {
+    if (!trimmedTitle || trimmedTitle === currentTitle) {
       setRenameModal({ isOpen: false, chatId: null, chatTitle: "" });
       return;
     }
 
     try {
-      await changeChatTitle(chatId, newTitle.trim());
+      await changeChatTitle(chatId, trimmedTitle);
 
       // Update chat in Redux store
       dispatch(
         chatSliceActions.updateChat({
           chatId,
-          updates: { title: newTitle.trim() },
+          updates: { title: trimmedTitle },
         })
       );
 
@@ -201,16 +203,16 @@ export const useSidebar = () => {
   };
 
   // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setOpenDropdown(null);
-    };
+  const handleClickOutside = useCallback(() => {
+    setOpenDropdown(null);
+  }, []);
 
+  useEffect(() => {
     document.addEventListener("click", handleClickOutside);
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
-  }, []);
+  }, [handleClickOutside]);
 
   return {
     chats,

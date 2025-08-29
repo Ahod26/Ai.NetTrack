@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { createChat } from "../api/chat";
@@ -12,11 +12,22 @@ export function useInitialChatLogic() {
   const { isUserLoggedIn, user } = useSelector((state) => state.userAuth);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const errorTimeoutRef = useRef(null);
 
   // Open sidebar when component mounts
   useEffect(() => {
     dispatch(sidebarActions.openSidebar());
   }, [dispatch]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+        errorTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const handleSendMessage = async (messageText) => {
     if (!isUserLoggedIn || isCreatingChat) {
@@ -26,17 +37,19 @@ export function useInitialChatLogic() {
     setIsCreatingChat(true);
 
     try {
-      // Create new chat via REST API
       const newChat = await createChat(messageText);
-      console.log("Created new chat:", newChat);
+
+      const chatTitle =
+        newChat.title ||
+        (messageText.length > 50
+          ? messageText.slice(0, 50) + "..."
+          : messageText);
 
       // Add chat optimistically to Redux store
       dispatch(
         chatSliceActions.addChat({
           id: newChat.id,
-          title:
-            newChat.title ||
-            messageText.slice(0, 50) + (messageText.length > 50 ? "..." : ""),
+          title: chatTitle,
           time: "Just now",
           lastMessageAt: new Date().toISOString(),
         })
@@ -56,30 +69,37 @@ export function useInitialChatLogic() {
     } catch (error) {
       console.error("Error creating chat or sending message:", error);
       setIsCreatingChat(false);
-      // Show error message in top right for 3 seconds
-      let msg = error?.message || "Failed to create chat";
+
+      // Clear any existing timeout
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+
+      // Show error message for 5 seconds
+      const msg = error?.message || "Failed to create chat";
       setErrorMessage(msg);
-      setTimeout(() => setErrorMessage(""), 5000);
+      errorTimeoutRef.current = setTimeout(() => {
+        setErrorMessage("");
+        errorTimeoutRef.current = null;
+      }, 5000);
     }
   };
 
-  // Extract first name from full name
-  const getFirstName = () => {
+  // Memoize personalized greeting to avoid recalculation
+  const personalizedGreeting = useMemo(() => {
     if (!isUserLoggedIn || !user?.userName) {
-      return "";
+      return "How can I help you today?";
     }
 
     const firstName = user.userName.split(" ")[0];
-    return firstName;
-  };
+    return firstName
+      ? `How can I help you today, ${firstName}?`
+      : "How can I help you today?";
+  }, [isUserLoggedIn, user?.userName]);
 
-  const getPersonalizedGreeting = () => {
-    const firstName = getFirstName();
-    if (firstName) {
-      return `How can I help you today, ${firstName}?`;
-    }
-    return "How can I help you today?";
-  };
+  const getPersonalizedGreeting = useCallback(() => {
+    return personalizedGreeting;
+  }, [personalizedGreeting]);
 
   return {
     isUserLoggedIn,

@@ -1,8 +1,9 @@
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect, useMemo } from "react";
 
 export function useAutoScroll(messages) {
   const messagesContainerRef = useRef(null);
   const isNearBottomRef = useRef(true);
+  const lastMessagesLengthRef = useRef(0);
 
   const scrollToBottom = useCallback(() => {
     if (messagesContainerRef.current) {
@@ -25,13 +26,20 @@ export function useAutoScroll(messages) {
     checkIfNearBottom();
   }, [checkIfNearBottom]);
 
+  // Memoize messages length to prevent unnecessary effect runs
+  const messagesLength = useMemo(() => messages.length, [messages.length]);
+
   // Auto-scroll when new messages arrive (only if user is near bottom)
   useEffect(() => {
-    if (isNearBottomRef.current) {
-      scrollToBottom();
-    }
-  }, [messages, scrollToBottom]);
+    // Only scroll if messages length actually changed
+    if (messagesLength !== lastMessagesLengthRef.current) {
+      lastMessagesLengthRef.current = messagesLength;
 
+      if (isNearBottomRef.current) {
+        scrollToBottom();
+      }
+    }
+  }, [messagesLength, scrollToBottom]);
   return {
     messagesContainerRef,
     handleScroll,

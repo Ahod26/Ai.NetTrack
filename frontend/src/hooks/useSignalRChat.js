@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { chatSliceActions } from "../store/chat";
@@ -13,6 +13,8 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [error, setError] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const errorTimeoutRef = useRef(null);
+  const messageIdCounterRef = useRef(0);
 
   // useCallback for functions that are passed as event handler to signalr. I do not want resubscribe every render
 
@@ -40,20 +42,28 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
   // Handle chunk message
   const handleChunkMessageReceived = useCallback((chunkMessage) => {
     setMessages((prev) => {
-      // Find previous chunk message (if any)
-      const lastChunk = prev.find((msg) => msg.isChunkMessage);
-      const filtered = prev.filter((msg) => !msg.isChunkMessage);
-      const newContent = lastChunk
-        ? lastChunk.content + chunkMessage.content
-        : chunkMessage.content;
-      return [
-        ...filtered,
-        {
-          content: newContent,
-          type: "assistant",
-          isChunkMessage: true,
-        },
-      ];
+      const lastIndex = prev.length - 1;
+      const lastMessage = prev[lastIndex];
+
+      if (lastMessage && lastMessage.isChunkMessage) {
+        // Update existing chunk message in place
+        const updated = [...prev];
+        updated[lastIndex] = {
+          ...lastMessage,
+          content: lastMessage.content + chunkMessage.content,
+        };
+        return updated;
+      } else {
+        // First chunk - add new chunk message
+        return [
+          ...prev,
+          {
+            content: chunkMessage.content,
+            type: "assistant",
+            isChunkMessage: true,
+          },
+        ];
+      }
     });
   }, []);
 
@@ -69,9 +79,6 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
 
     setMessages(transformedMessages);
     setIsLoading(false);
-
-    // Scroll to bottom when chat loads
-    setTimeout(() => {}, 100);
   }, []);
 
   // Handle SignalR errors
@@ -85,10 +92,16 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
       return prev;
     });
 
+    // Clear any existing timeout
+    if (errorTimeoutRef.current) {
+      clearTimeout(errorTimeoutRef.current);
+    }
+
     // Show error message in popup for 5 seconds
     setErrorMessage(error);
-    setTimeout(() => {
+    errorTimeoutRef.current = setTimeout(() => {
       setErrorMessage("");
+      errorTimeoutRef.current = null;
     }, 5000);
 
     setIsLoading(false);
@@ -112,8 +125,10 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
         setIsLoading(true);
         setError(null);
 
-        // Start SignalR connection first
-        await chatHubService.startConnection();
+        // Start SignalR connection (only if not already connected)
+        if (chatHubService.getConnectionState() === "Disconnected") {
+          await chatHubService.startConnection();
+        }
 
         // Set up SignalR event handlers
         unsubscribeFullMessage = chatHubService.onFullMessageReceived(
@@ -131,12 +146,13 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
         // Check if there's an initial message from navigation state
         if (location.state?.initialMessage) {
           // Add the initial message to state immediately
+          messageIdCounterRef.current += 1;
           setMessages([
             {
               content: location.state.initialMessage,
               type: "user",
               createdAt: new Date().toISOString(),
-              id: `temp-${Date.now()}`, // Temporary ID until real message comes from SignalR
+              id: `temp-${Date.now()}-${messageIdCounterRef.current}`, // More unique ID
             },
           ]);
           setIsSendingMessage(true); // Show that we're waiting for AI response
@@ -160,6 +176,12 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
       if (unsubscribeChunkMessage) unsubscribeChunkMessage();
       if (unsubscribeChatJoined) unsubscribeChatJoined();
       if (unsubscribeError) unsubscribeError();
+
+      // Clear error timeout on cleanup
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+        errorTimeoutRef.current = null;
+      }
     };
   }, [
     chatId,
@@ -169,7 +191,7 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
     handleChunkMessageReceived,
     handleChatJoined,
     handleSignalRError,
-    location.state,
+    location.state?.initialMessage,
   ]);
 
   const sendMessage = async (messageText) => {
@@ -181,11 +203,12 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
 
     try {
       // Add user message to UI immediately - optimistic update
+      messageIdCounterRef.current += 1;
       const userMessage = {
         content: messageText,
         type: "user",
         createdAt: new Date().toISOString(),
-        id: Date.now(),
+        id: `user-${Date.now()}-${messageIdCounterRef.current}`, // More unique ID
       };
       setMessages((prev) => [...prev, userMessage]);
 

@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import styles from "../Sidebar.module.css";
 
-export default function RenameModal({
+const RenameModal = memo(function RenameModal({
   isOpen,
   chatTitle,
   onConfirm,
@@ -168,4 +168,6 @@ export default function RenameModal({
       </div>
     </div>
   );
-}
+});
+
+export default RenameModal;

@@ -2,9 +2,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { memo } from "react";
 import styles from "./MarkdownRenderer.module.css";
 
-const MarkdownRenderer = ({ content }) => {
+const MarkdownRenderer = memo(({ content }) => {
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -169,6 +170,6 @@ const MarkdownRenderer = ({ content }) => {
       </ReactMarkdown>
     </div>
   );
-};
+});
 
 export default MarkdownRenderer;
