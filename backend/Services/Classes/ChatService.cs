@@ -119,7 +119,7 @@ ICacheService cacheService) : IChatService
     var cachedResponse = await LLMCacheService.GetCachedResponseAsync(content, context);
     if (cachedResponse != null)
     {
-      // Cache hit - save both user and AI messages and return
+      await SimulateStreamingAsync(cachedResponse, onChunkReceived, cancellationToken);
       await AddMessageAsync(chatId, content, MessageType.User, userId);
       var cachedAiMessage = await AddMessageAsync(chatId, cachedResponse, MessageType.Assistant, userId);
       return cachedAiMessage;
@@ -204,4 +204,45 @@ ICacheService cacheService) : IChatService
     return await chatRepo.GetMessagesAsync(chatId);
   }
 
+  private async Task<string> SimulateStreamingAsync(string fullResponse, Func<string, Task>? onChunkReceived, CancellationToken cancellationToken)
+  {
+    if (onChunkReceived == null)
+    {
+      return fullResponse;
+    }
+
+    const int chunkSize = 3; // Average words per chunk 
+    const int delayMs = 50;   // Milliseconds between chunks 
+
+    var words = fullResponse.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var chunks = new List<string>();
+
+    for (int i = 0; i < words.Length; i += chunkSize)
+    {
+      var chunk = string.Join(" ", words.Skip(i).Take(chunkSize));
+
+      // Add space after chunk unless it's the last one
+      if (i + chunkSize < words.Length)
+      {
+        chunk += " ";
+      }
+
+      chunks.Add(chunk);
+    }
+
+    foreach (var chunk in chunks)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+
+      await onChunkReceived(chunk);
+
+      // Small delay to simulate real streaming
+      if (delayMs > 0)
+      {
+        await Task.Delay(delayMs, cancellationToken);
+      }
+    }
+
+    return fullResponse;
+  }
 }

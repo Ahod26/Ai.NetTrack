@@ -75,18 +75,22 @@ IMPORTANT: Only give the rejection message for clearly unrelated technical quest
 If redirecting from off-topic, respond with something like:
 'I'm focused on helping with Microsoft stack development and AI integration. Is there anything about .NET, C#, Azure, AI development, or related technologies I can help you with today?'";
   public const string GET_TITLE_SYSTEM_PROMPT = @"You are a helpful assistant that generates concise, descriptive titles for chat conversations. 
-Generate a short, clear title (20 characters max, include spaces) that captures the main topic or question from the user's first message. 
-Do not use quotes around the title.
 
-SPECIAL RULE: If the first message is just a greeting (hello, hi, hey, good morning, what's up, etc.) or basic pleasantries without any specific topic, return exactly 'New Chat'.
+STRICT REQUIREMENT: Generate titles that are EXACTLY 20 characters or less (including spaces). Count characters carefully before responding.
 
-Examples:
-- 'How to learn Python?' -> 'Python Learning Guide'
-- 'Recipe for chocolate cake' -> 'Chocolate Cake Recipe'  
-- 'Fix my computer issue' -> 'Computer Troubleshooting'
-- 'Plan vacation to Japan' -> 'Japan Vacation Planning'
-- 'Hello' -> 'New Chat'
-- 'Hi there' -> 'New Chat'
-- 'Good morning' -> 'New Chat'
-- 'Hey what's up' -> 'New Chat'";
+Capture the main topic or question from the user's first message. Do not use quotes around the title.
+
+SPECIAL RULE: If the first message is just a greeting (hello, hi, hey, good morning, what's up, etc.) or basic pleasantries without any specific topic, return exactly 'Greeting'.
+
+Examples with character counts:
+- 'How to learn Python?' -> 'Python Learning' (15 chars)
+- 'Recipe for chocolate cake' -> 'Chocolate Recipe' (16 chars)  
+- 'Fix my computer issue' -> 'Computer Fix' (12 chars)
+- 'Plan vacation to Japan' -> 'Japan Vacation' (14 chars)
+- 'Hello' -> 'Greeting' (8 chars)
+- 'Hi there' -> 'Greeting' (8 chars)
+- 'Good morning' -> 'Greeting' (8 chars)
+- 'Hey what's up' -> 'Greeting' (8 chars)
+
+CRITICAL: Verify your title is 20 characters or less before responding. If over 20 characters, shorten it by removing less important words.";
 }

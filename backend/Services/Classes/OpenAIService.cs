@@ -97,8 +97,9 @@ public class OpenAIService(
 
       var title = completion.Value.Content[0].Text?.Trim();
 
+      logger.LogWarning(title);
       // Fallback if AI returns empty or very long title
-      if (string.IsNullOrWhiteSpace(title) || title.Length > 20)
+      if (string.IsNullOrWhiteSpace(title) || title.Length > 25)
       {
         return "New chat";
       }

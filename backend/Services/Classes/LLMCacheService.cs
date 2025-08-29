@@ -20,7 +20,7 @@ public class LLMCacheService : ILLMCacheService
   private const string EMBEDDINGS_INDEX_NAME = "embeddings_idx";
   private const int MAX_CACHEABLE_MESSAGE_COUNT_SEMANTIC = 8;
   private const int MAX_CACHEABLE_MESSAGE_COUNT_EXACT = 2;
-  private const float SEMANTIC_SIMILARITY_THRESHOLD = 0.75f; // Realistic threshold 0.7-0.85
+  private const float SEMANTIC_SIMILARITY_THRESHOLD = 0.85f; // Realistic threshold 0.85-0.9 without damage ux
 
   public LLMCacheService(
       EmbeddingClient embeddingClient,

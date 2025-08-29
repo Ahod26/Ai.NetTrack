@@ -33,8 +33,8 @@ export default function RenameModal({
       return "Title must be at least 1 character";
     }
 
-    if (trimmedTitle.length > 20) {
-      return "Title must be 20 characters or less";
+    if (trimmedTitle.length > 25) {
+      return "Title must be 25 characters or less";
     }
 
     return "";
@@ -133,7 +133,7 @@ export default function RenameModal({
             placeholder="Enter new title"
             autoFocus
             disabled={isSubmitting}
-            maxLength={20}
+            maxLength={25}
             onKeyPress={handleKeyPress}
           />
 
@@ -146,7 +146,7 @@ export default function RenameModal({
 
           {/* Character Count */}
           <div className={styles.characterCount}>
-            {newTitle.length}/20 characters
+            {newTitle.length}/25 characters
           </div>
         </div>
         <div className={styles.modalActions}>
