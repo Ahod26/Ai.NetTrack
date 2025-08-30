@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 
 [ApiController]
 [Route("[controller]")]
@@ -94,4 +93,5 @@ public class ChatController
       return StatusCode(500, "Error changing title");
     }
   }
+
 }

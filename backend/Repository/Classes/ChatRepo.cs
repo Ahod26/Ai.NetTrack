@@ -29,21 +29,6 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
     await dbContext.SaveChangesAsync();
   }
 
-  public async Task<ChatMessage> AddMessageAsync(ChatMessage message)
-  {
-    dbContext.ChatMessages.Add(message);
-    await dbContext.SaveChangesAsync();
-    return message;
-  }
-
-  public async Task<List<ChatMessage>> GetMessagesAsync(Guid chatId)
-  {
-    return await dbContext.ChatMessages
-    .Where(m => m.ChatId == chatId)
-    .OrderBy(m => m.CreatedAt)  // Chronological order
-    .ToListAsync();
-  }
-
   public async Task<Chat?> GetChatByIdAsync(Guid chatId)
   {
     return await dbContext.Chats.FirstOrDefaultAsync((c) => c.Id == chatId);

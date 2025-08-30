@@ -8,6 +8,7 @@ public class ChatMessage
   public MessageType Type { get; set; }
   public DateTime CreatedAt { get; set; }
   public int TokenCount { get; set; } = 0;
+  public bool IsStarred { get; set; } = false;
 
   //navigation properties
   [JsonIgnore]

@@ -2,6 +2,7 @@ using AutoMapper;
 
 public class ChatService
 (IChatRepo chatRepo,
+IMessagesRepo messagesRepo,
 IOpenAIService openAIService,
 IMapper mapper,
 ILLMCacheService LLMCacheService,
@@ -97,7 +98,7 @@ ICacheService cacheService) : IChatService
     {
       return mapper.Map<List<FullMessageDto>>(cachedChat.Messages);
     }
-    var messages = await chatRepo.GetMessagesAsync(chatId);
+    var messages = await messagesRepo.GetMessagesAsync(chatId);
     // Cache messages and metadata on miss
     var chatEntity = await chatRepo.GetChatByIdAndUserIdAsync(chatId, userId);
     if (chatEntity != null)
@@ -177,7 +178,7 @@ ICacheService cacheService) : IChatService
       CreatedAt = DateTime.UtcNow
     };
 
-    var savedMessage = await chatRepo.AddMessageAsync(message);
+    var savedMessage = await messagesRepo.AddMessageAsync(message);
 
     // Update chat's last message time
     var chat = await chatRepo.GetChatByIdAsync(chatId);
@@ -201,7 +202,7 @@ ICacheService cacheService) : IChatService
     {
       return cachedChat.Messages;
     }
-    return await chatRepo.GetMessagesAsync(chatId);
+    return await messagesRepo.GetMessagesAsync(chatId);
   }
 
   private async Task<string> SimulateStreamingAsync(string fullResponse, Func<string, Task>? onChunkReceived, CancellationToken cancellationToken)

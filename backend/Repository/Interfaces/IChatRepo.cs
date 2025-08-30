@@ -4,8 +4,6 @@ public interface IChatRepo
   Task<Chat?> GetChatByIdAndUserIdAsync(Guid chatId, string userId);
   Task<List<Chat>> GetChatsByUserIdAsync(string userId);
   Task UpdateChatAsync(Chat chat);
-  Task<ChatMessage> AddMessageAsync(ChatMessage message);
-  Task<List<ChatMessage>> GetMessagesAsync(Guid chatId);
   Task<Chat?> GetChatByIdAsync(Guid chatId);
   Task DeleteChatAsync(Guid chatId);
   Task ChangeChatTitleAsync(Guid chatId, string newTitle);

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Caching.Distributed;
 [ApiController]
 [Route("[controller]")]
 public class AuthController
-(ILogger<AuthController> logger, IAuthService authService, IDistributedCache cache) : ControllerBase
+(ILogger<AuthController> logger, IAuthService authService) : ControllerBase
 {
   [HttpPost("")]
   public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
@@ -94,19 +94,4 @@ public class AuthController
     return Ok(new { message = "Logout successful" });
   }
 
-  [HttpGet("test-redis")]
-  public async Task<ActionResult> TestRedis()
-  {
-    try
-    {
-      // Try to read from cache
-      var value = await cache.GetStringAsync("test-key");
-
-      return Ok(new { value = value });
-    }
-    catch (Exception ex)
-    {
-      return BadRequest(new { success = false, error = ex.Message });
-    }
-  }
 }
