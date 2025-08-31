@@ -378,11 +378,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-# Custom: Application Settings with Secrets
-appsettings.json
-appsettings.Development.json
-appsettings.Production.json
-appsettings.Staging.json
 
 # Custom: Environment files
 .env
