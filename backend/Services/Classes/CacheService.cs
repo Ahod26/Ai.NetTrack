@@ -1,136 +1,76 @@
-using Microsoft.Extensions.Caching.Memory;
-
-public class CacheService(IMemoryCache memoryCache) : ICacheService
+public class CacheService(IChatCacheRepo chatCacheRepo) : ICacheService
 {
-
   // Chat cache duration settings
   private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(2);
-  private static readonly TimeSpan SlidingExpiration = TimeSpan.FromMinutes(30);
-  private readonly MemoryCacheEntryOptions _cacheOptions = new MemoryCacheEntryOptions()
-    .SetAbsoluteExpiration(CacheDuration)
-    .SetSlidingExpiration(SlidingExpiration);
 
-  public CachedChatData? GetCachedChat(string userId, Guid chatId)
+  public async Task<CachedChatData?> GetCachedChat(string userId, Guid chatId)
   {
     var key = GenerateCacheKey(userId, chatId);
-    if (memoryCache.TryGetValue(key, out CachedChatData? cached))
-    {
-      return cached;
-    }
-    return null;
+    return await chatCacheRepo.GetCachedChatAsync(key);
   }
 
-  public void SetCachedChat(string userId, Guid chatId, CachedChatData data)
+  public async Task SetCachedChat(string userId, Guid chatId, CachedChatData data)
   {
     var key = GenerateCacheKey(userId, chatId);
-    memoryCache.Set(key, data, _cacheOptions);
+    await chatCacheRepo.SetCachedChatAsync(key, data, CacheDuration);
   }
 
-  public void AddMessageToCachedChat(string userId, Guid chatId, ChatMessage messageToAdd)
+  public async Task AddMessageToCachedChat(string userId, Guid chatId, ChatMessage messageToAdd)
   {
     var cacheKey = GenerateCacheKey(userId, chatId);
+    var existingChat = await chatCacheRepo.GetCachedChatAsync(cacheKey);
 
-    if (memoryCache.TryGetValue(cacheKey, out CachedChatData? existingChat))
+    if (existingChat != null)
     {
-      existingChat!.Messages!.Add(messageToAdd);
-      memoryCache.Set(cacheKey, existingChat, _cacheOptions);
+      existingChat.Messages!.Add(messageToAdd);
+      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, CacheDuration);
     }
   }
 
-  public void ChangeCachedChatTitle(string userId, Guid chatId, string newTitle)
+  public async Task ChangeCachedChatTitle(string userId, Guid chatId, string newTitle)
   {
     var cacheKey = GenerateCacheKey(userId, chatId);
+    var existingChat = await chatCacheRepo.GetCachedChatAsync(cacheKey);
 
-    if (memoryCache.TryGetValue(cacheKey, out CachedChatData? existingChat))
+    if (existingChat != null)
     {
-      existingChat!.Metadata!.Title = newTitle;
-      memoryCache.Set(cacheKey, existingChat, _cacheOptions);
+      existingChat.Metadata!.Title = newTitle;
+      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, CacheDuration);
     }
   }
 
-  public void ChangeCachedChatContextCountStatus(string userId, Guid chatId)
+  public async Task ChangeCachedChatContextCountStatus(string userId, Guid chatId)
   {
     var cacheKey = GenerateCacheKey(userId, chatId);
+    var existingChat = await chatCacheRepo.GetCachedChatAsync(cacheKey);
 
-    if (memoryCache.TryGetValue(cacheKey, out CachedChatData? existingChat))
+    if (existingChat != null)
     {
-      existingChat!.Metadata!.IsContextFull = true;
-      memoryCache.Set(cacheKey, existingChat, _cacheOptions);
+      existingChat.Metadata!.IsContextFull = true;
+      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, CacheDuration);
     }
   }
 
-  public void DeleteCachedChat(string userId, Guid chatId)
+  public async Task DeleteCachedChat(string userId, Guid chatId)
   {
     var key = GenerateCacheKey(userId, chatId);
-    memoryCache.Remove(key);
+    await chatCacheRepo.DeleteCachedChatAsync(key);
   }
 
-  public List<ChatMessage> GetStarredMessagesFromCache(string userId)
+  public async Task<List<ChatMessage>> GetStarredMessagesFromCache(string userId)
   {
-    var key = GenerateStarredCacheKey(userId);
-    if (memoryCache.TryGetValue(key, out List<ChatMessage>? starredMessages))
-    {
-      return starredMessages ?? new List<ChatMessage>();
-    }
-    return new List<ChatMessage>();
+    var chatKeyPattern = $"chat:{userId}:*";
+    return await chatCacheRepo.GetAllStarredMessagesAsync(chatKeyPattern);
   }
 
-  public void SetStarredMessagesInCache(string userId, List<ChatMessage> starredMessages)
+  public async Task ToggleStarredMessageInCache(string userId, ChatMessage message)
   {
-    var key = GenerateStarredCacheKey(userId);
-    memoryCache.Set(key, starredMessages, _cacheOptions);
+    var chatKeyPattern = $"chat:{userId}:*";
+    await chatCacheRepo.UpdateMessageStarStatusAsync(chatKeyPattern, message.Id, message.IsStarred);
   }
 
-  public void ToggleStarredMessageInCache(string userId, ChatMessage message)
-  {
-    if (message.IsStarred)
-    {
-      AddStarredMessageToCache(userId, message);
-    }
-    else
-    {
-      RemoveStarredMessageFromCache(userId, message.Id);
-    }
-  }
-  
   private string GenerateCacheKey(string userId, Guid chatId)
   {
     return $"chat:{userId}:{chatId}";
-  }
-  private string GenerateStarredCacheKey(string userId)
-  {
-    return $"starred:{userId}";
-  }
-  private void AddStarredMessageToCache(string userId, ChatMessage message)
-  {
-    var key = GenerateStarredCacheKey(userId);
-    if (memoryCache.TryGetValue(key, out List<ChatMessage>? existingStarred))
-    {
-      existingStarred ??= new List<ChatMessage>();
-      if (!existingStarred.Any(m => m.Id == message.Id))
-      {
-        existingStarred.Add(message);
-        memoryCache.Set(key, existingStarred, _cacheOptions);
-      }
-    }
-    else
-    {
-      // No cached starred messages yet, create new list
-      memoryCache.Set(key, new List<ChatMessage> { message }, _cacheOptions);
-    }
-  }
-  private void RemoveStarredMessageFromCache(string userId, Guid messageId)
-  {
-    var key = GenerateStarredCacheKey(userId);
-    if (memoryCache.TryGetValue(key, out List<ChatMessage>? existingStarred))
-    {
-      existingStarred ??= new List<ChatMessage>();
-      var messageToRemove = existingStarred.FirstOrDefault(m => m.Id == messageId);
-      if (messageToRemove != null)
-      {
-        existingStarred.Remove(messageToRemove);
-        memoryCache.Set(key, existingStarred, _cacheOptions);
-      }
-    }
   }
 }

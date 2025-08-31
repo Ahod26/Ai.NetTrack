@@ -69,12 +69,12 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
 
   // Handle chat joined event
   const handleChatJoined = useCallback((joinedChatId, title, chatMessages) => {
-    // Transform messages to component format
     const transformedMessages = chatMessages.map((msg) => ({
       content: msg.content,
       type: msg.type === 0 ? "user" : "assistant",
       createdAt: msg.createdAt,
       id: msg.id,
+      isStarred: msg.isStarred
     }));
 
     setMessages(transformedMessages);

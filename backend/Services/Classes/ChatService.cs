@@ -32,14 +32,14 @@ ICacheService cacheService) : IChatService
     }
 
     var initialMessage = await GetChatMessagesAsync(chatDto.Id, userId);
-    cacheService.SetCachedChat(userId, chatDto.Id, new CachedChatData { Metadata = chatDto, Messages = initialMessage });
+    await cacheService.SetCachedChat(userId, chatDto.Id, new CachedChatData { Metadata = chatDto, Messages = initialMessage });
 
     return chatDto;
   }
 
   public async Task<ChatMetaDataDto?> GetUserChatAsync(Guid chatId, string userId, int? timezoneOffset = null)
   {
-    var cachedChat = cacheService.GetCachedChat(userId, chatId);
+    var cachedChat = await cacheService.GetCachedChat(userId, chatId);
     if (cachedChat != null)
     {
       return cachedChat.Metadata;
@@ -62,7 +62,7 @@ ICacheService cacheService) : IChatService
     }
 
     var initialMessages = await GetChatMessagesAsync(chatDto.Id, userId);
-    cacheService.SetCachedChat(userId, chatDto.Id, new CachedChatData { Metadata = chatDto, Messages = initialMessages });
+    await cacheService.SetCachedChat(userId, chatDto.Id, new CachedChatData { Metadata = chatDto, Messages = initialMessages });
     return chatDto;
   }
 
@@ -85,7 +85,7 @@ ICacheService cacheService) : IChatService
     foreach (var metadata in chatDtos)
     {
       var messages = await GetChatMessagesAsync(metadata.Id, userId);
-      cacheService.SetCachedChat(userId, metadata.Id, new CachedChatData { Metadata = metadata, Messages = messages });
+      await cacheService.SetCachedChat(userId, metadata.Id, new CachedChatData { Metadata = metadata, Messages = messages });
     }
 
     return chatDtos;
@@ -93,7 +93,7 @@ ICacheService cacheService) : IChatService
 
   public async Task<List<FullMessageDto>> GetAllChatMessagesAsync(Guid chatId, string userId)
   {
-    var cachedChat = cacheService.GetCachedChat(userId, chatId);
+    var cachedChat = await cacheService.GetCachedChat(userId, chatId);
     if (cachedChat != null)
     {
       return mapper.Map<List<FullMessageDto>>(cachedChat.Messages);
@@ -104,7 +104,7 @@ ICacheService cacheService) : IChatService
     if (chatEntity != null)
     {
       var metaDto = mapper.Map<ChatMetaDataDto>(chatEntity);
-      cacheService.SetCachedChat(userId, chatId, new CachedChatData { Metadata = metaDto, Messages = messages });
+      await cacheService.SetCachedChat(userId, chatId, new CachedChatData { Metadata = metaDto, Messages = messages });
     }
     return mapper.Map<List<FullMessageDto>>(messages);
   }
@@ -152,18 +152,18 @@ ICacheService cacheService) : IChatService
   public async Task DeleteChatByIdAsync(Guid chatId, string userId)
   {
     await chatRepo.DeleteChatAsync(chatId);
-    cacheService.DeleteCachedChat(userId, chatId);
+    await cacheService.DeleteCachedChat(userId, chatId);
   }
 
   public async Task ChangeChatTitle(Guid chatId, string newTitle, string userId)
   {
-    cacheService.ChangeCachedChatTitle(userId, chatId, newTitle);
+    await cacheService.ChangeCachedChatTitle(userId, chatId, newTitle);
     await chatRepo.ChangeChatTitleAsync(chatId, newTitle);
   }
 
   private async Task ChangeContextStatus(Guid chatId, string userId)
   {
-    cacheService.ChangeCachedChatContextCountStatus(userId, chatId);
+    await cacheService.ChangeCachedChatContextCountStatus(userId, chatId);
     await chatRepo.ChangeContextStatus(chatId);
   }
 
@@ -189,7 +189,7 @@ ICacheService cacheService) : IChatService
       await chatRepo.UpdateChatAsync(chat);
     }
 
-    cacheService.AddMessageToCachedChat(userId, chatId, savedMessage);
+    await cacheService.AddMessageToCachedChat(userId, chatId, savedMessage);
 
     var fullMessage = mapper.Map<FullMessageDto>(savedMessage);
     return fullMessage;
@@ -197,7 +197,7 @@ ICacheService cacheService) : IChatService
 
   private async Task<List<ChatMessage>> GetChatMessagesAsync(Guid chatId, string userId)
   {
-    var cachedChat = cacheService.GetCachedChat(userId, chatId);
+    var cachedChat = await cacheService.GetCachedChat(userId, chatId);
     if (cachedChat != null && cachedChat.Messages != null)
     {
       return cachedChat.Messages;

@@ -2,4 +2,5 @@
 export * from "./auth";
 export * from "./config";
 export * from "./chat";
-export * from "./chatHub"
+export * from "./chatHub";
+export * from "./messages"

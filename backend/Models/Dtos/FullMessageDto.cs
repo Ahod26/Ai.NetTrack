@@ -5,5 +5,6 @@ public class FullMessageDto
   public required MessageType Type { get; set; }
   public required DateTime CreatedAt { get; set; }
   public int TokenCount { get; set; } = 0;
+  public bool IsStarred { get; set; }
   public bool IsChunkMessage { get; set; } = false;
 }

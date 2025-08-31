@@ -30,8 +30,8 @@ public class MessagesController(IMessagesService messagesService, ILogger<Messag
     try
     {
       var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-      await messagesService.ToggleStarAsync(messageId, userId);
-      return Ok(new { message = "Star toggled successfully" });
+      var result = await messagesService.ToggleStarAsync(messageId, userId);
+      return Ok(new { messageId = messageId, isStarred = result.IsStarred, message = "Star toggled successfully" });
     }
     catch (Exception ex)
     {

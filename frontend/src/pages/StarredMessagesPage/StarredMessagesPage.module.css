@@ -1,3 +1,38 @@
+.pageContainer {
+  display: flex;
+  height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.chatContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  position: fixed; /* Position relative to viewport like MainChat */
+  top: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  z-index: 50; /* Below sidebar */
+}
+
+/* When sidebar is open, shift content to center in remaining space */
+.chatContainer.sidebarOpen {
+  transform: translateX(120px); /* Half of sidebar width (240px / 2) */
+}
+
+.chatContainer.sidebarClosed {
+  transform: translateX(0); /* No transform when sidebar is closed */
+}
+
+/* Messages expand when sidebar is closed */
+.chatContainer.sidebarClosed .message {
+  max-width: 960px; /* 1.2x the input width (800px * 1.2) */
+}
+
 .messagesContainer {
   flex: 1;
   overflow-y: auto;
@@ -18,15 +53,11 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 800px; /* Reverted back to match input form container */
+  max-width: 800px; /* Match input form container */
   margin: 0 auto; /* Center like input field */
+  position: relative;
 }
 
-.message.user {
-  align-items: flex-start; /* Align user messages to start like AI messages */
-}
-
-.message.ai,
 .message.assistant {
   align-items: center; /* Center AI messages */
 }
@@ -41,42 +72,17 @@
   white-space: normal; /* Changed from pre-wrap to normal for markdown */
   width: 100%; /* Take full width like the input field */
   max-width: none; /* Remove width restriction */
-}
-
-.message.user .messageContent {
-  background: #2a2a2a;
-  color: #f0f0f0;
-  border-bottom-right-radius: 0.25rem;
-  border: 1px solid #3a3a3a;
-  white-space: pre-wrap; /* Keep pre-wrap for user messages */
-  width: auto; /* Fit content width for user messages */
-  display: inline-block; /* Allow width to shrink to content */
-  max-width: 70%; /* Prevent too wide messages */
-}
-
-.message.ai .messageContent,
-.message.assistant .messageContent {
   background: transparent;
   color: var(--text-primary);
   border-bottom-left-radius: 0.25rem;
+  border-left: 2px solid transparent;
+  transition: all 0.3s ease;
 }
 
-/* Scrollbar styling */
-.messagesContainer::-webkit-scrollbar {
-  width: 6px;
-}
-
-.messagesContainer::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.messagesContainer::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-
-.messagesContainer::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+/* Purple accent for starred messages */
+.message:hover .messageContent {
+  border-left-color: rgba(139, 92, 246, 0.3);
+  background: rgba(139, 92, 246, 0.02);
 }
 
 /* Message Actions */
@@ -187,8 +193,98 @@
   color: #3b82f6; /* Blue for feedback */
 }
 
+/* Message Divider */
+.messageDivider {
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #8b5cf6 20%,
+    #a855f7 50%,
+    #8b5cf6 80%,
+    transparent 100%
+  );
+  margin: 2rem 0;
+  border-radius: 1px;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+.message:hover + .messageDivider,
+.messageDivider:hover {
+  opacity: 0.6;
+}
+
+/* Loading and error states */
+.loadingMessage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  gap: 1.5rem;
+  padding: 3rem;
+}
+
+.emptyIcon {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.emptyTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.emptyDescription {
+  color: var(--text-muted);
+  font-size: 1rem;
+  max-width: 400px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Scrollbar styling */
+.messagesContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messagesContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messagesContainer::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.messagesContainer::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
+  .chatContainer {
+    margin-left: 0; /* No sidebar margin on mobile */
+  }
+
+  .chatContainer.sidebarClosed {
+    margin-left: 0;
+  }
+
   .messagesContainer {
     padding: 1rem;
   }

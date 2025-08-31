@@ -14,4 +14,8 @@ export const API_ENDPOINTS = {
     DELETECHATBYID: "/chat", // Base route, append /{chatId} when calling
     CHANGECHATTITLE: "/chat" // Base route, append /{chatId}/title when calling
   },
+  MESSAGES: {
+    STARREDMESSAGES: "messages/starred",
+    TOGGLESTAR: "messages" // Base route, append /{messageId}/starred
+  }
 };

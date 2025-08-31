@@ -3,6 +3,7 @@ import App from "../App";
 import ChatPage from "../pages/ChatPage/ChatPage";
 import InitialChatPage from "../pages/InitialChatPage/InitialChatPage";
 import TimelinePage from "../pages/TimelinePage/TimelinePage";
+import StarredMessagesPage from "../pages/StarredMessagesPage/StarredMessagesPage";
 import NotFound from "../pages/NotFound/NotFound";
 import { Login, Signup } from "../components/Auth";
 
@@ -28,6 +29,10 @@ export const router = createBrowserRouter([
       {
         path: "chat/:chatId",
         element: <ChatPage />,
+      },
+      {
+        path: "chat/starred",
+        element: <StarredMessagesPage />,
       },
       {
         path: "login",

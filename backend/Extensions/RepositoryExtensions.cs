@@ -7,7 +7,8 @@ public static class RepositoryExtensions
     services.AddScoped<IMessagesRepo, MessagesRepo>();
 
     services.AddSingleton<ILLMCacheRepo, LLMCacheRepo>();
-    
+    services.AddSingleton<IChatCacheRepo, ChatCacheRepo>();
+
     return services;
   }
 }
