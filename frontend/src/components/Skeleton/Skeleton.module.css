@@ -1,0 +1,87 @@
+/* Base skeleton styles - more refined like Claude */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-color, #e2e5e9) 25%,
+    var(--skeleton-highlight, #f7f7f7) 50%,
+    var(--skeleton-color, #e2e5e9) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .skeleton {
+    --skeleton-color: #2a2a2a;
+    --skeleton-highlight: #3a3a3a;
+  }
+}
+
+/* Light mode refined colors */
+@media (prefers-color-scheme: light) {
+  .skeleton {
+    --skeleton-color: #e2e5e9;
+    --skeleton-highlight: #f7f7f7;
+  }
+}
+
+/* Animation variants */
+.pulse {
+  animation: skeleton-pulse 2s ease-in-out infinite;
+}
+
+.wave {
+  animation: skeleton-wave 2s ease-in-out infinite;
+}
+
+.shimmer {
+  animation: skeleton-shimmer 2s ease-in-out infinite;
+}
+
+/* Shape variants */
+.text {
+  border-radius: 4px;
+}
+
+.rect {
+  border-radius: 6px;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.rounded {
+  border-radius: 8px;
+}
+
+/* Refined animations more like Claude */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes skeleton-wave {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

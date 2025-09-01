@@ -1,0 +1,108 @@
+.thinkingWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.thinkingBubble {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 90, 159, 0.18),
+    rgba(139, 90, 159, 0.08)
+  );
+  border: 1px solid rgba(139, 90, 159, 0.35);
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.label {
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dots {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 12px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background: #8b5a9f;
+  border-radius: 50%;
+  opacity: 0.35;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translateY(0);
+    opacity: 0.25;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0.35;
+  }
+}
+
+/* Subtle animated sheen across bubble */
+.thinkingBubble:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  background-size: 200% 100%;
+  animation: sheen 3.2s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes sheen {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .thinkingBubble:before {
+    animation: none;
+  }
+}

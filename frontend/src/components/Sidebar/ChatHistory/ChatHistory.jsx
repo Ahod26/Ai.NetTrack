@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
+import { ChatListSkeleton } from "../../Skeleton";
 import ChatActionsMenu from "../ChatActionsMenu";
 import styles from "../Sidebar.module.css";
 
@@ -17,7 +18,7 @@ const ChatHistory = memo(function ChatHistory({
       <div className={styles.chatHistory}>
         <div className={styles.sectionTitle}>Recent Chats</div>
         <div className={styles.chatList}>
-          <div className={styles.loadingChats}>Loading chats...</div>
+          <ChatListSkeleton count={5} />
         </div>
       </div>
     );

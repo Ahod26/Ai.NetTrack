@@ -1,0 +1,46 @@
+.messageListSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px;
+}
+
+.messageSkeleton {
+  background-color: var(--message-bg, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--message-border, rgba(255, 255, 255, 0.06));
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 85%;
+  margin-left: auto; /* Align to right like AI messages */
+  position: relative;
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.messageActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+  padding-top: 12px;
+  border-top: 1px solid var(--message-border, rgba(255, 255, 255, 0.06));
+}
+
+/* Refined colors like Claude */
+@media (prefers-color-scheme: dark) {
+  .messageSkeleton {
+    --message-bg: rgba(255, 255, 255, 0.02);
+    --message-border: rgba(255, 255, 255, 0.06);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .messageSkeleton {
+    --message-bg: rgba(0, 0, 0, 0.02);
+    --message-border: rgba(0, 0, 0, 0.06);
+  }
+}

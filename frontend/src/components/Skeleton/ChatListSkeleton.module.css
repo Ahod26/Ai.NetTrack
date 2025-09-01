@@ -1,0 +1,13 @@
+/* Only minimal overrides; structure comes from Sidebar.module.css */
+.chatListSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.titleSkeleton {
+  border-radius: 4px;
+}
+.timeSkeleton {
+  border-radius: 4px;
+  opacity: 0.55;
+}

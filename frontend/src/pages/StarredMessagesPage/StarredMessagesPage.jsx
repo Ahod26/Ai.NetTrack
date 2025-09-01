@@ -2,6 +2,7 @@ import { useState, useEffect, memo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import MarkdownRenderer from "../../components/MarkdownRenderer/MarkdownRenderer";
+import { MessageListSkeleton } from "../../components/Skeleton";
 import { messagesSliceActions } from "../../store/messagesSlice";
 import { sidebarActions } from "../../store/sidebarSlice";
 import { getAllStarredMessages } from "../../api/messages";
@@ -48,7 +49,7 @@ const StarredMessagesPage = memo(function StarredMessagesPage() {
   }, [dispatch]);
 
   const handleStarToggle = (messageId) => {
-    // Optimistic update 
+    // Optimistic update
     dispatch(messagesSliceActions.toggleMessageStarOptimistic(messageId));
   };
 
@@ -85,8 +86,8 @@ const StarredMessagesPage = memo(function StarredMessagesPage() {
             isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
           }`}
         >
-          <div className={styles.loadingMessage}>
-            Loading starred messages...
+          <div className={styles.messagesContainer}>
+            <MessageListSkeleton inline count={4} showStarredActions={true} />
           </div>
         </div>
       </div>

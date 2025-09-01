@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { sidebarActions } from "../../../store/sidebarSlice";
 import { useSignalRChat } from "../../../hooks/useSignalRChat";
 import { useAutoScroll } from "../../../hooks/useAutoScroll";
+import { MessageListSkeleton } from "../../Skeleton";
 import ErrorPopup from "../../ErrorPopup";
 import ChatInput from "../ChatInput/ChatInput";
 import MessageList from "../MessageList/MessageList";
@@ -51,9 +52,21 @@ const MainChat = memo(function MainChat() {
   }
 
   if (isLoading) {
+    // Preserve full layout so skeleton occupies exact future positions
     return (
-      <div className={styles.chatContainer}>
-        <div className={styles.loadingMessage}>Loading chat...</div>
+      <div
+        className={`${styles.chatContainer} ${
+          isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
+        }`}
+      >
+        <div className={styles.messagesContainer}>
+          <MessageListSkeleton inline count={3} />
+        </div>
+        <ChatInput
+          onSendMessage={() => {}}
+          disabled={true}
+          placeholder="Loading chat..."
+        />
       </div>
     );
   }

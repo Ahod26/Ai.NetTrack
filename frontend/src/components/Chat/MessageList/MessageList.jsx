@@ -1,6 +1,7 @@
 import { memo, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import MarkdownRenderer from "../../MarkdownRenderer/MarkdownRenderer";
+import TypingIndicator from "../TypingIndicator/TypingIndicator";
 import { messagesSliceActions } from "../../../store/messagesSlice";
 import { useStarSync } from "../../../hooks/useStarSync";
 import styles from "./MessageList.module.css";
@@ -161,7 +162,9 @@ const MessageList = memo(function MessageList({
       ))}
       {isSendingMessage && !hasChunkMessage && (
         <div className={`${styles.message} ${styles.assistant}`}>
-          <div className={styles.messageContent}>Thinking...</div>
+          <div className={styles.messageContent}>
+            <TypingIndicator />
+          </div>
         </div>
       )}
     </div>
