@@ -1,13 +1,18 @@
 using AutoMapper;
+using backend.Configuration;
+using Microsoft.Extensions.Options;
 
-public class ChatService
-(IChatRepo chatRepo,
-IMessagesRepo messagesRepo,
-IOpenAIService openAIService,
-IMapper mapper,
-ILLMCacheService LLMCacheService,
-ICacheService cacheService) : IChatService
+public class ChatService(
+    IChatRepo chatRepo,
+    IMessagesRepo messagesRepo,
+    IOpenAIService openAIService,
+    IMapper mapper,
+    ILLMCacheService LLMCacheService,
+    ICacheService cacheService,
+    IOptions<StreamingSettings> streamingOptions) : IChatService
 {
+  private readonly StreamingSettings streamingSettings = streamingOptions.Value;
+
   public async Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null)
   {
     string title = await openAIService.GenerateChatTitle(firstMessage);
@@ -25,11 +30,7 @@ ICacheService cacheService) : IChatService
     var chatDto = mapper.Map<ChatMetaDataDto>(chatCreated);
 
     // Apply timezone conversion if offset is provided
-    if (timezoneOffset.HasValue)
-    {
-      chatDto.CreatedAt = chatDto.CreatedAt.AddMinutes(-timezoneOffset.Value);
-      chatDto.LastMessageAt = chatDto.LastMessageAt.AddMinutes(-timezoneOffset.Value);
-    }
+    ApplyTimezoneOffset(chatDto, timezoneOffset);
 
     var initialMessage = await GetChatMessagesAsync(chatDto.Id, userId);
     await cacheService.SetCachedChat(userId, chatDto.Id, new CachedChatData { Metadata = chatDto, Messages = initialMessage });
@@ -55,11 +56,7 @@ ICacheService cacheService) : IChatService
     var chatDto = mapper.Map<ChatMetaDataDto>(chat);
 
     // Apply timezone conversion if offset is provided
-    if (timezoneOffset.HasValue)
-    {
-      chatDto.CreatedAt = chatDto.CreatedAt.AddMinutes(-timezoneOffset.Value);
-      chatDto.LastMessageAt = chatDto.LastMessageAt.AddMinutes(-timezoneOffset.Value);
-    }
+    ApplyTimezoneOffset(chatDto, timezoneOffset);
 
     var initialMessages = await GetChatMessagesAsync(chatDto.Id, userId);
     await cacheService.SetCachedChat(userId, chatDto.Id, new CachedChatData { Metadata = chatDto, Messages = initialMessages });
@@ -76,16 +73,8 @@ ICacheService cacheService) : IChatService
     {
       foreach (var chatDto in chatDtos)
       {
-        chatDto.CreatedAt = chatDto.CreatedAt.AddMinutes(-timezoneOffset.Value);
-        chatDto.LastMessageAt = chatDto.LastMessageAt.AddMinutes(-timezoneOffset.Value);
+        ApplyTimezoneOffset(chatDto, timezoneOffset);
       }
-    }
-
-
-    foreach (var metadata in chatDtos)
-    {
-      var messages = await GetChatMessagesAsync(metadata.Id, userId);
-      await cacheService.SetCachedChat(userId, metadata.Id, new CachedChatData { Metadata = metadata, Messages = messages });
     }
 
     return chatDtos;
@@ -205,6 +194,15 @@ ICacheService cacheService) : IChatService
     return await messagesRepo.GetMessagesAsync(chatId);
   }
 
+  private void ApplyTimezoneOffset(ChatMetaDataDto chatDto, int? timezoneOffset)
+  {
+    if (timezoneOffset.HasValue)
+    {
+      chatDto.CreatedAt = chatDto.CreatedAt.AddMinutes(-timezoneOffset.Value);
+      chatDto.LastMessageAt = chatDto.LastMessageAt.AddMinutes(-timezoneOffset.Value);
+    }
+  }
+
   private async Task<string> SimulateStreamingAsync(string fullResponse, Func<string, Task>? onChunkReceived, CancellationToken cancellationToken)
   {
     if (onChunkReceived == null)
@@ -212,8 +210,8 @@ ICacheService cacheService) : IChatService
       return fullResponse;
     }
 
-    const int chunkSize = 3; // Average words per chunk 
-    const int delayMs = 50;   // Milliseconds between chunks 
+    var chunkSize = streamingSettings.ChunkSize; // Configurable words per chunk 
+    var delayMs = streamingSettings.DelayMs;     // Configurable delay between chunks 
 
     var words = fullResponse.Split(' ', StringSplitOptions.RemoveEmptyEntries);
     var chunks = new List<string>();

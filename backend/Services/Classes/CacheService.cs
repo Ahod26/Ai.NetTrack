@@ -1,7 +1,10 @@
-public class CacheService(IChatCacheRepo chatCacheRepo) : ICacheService
+using backend.Configuration;
+using Microsoft.Extensions.Options;
+
+public class CacheService(IChatCacheRepo chatCacheRepo,
+IOptions<ChatCacheSettings> cacheOptions) : ICacheService
 {
-  // Chat cache duration settings
-  private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(2);
+  private readonly ChatCacheSettings cacheSettings = cacheOptions.Value;
 
   public async Task<CachedChatData?> GetCachedChat(string userId, Guid chatId)
   {
@@ -12,7 +15,7 @@ public class CacheService(IChatCacheRepo chatCacheRepo) : ICacheService
   public async Task SetCachedChat(string userId, Guid chatId, CachedChatData data)
   {
     var key = GenerateCacheKey(userId, chatId);
-    await chatCacheRepo.SetCachedChatAsync(key, data, CacheDuration);
+    await chatCacheRepo.SetCachedChatAsync(key, data, cacheSettings.CacheDuration);
   }
 
   public async Task AddMessageToCachedChat(string userId, Guid chatId, ChatMessage messageToAdd)
@@ -23,7 +26,7 @@ public class CacheService(IChatCacheRepo chatCacheRepo) : ICacheService
     if (existingChat != null)
     {
       existingChat.Messages!.Add(messageToAdd);
-      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, CacheDuration);
+      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, cacheSettings.CacheDuration);
     }
   }
 
@@ -35,7 +38,7 @@ public class CacheService(IChatCacheRepo chatCacheRepo) : ICacheService
     if (existingChat != null)
     {
       existingChat.Metadata!.Title = newTitle;
-      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, CacheDuration);
+      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, cacheSettings.CacheDuration);
     }
   }
 
@@ -47,7 +50,7 @@ public class CacheService(IChatCacheRepo chatCacheRepo) : ICacheService
     if (existingChat != null)
     {
       existingChat.Metadata!.IsContextFull = true;
-      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, CacheDuration);
+      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, cacheSettings.CacheDuration);
     }
   }
 

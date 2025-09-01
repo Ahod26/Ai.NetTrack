@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 using NRedisStack;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
@@ -14,21 +15,21 @@ public class LLMCacheService : ILLMCacheService
   private readonly ILogger<LLMCacheService> _logger;
   private readonly TopicExtractor _topicExtractor;
   private readonly ILLMCacheRepo _LLMCacheRepo;
+  private readonly LLMCacheSettings _settings;
 
   private const string EXACT_CACHE_PREFIX = "exact:cache:";
   private const string SEMANTIC_CACHE_PREFIX = "semantic:cache:";
   private const string EMBEDDINGS_INDEX_NAME = "embeddings_idx";
-  private const int MAX_CACHEABLE_MESSAGE_COUNT_SEMANTIC = 8;
-  private const int MAX_CACHEABLE_MESSAGE_COUNT_EXACT = 2;
-  private const float SEMANTIC_SIMILARITY_THRESHOLD = 0.85f; // Realistic threshold 0.85-0.9 without damage ux
 
   public LLMCacheService(
       EmbeddingClient embeddingClient,
       ILLMCacheRepo LLMCacheRepo,
+      IOptions<LLMCacheSettings> options,
       ILogger<LLMCacheService> logger)
   {
     _embeddingClient = embeddingClient;
     _LLMCacheRepo = LLMCacheRepo;
+    _settings = options.Value;
     _logger = logger;
     _topicExtractor = new TopicExtractor();
 
@@ -44,7 +45,7 @@ public class LLMCacheService : ILLMCacheService
     try
     {
       // Skip caching for conversations too long
-      if (context.Count > MAX_CACHEABLE_MESSAGE_COUNT_SEMANTIC)
+      if (context.Count > _settings.MaxCacheableMessageCountSemantic)
       {
         return;
       }
@@ -52,7 +53,7 @@ public class LLMCacheService : ILLMCacheService
       var expiration = CalculateExpiration(context.Count);
 
       // Exact key cache
-      if (context.Count <= MAX_CACHEABLE_MESSAGE_COUNT_EXACT)
+      if (context.Count <= _settings.MaxCacheableMessageCountExact)
       {
         var exactCacheKey = GenerateCacheKey(userMessage, context);
 
@@ -73,7 +74,7 @@ public class LLMCacheService : ILLMCacheService
     try
     {
       // Skip semantic search for conversations too long
-      if (context.Count > MAX_CACHEABLE_MESSAGE_COUNT_SEMANTIC)
+      if (context.Count > _settings.MaxCacheableMessageCountSemantic)
       {
         return null;
       }
@@ -86,7 +87,7 @@ public class LLMCacheService : ILLMCacheService
         return exactResult;
       }
 
-      // 2. Try semantic cache (similarity-based)
+      // 2. Try semantic cache 
       var semanticResult = await GetSemanticCacheAsync(userMessage, context);
       if (semanticResult != null)
       {
@@ -169,7 +170,7 @@ public class LLMCacheService : ILLMCacheService
     {
       var similarity = 1.0f - searchResult.Value.Score;
 
-      if (similarity >= SEMANTIC_SIMILARITY_THRESHOLD)
+      if (similarity >= _settings.SemanticSimilarityThreshold)
       {
         return await _LLMCacheRepo.GetResponseFromSemanticMatchAsync(searchResult.Value.DocumentId);
       }
@@ -205,8 +206,8 @@ public class LLMCacheService : ILLMCacheService
 
   private TimeSpan CalculateExpiration(int messageCount)
   {
-    var baseDays = 21; // Base lifetime
-    var decayFactor = Math.Pow(0.7, messageCount - 1);
+    var baseDays = _settings.BaseCacheLifetimeDays; // Base lifetime
+    var decayFactor = Math.Pow(_settings.CacheLifetimeDecayFactor, messageCount - 1);
     var lifetimeDays = Math.Max(1, (int)(baseDays * decayFactor));
 
     return TimeSpan.FromDays(lifetimeDays);

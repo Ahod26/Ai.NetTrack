@@ -48,7 +48,7 @@ const StarredMessagesPage = memo(function StarredMessagesPage() {
   }, [dispatch]);
 
   const handleStarToggle = (messageId) => {
-    // Optimistic update - don't remove from list immediately
+    // Optimistic update 
     dispatch(messagesSliceActions.toggleMessageStarOptimistic(messageId));
   };
 

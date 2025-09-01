@@ -28,12 +28,12 @@ export const useStarSync = () => {
     const changesToSync = { ...pendingChanges };
 
     try {
-      // Send star changes to backend based on desired final state
+      // Send star changes to backend based on final state
       const results = await Promise.all(
         pendingIds.map(async (messageId) => {
           const desiredStarredState = changesToSync[messageId];
 
-          // Call the API with the desired state (might need to call multiple times to reach desired state)
+          // Call the API with the desired state 
           const response = await toggleMessageStar(messageId);
 
           // Check if we got the desired state, if not, call again
@@ -55,9 +55,7 @@ export const useStarSync = () => {
 
       // Clear pending changes on success
       dispatch(messagesSliceActions.clearPendingStarChanges());
-    } catch (error) {
-      console.error("Failed to sync star changes:", error);
-      // Optionally revert optimistic changes
+    } catch {
       dispatch(messagesSliceActions.revertOptimisticChanges(pendingIds));
     } finally {
       syncInProgressRef.current = false;
@@ -73,7 +71,7 @@ export const useStarSync = () => {
     }
   }, [location.pathname, syncPendingStarChanges]);
 
-  // Also sync on component unmount (when component is destroyed)
+  // Also sync on component unmount 
   useEffect(() => {
     return () => {
       const pendingIds = Object.keys(pendingChanges);

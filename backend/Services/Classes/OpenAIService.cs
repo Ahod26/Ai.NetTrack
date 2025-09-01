@@ -1,4 +1,5 @@
 using System.Text;
+using backend.Configuration;
 using Microsoft.Extensions.Options;
 using OpenAI.Chat;
 
@@ -90,7 +91,7 @@ public class OpenAIService(
       var options = new ChatCompletionOptions
       {
         MaxOutputTokenCount = 50,
-        Temperature = 0.3f // Lower temperature for more consistent, focused titles
+        Temperature = settings.TitleGenerationTemperature // Configurable temperature for consistent, focused titles
       };
 
       var completion = await chatClient.CompleteChatAsync(messages, options);
