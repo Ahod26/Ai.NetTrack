@@ -1,4 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using backend.Models.Domain;
+using backend.Repository.Interfaces;
+using backend.Data;
+
+namespace backend.Repository.Classes;
 
 public class MessagesRepo(ApplicationDbContext dbContext) : IMessagesRepo
 {

@@ -1,6 +1,12 @@
 using AutoMapper;
-using backend.Configuration;
+using backend.Models.Configuration;
+using backend.Models.Dtos;
+using backend.Services.Interfaces;
+using backend.Repository.Interfaces;
+using backend.Models.Domain;
 using Microsoft.Extensions.Options;
+
+namespace backend.Services.Classes;
 
 public class ChatService(
     IChatRepo chatRepo,

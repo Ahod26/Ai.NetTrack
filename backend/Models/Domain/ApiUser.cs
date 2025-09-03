@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 
+namespace backend.Models.Domain;
+
 public class ApiUser : IdentityUser
 {
   //navigation properties

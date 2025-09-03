@@ -1,3 +1,8 @@
+using backend.Models.Dtos;
+using backend.Models.Domain;
+
+namespace backend.Repository.Interfaces;
+
 public interface IChatCacheRepo
 {
   Task<CachedChatData?> GetCachedChatAsync(string cacheKey);

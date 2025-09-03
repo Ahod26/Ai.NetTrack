@@ -1,4 +1,7 @@
 using System.Security.Claims;
+using backend.Models.Dtos;
+
+namespace backend.Services.Interfaces;
 
 public interface IAuthService
 {

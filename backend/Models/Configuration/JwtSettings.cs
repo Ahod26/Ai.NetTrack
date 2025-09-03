@@ -1,3 +1,5 @@
+namespace backend.Models.Configuration;
+
 public class JwtSettings
 {
   public const string SECTION_NAME = "JwtSettings";

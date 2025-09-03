@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 
+namespace backend.Models.Domain;
+
 public class ChatMessage
 {
   public Guid Id { get; set; }

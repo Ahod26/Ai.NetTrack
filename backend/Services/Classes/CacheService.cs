@@ -1,5 +1,13 @@
-using backend.Configuration;
+using backend.Models.Configuration;
 using Microsoft.Extensions.Options;
+using backend.Services.Interfaces;
+using backend.Repository.Interfaces;
+using backend.Models.Dtos;
+using backend.Models.Domain;
+
+using ChatMessage = backend.Models.Domain.ChatMessage;
+
+namespace backend.Services.Classes;
 
 public class CacheService(IChatCacheRepo chatCacheRepo,
 IOptions<ChatCacheSettings> cacheOptions) : ICacheService

@@ -1,3 +1,5 @@
+namespace backend.Repository.Interfaces;
+
 public interface ILLMCacheRepo
 {
   Task StoreExactCacheAsync(string cacheKey, string response, TimeSpan expiration);

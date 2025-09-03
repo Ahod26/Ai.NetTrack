@@ -1,3 +1,5 @@
+namespace backend.Models.Dtos;
+
 public class RegisterResponseDTO
 {
     public bool Success { get; set; }

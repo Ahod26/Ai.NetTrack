@@ -1,3 +1,5 @@
+using backend.Extensions;
+using backend.Hubs.Classes;
 
 var builder = WebApplication.CreateBuilder(args);
 

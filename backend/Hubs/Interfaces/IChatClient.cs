@@ -1,3 +1,7 @@
+using backend.Models.Dtos;
+
+namespace backend.Hubs.Interfaces;
+
 public interface IChatClient
 {
   Task ReceiveMessage(object message);

@@ -1,3 +1,5 @@
+namespace backend.Models.Dtos;
+
 public class LinkDTO
 {
   public string Href { get; private set; }

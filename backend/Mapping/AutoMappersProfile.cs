@@ -1,4 +1,8 @@
 using AutoMapper;
+using backend.Models.Domain;
+using backend.Models.Dtos;
+
+namespace backend.Mapping;
 
 public class AutoMappersProfiles : Profile
 {

@@ -1,3 +1,5 @@
+namespace backend.Models.Dtos;
+
 public class ChatMetaDataDto
 {
   public Guid Id { get; set; }

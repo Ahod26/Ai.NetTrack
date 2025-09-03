@@ -1,6 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using MySqlX.XDevAPI;
+using backend.Services.Interfaces;
+using backend.Models.Dtos;
+using backend.Hubs.Interfaces;
+
+namespace backend.Hubs.Classes;
 
 [Authorize]
 public class ChatHub(IChatService chatService) : Hub<IChatClient>

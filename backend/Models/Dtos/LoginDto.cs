@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+namespace backend.Models.Dtos;
 
 public class LoginDTO
 {

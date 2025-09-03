@@ -2,6 +2,10 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using backend.Models.Domain;
+using backend.Data;
+
+namespace backend.Extensions;
 
 public static class AuthenticationExtensions
 {

@@ -1,4 +1,6 @@
-using backend.Configuration;
+using backend.Models.Configuration;
+
+namespace backend.Extensions;
 
 public static class ConfigurationExtensions
 {

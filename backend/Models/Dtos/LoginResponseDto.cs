@@ -1,3 +1,5 @@
+namespace backend.Models.Dtos;
+
 public class LoginResponseDTO
 {
     public bool Success { get; set; }

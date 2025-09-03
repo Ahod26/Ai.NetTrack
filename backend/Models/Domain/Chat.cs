@@ -1,3 +1,5 @@
+namespace backend.Models.Domain;
+
 public class Chat
 {
   public Guid Id { get; set; }

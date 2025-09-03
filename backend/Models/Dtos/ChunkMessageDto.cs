@@ -1,3 +1,5 @@
+namespace backend.Models.Dtos;
+
 public class ChunkMessageDto
 {
   public required string Content { get; set; } = "";

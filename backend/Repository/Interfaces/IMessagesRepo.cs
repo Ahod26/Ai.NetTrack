@@ -1,3 +1,7 @@
+using backend.Models.Domain;
+
+namespace backend.Repository.Interfaces;
+
 public interface IMessagesRepo
 {
   Task<ChatMessage> AddMessageAsync(ChatMessage message);

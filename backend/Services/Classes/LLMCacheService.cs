@@ -8,6 +8,14 @@ using NRedisStack.Search;
 using OpenAI.Embeddings;
 using StackExchange.Redis;
 using static NRedisStack.Search.Schema;
+using backend.Models.Domain;
+using backend.Repository.Interfaces;
+using backend.Models.Configuration;
+using backend.Services.Interfaces;
+
+using ChatMessage = backend.Models.Domain.ChatMessage;
+
+namespace backend.Services.Classes;
 
 public class LLMCacheService : ILLMCacheService
 {

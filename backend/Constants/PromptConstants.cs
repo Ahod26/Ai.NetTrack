@@ -1,3 +1,5 @@
+namespace backend.Constants;
+
 //Static because - memory efficient no need to create instances, the class share data not object behavior
 public static class PromptConstants
 {

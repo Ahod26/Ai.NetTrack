@@ -1,3 +1,5 @@
+namespace backend.Models.Configuration;
+
 public class LLMCacheSettings
 {
   public const string SECTION_NAME = "LLMCache";

@@ -1,3 +1,7 @@
+namespace backend.Services.Interfaces;
+
+using backend.Models.Dtos;
+
 public interface IChatService
 {
   Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null);

@@ -1,3 +1,8 @@
+using backend.Repository.Interfaces;
+using backend.Repository.Classes;
+
+namespace backend.Extensions;
+
 public static class RepositoryExtensions
 {
   public static IServiceCollection AddRepositoriesServices(this IServiceCollection services)

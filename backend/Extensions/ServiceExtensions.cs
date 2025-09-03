@@ -1,3 +1,8 @@
+using backend.Services.Interfaces;
+using backend.Services.Classes;
+
+namespace backend.Extensions;
+
 public static class ServiceExtensions
 {
   public static IServiceCollection AddBusinessServices(this IServiceCollection services)

@@ -1,7 +1,14 @@
 using System.Text;
-using backend.Configuration;
+using backend.Models.Configuration;
 using Microsoft.Extensions.Options;
 using OpenAI.Chat;
+using backend.Services.Interfaces;
+using backend.Models.Domain;
+using backend.Models.Dtos;
+using backend.Constants;
+using ChatMessage = backend.Models.Domain.ChatMessage; // Resolve ambiguity
+
+namespace backend.Services.Classes;
 
 public class OpenAIService(
   ChatClient chatClient, IOptions<OpenAISettings> options, ILogger<OpenAIService> logger

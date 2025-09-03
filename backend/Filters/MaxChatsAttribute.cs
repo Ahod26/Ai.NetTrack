@@ -2,6 +2,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using backend.Repository.Interfaces;
+
+namespace backend.Filters;
 
 public class MaxChatsAttribute(IChatRepo chatRepo) : ActionFilterAttribute
 {

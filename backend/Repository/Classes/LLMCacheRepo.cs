@@ -5,6 +5,9 @@ using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
 using StackExchange.Redis;
 using static NRedisStack.Search.Schema;
+using backend.Repository.Interfaces;
+
+namespace backend.Repository.Classes;
 
 public class LLMCacheRepo : ILLMCacheRepo
 {
@@ -93,7 +96,7 @@ public class LLMCacheRepo : ILLMCacheRepo
       // Wait for index to be ready
       await Task.Delay(2000);
     }
-    catch(Exception ex)
+    catch (Exception ex)
     {
       _logger.LogError(ex, "Failed to create Redis search index");
     }
@@ -167,7 +170,7 @@ public class LLMCacheRepo : ILLMCacheRepo
       await ClearAllCacheAsync();
       await RecreateIndexAsync();
     }
-    catch(Exception ex)
+    catch (Exception ex)
     {
       _logger.LogError(ex, "Failed to refresh index");
     }

@@ -1,4 +1,4 @@
-namespace backend.Configuration;
+namespace backend.Models.Configuration;
 
 public class OpenAISettings
 {

@@ -1,7 +1,12 @@
 using System.Text.Json;
 using StackExchange.Redis;
+using backend.Models.Dtos;
+using backend.Models.Domain;
+using backend.Repository.Interfaces;
 
-public class ChatCacheRepo(IConnectionMultiplexer redis,ILogger<ChatCacheRepo> logger) : IChatCacheRepo
+namespace backend.Repository.Classes;
+
+public class ChatCacheRepo(IConnectionMultiplexer redis, ILogger<ChatCacheRepo> logger) : IChatCacheRepo
 {
   private readonly IDatabase _database = redis.GetDatabase();
 

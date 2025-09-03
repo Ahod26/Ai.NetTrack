@@ -1,7 +1,10 @@
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using backend.Services.Interfaces;
+using backend.Models.Dtos;
+
+namespace backend.Controllers;
 
 [ApiController]
 [Route("[controller]")]

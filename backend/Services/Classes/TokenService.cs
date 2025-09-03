@@ -1,9 +1,13 @@
-
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using backend.Models.Configuration;
+using backend.Models.Domain;
+using backend.Services.Interfaces;
+
+namespace backend.Services.Classes;
 
 public class TokenService(IOptions<JwtSettings> options) : ITokenService
 {

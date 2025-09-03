@@ -1,6 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using backend.Services.Interfaces;
+using backend.Models.Dtos;
+
+namespace backend.Controllers;
 
 [Route("[controller]")]
 [ApiController]

@@ -1,3 +1,7 @@
+using backend.Models.Domain;
+
+namespace backend.Repository.Interfaces;
+
 public interface IChatRepo
 {
   Task<Chat> CreateChatAsync(Chat chat);

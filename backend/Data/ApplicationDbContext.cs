@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using backend.Models.Domain;
+
+namespace backend.Data;
 
 public class ApplicationDbContext : IdentityDbContext<ApiUser>
 {

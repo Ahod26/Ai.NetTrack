@@ -1,3 +1,5 @@
+namespace backend.Models.Dtos;
+
 public class UserInfoDTO
 {
   public string UserName { get; set; } = "";

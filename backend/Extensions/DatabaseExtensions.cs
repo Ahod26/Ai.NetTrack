@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using backend.Data;
+
+namespace backend.Extensions;
 
 public static class DatabaseExtensions
 {

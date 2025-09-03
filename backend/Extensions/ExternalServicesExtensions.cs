@@ -1,6 +1,9 @@
 using OpenAI;
 using OpenAI.Embeddings;
 using StackExchange.Redis;
+using backend.Models.Configuration;
+
+namespace backend.Extensions;
 
 public static class ExternalServicesExtensions
 {
@@ -19,7 +22,7 @@ public static class ExternalServicesExtensions
       return openAIClient.GetChatClient(model);
     });
 
-    services.AddSingleton(provider => 
+    services.AddSingleton(provider =>
     new EmbeddingClient("text-embedding-3-small", configuration["OpenAI:ApiKey"]));
 
     services.AddStackExchangeRedisCache(options =>

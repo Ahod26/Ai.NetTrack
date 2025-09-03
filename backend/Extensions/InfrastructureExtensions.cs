@@ -1,4 +1,7 @@
 using System.Text.Json.Serialization;
+using backend.Mapping;
+
+namespace backend.Extensions;
 
 public static class InfrastructureExtensions
 {

@@ -1,3 +1,8 @@
+using backend.Models.Dtos;
+using backend.Models.Domain;
+
+namespace backend.Services.Interfaces;
+
 public interface ICacheService
 {
   Task<CachedChatData?> GetCachedChat(string userId, Guid chatId);

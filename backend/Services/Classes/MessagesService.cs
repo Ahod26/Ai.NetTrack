@@ -1,4 +1,12 @@
 using AutoMapper;
+using backend.Services.Interfaces;
+using backend.Repository.Interfaces;
+using backend.Models.Dtos;
+using backend.Models.Domain;
+
+using ChatMessage = backend.Models.Domain.ChatMessage;
+
+namespace backend.Services.Classes;
 
 public class MessagesServices(
   ICacheService cacheService,

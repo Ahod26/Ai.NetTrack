@@ -1,3 +1,7 @@
+using backend.Models.Domain;
+
+namespace backend.Models.Dtos;
+
 public class CachedChatData
 {
   public ChatMetaDataDto? Metadata { get; set; }
