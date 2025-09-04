@@ -11,6 +11,10 @@ public static class ServiceExtensions
     services.AddScoped<IMessagesService, MessagesServices>();
     services.AddScoped<IAuthService, AuthService>();
     services.AddScoped<ICookieService, CookieService>();
+    services.AddScoped<INewsCollectorService, NewsCollectorService>();
+    services.AddScoped<IGitHubService, GitHubService>();
+    services.AddScoped<IRssService, RssService>();
+    services.AddScoped<IYouTubeService, YouTubeService>();
 
     services.AddSingleton<IOpenAIService, OpenAIService>();
     services.AddSingleton<ITokenService, TokenService>();
