@@ -11,6 +11,7 @@ public static class ConfigurationExtensions
     services.Configure<LLMCacheSettings>(configuration.GetSection(LLMCacheSettings.SECTION_NAME));
     services.Configure<ChatCacheSettings>(configuration.GetSection(ChatCacheSettings.SECTION_NAME));
     services.Configure<StreamingSettings>(configuration.GetSection(StreamingSettings.SECTION_NAME));
+    services.Configure<McpSettings>(configuration.GetSection(McpSettings.SECTION_NAME));
 
     return services;
   }

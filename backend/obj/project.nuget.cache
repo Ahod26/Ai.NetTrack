@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "i0u03CnlhXA=",
+  "dgSpecHash": "PopOp11HuWM=",
   "success": true,
   "projectFilePath": "/Users/arbelhodesman/Desktop/Ai Track/backend/backend.csproj",
   "expectedPackageFiles": [
@@ -88,6 +88,7 @@
     "/Users/arbelhodesman/.nuget/packages/microsoft.entityframeworkcore.design/9.0.8/microsoft.entityframeworkcore.design.9.0.8.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/microsoft.entityframeworkcore.relational/9.0.8/microsoft.entityframeworkcore.relational.9.0.8.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/microsoft.entityframeworkcore.tools/9.0.8/microsoft.entityframeworkcore.tools.9.0.8.nupkg.sha512",
+    "/Users/arbelhodesman/.nuget/packages/microsoft.extensions.ai.abstractions/9.7.1/microsoft.extensions.ai.abstractions.9.7.1.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/microsoft.extensions.caching.stackexchangeredis/9.0.8/microsoft.extensions.caching.stackexchangeredis.9.0.8.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/microsoft.extensions.dependencymodel/9.0.8/microsoft.extensions.dependencymodel.9.0.8.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/microsoft.extensions.identity.core/9.0.8/microsoft.extensions.identity.core.9.0.8.nupkg.sha512",
@@ -108,6 +109,9 @@
     "/Users/arbelhodesman/.nuget/packages/microsoft.visualstudio.web.codegeneration.utils/9.0.0/microsoft.visualstudio.web.codegeneration.utils.9.0.0.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/microsoft.visualstudio.web.codegenerators.mvc/9.0.0/microsoft.visualstudio.web.codegenerators.mvc.9.0.0.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/microsoft.win32.systemevents/4.7.0/microsoft.win32.systemevents.4.7.0.nupkg.sha512",
+    "/Users/arbelhodesman/.nuget/packages/modelcontextprotocol/0.3.0-preview.4/modelcontextprotocol.0.3.0-preview.4.nupkg.sha512",
+    "/Users/arbelhodesman/.nuget/packages/modelcontextprotocol.aspnetcore/0.3.0-preview.4/modelcontextprotocol.aspnetcore.0.3.0-preview.4.nupkg.sha512",
+    "/Users/arbelhodesman/.nuget/packages/modelcontextprotocol.core/0.3.0-preview.4/modelcontextprotocol.core.0.3.0-preview.4.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/mono.texttemplating/3.0.0/mono.texttemplating.3.0.0.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/mysql.data/8.0.33/mysql.data.8.0.33.nupkg.sha512",
     "/Users/arbelhodesman/.nuget/packages/mysqlconnector/2.4.0/mysqlconnector.2.4.0.nupkg.sha512",

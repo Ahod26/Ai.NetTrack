@@ -92,6 +92,10 @@
               "target": "Package",
               "version": "[9.0.0, )"
             },
+            "ModelContextProtocol.AspNetCore": {
+              "target": "Package",
+              "version": "[0.3.0-preview.4, )"
+            },
             "NRedisStack": {
               "target": "Package",
               "version": "[1.1.0, )"

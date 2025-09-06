@@ -1450,6 +1450,19 @@
           "Microsoft.EntityFrameworkCore.Design": "9.0.8"
         }
       },
+      "Microsoft.Extensions.AI.Abstractions/9.7.1": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.Extensions.Caching.StackExchangeRedis/9.0.8": {
         "type": "package",
         "dependencies": {
@@ -1868,6 +1881,57 @@
           "runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.dll": {
             "assetType": "runtime",
             "rid": "win"
+          }
+        }
+      },
+      "ModelContextProtocol/0.3.0-preview.4": {
+        "type": "package",
+        "dependencies": {
+          "ModelContextProtocol.Core": "0.3.0-preview.4"
+        },
+        "compile": {
+          "lib/net9.0/ModelContextProtocol.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/ModelContextProtocol.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "ModelContextProtocol.AspNetCore/0.3.0-preview.4": {
+        "type": "package",
+        "dependencies": {
+          "ModelContextProtocol": "0.3.0-preview.4"
+        },
+        "compile": {
+          "lib/net9.0/ModelContextProtocol.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/ModelContextProtocol.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
+      "ModelContextProtocol.Core/0.3.0-preview.4": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.AI.Abstractions": "9.7.1"
+        },
+        "compile": {
+          "lib/net9.0/ModelContextProtocol.Core.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/ModelContextProtocol.Core.dll": {
+            "related": ".xml"
           }
         }
       },
@@ -4932,6 +4996,27 @@
         "tools/netcoreapp2.0/any/ef.runtimeconfig.json"
       ]
     },
+    "Microsoft.Extensions.AI.Abstractions/9.7.1": {
+      "sha512": "fcAMMDxGgdl7vgkiFQ2yojdEwvGIkIpxsv6SQ33enA+q2iGuv3jsFUZmq6ZJ0YvMgrce7mG6GHFkEVcNxjIl0A==",
+      "type": "package",
+      "path": "microsoft.extensions.ai.abstractions/9.7.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "README.md",
+        "lib/net462/Microsoft.Extensions.AI.Abstractions.dll",
+        "lib/net462/Microsoft.Extensions.AI.Abstractions.xml",
+        "lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll",
+        "lib/net8.0/Microsoft.Extensions.AI.Abstractions.xml",
+        "lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll",
+        "lib/net9.0/Microsoft.Extensions.AI.Abstractions.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.xml",
+        "microsoft.extensions.ai.abstractions.9.7.1.nupkg.sha512",
+        "microsoft.extensions.ai.abstractions.nuspec"
+      ]
+    },
     "Microsoft.Extensions.Caching.StackExchangeRedis/9.0.8": {
       "sha512": "1UkdFR47ZrgnI1JY3eFGwZCQOCGN0xueYphSHar/hAcHAFR5L1XfQD6utwLB03qIC2bNPA+xb5OuYrX+8eGTSQ==",
       "type": "package",
@@ -5727,6 +5812,61 @@
         "runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.xml",
         "useSharedDesignerContext.txt",
         "version.txt"
+      ]
+    },
+    "ModelContextProtocol/0.3.0-preview.4": {
+      "sha512": "W+fBq9ZJwgmcThMH0xHpwlC51TsnlJHrlnot2cG5ryzKcpOI40IP1R9s55fGvE8ivhSAQ4/s7BuTIWCqda/s6w==",
+      "type": "package",
+      "path": "modelcontextprotocol/0.3.0-preview.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net8.0/ModelContextProtocol.dll",
+        "lib/net8.0/ModelContextProtocol.xml",
+        "lib/net9.0/ModelContextProtocol.dll",
+        "lib/net9.0/ModelContextProtocol.xml",
+        "lib/netstandard2.0/ModelContextProtocol.dll",
+        "lib/netstandard2.0/ModelContextProtocol.xml",
+        "logo.png",
+        "modelcontextprotocol.0.3.0-preview.4.nupkg.sha512",
+        "modelcontextprotocol.nuspec"
+      ]
+    },
+    "ModelContextProtocol.AspNetCore/0.3.0-preview.4": {
+      "sha512": "80wCheA2EoC13k8XXwMnfr4ffWIkpgqROVrv+0GvF01UbAwcxyqBjMaDNH1fHMmg1vNmjLc98xbkOA+MutWnKA==",
+      "type": "package",
+      "path": "modelcontextprotocol.aspnetcore/0.3.0-preview.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net8.0/ModelContextProtocol.AspNetCore.dll",
+        "lib/net8.0/ModelContextProtocol.AspNetCore.xml",
+        "lib/net9.0/ModelContextProtocol.AspNetCore.dll",
+        "lib/net9.0/ModelContextProtocol.AspNetCore.xml",
+        "logo.png",
+        "modelcontextprotocol.aspnetcore.0.3.0-preview.4.nupkg.sha512",
+        "modelcontextprotocol.aspnetcore.nuspec"
+      ]
+    },
+    "ModelContextProtocol.Core/0.3.0-preview.4": {
+      "sha512": "VZ3gd+1St3Kbg9UCTrOB0m7GE9Y2Elk73pBGvv4E13nIA0g4uV4rd4NXX0ffS2nV37K957dXa9CtAstfn9kb/Q==",
+      "type": "package",
+      "path": "modelcontextprotocol.core/0.3.0-preview.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net8.0/ModelContextProtocol.Core.dll",
+        "lib/net8.0/ModelContextProtocol.Core.xml",
+        "lib/net9.0/ModelContextProtocol.Core.dll",
+        "lib/net9.0/ModelContextProtocol.Core.xml",
+        "lib/netstandard2.0/ModelContextProtocol.Core.dll",
+        "lib/netstandard2.0/ModelContextProtocol.Core.xml",
+        "logo.png",
+        "modelcontextprotocol.core.0.3.0-preview.4.nupkg.sha512",
+        "modelcontextprotocol.core.nuspec"
       ]
     },
     "Mono.TextTemplating/3.0.0": {
@@ -6817,6 +6957,7 @@
       "Microsoft.Extensions.Caching.StackExchangeRedis >= 9.0.8",
       "Microsoft.Extensions.Identity.Core >= 9.0.8",
       "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 9.0.0",
+      "ModelContextProtocol.AspNetCore >= 0.3.0-preview.4",
       "NRedisStack >= 1.1.0",
       "OpenAI >= 2.3.0",
       "Pomelo.EntityFrameworkCore.MySql >= 9.0.0-rc.1.efcore.9.0.0",
@@ -6916,6 +7057,10 @@
           "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
             "target": "Package",
             "version": "[9.0.0, )"
+          },
+          "ModelContextProtocol.AspNetCore": {
+            "target": "Package",
+            "version": "[0.3.0-preview.4, )"
           },
           "NRedisStack": {
             "target": "Package",
