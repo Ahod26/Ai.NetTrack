@@ -12,6 +12,7 @@
     "Hmac",
     "HNSW",
     "ILLM",
+    "Kzah",
     "onreconnected",
     "reindexing",
     "signalr",
