@@ -13,6 +13,7 @@
     "HNSW",
     "ILLM",
     "Kzah",
+    "modelcontextprotocol",
     "onreconnected",
     "reindexing",
     "signalr",

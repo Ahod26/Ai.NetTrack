@@ -6,6 +6,8 @@ using backend.Services.Interfaces.Chat;
 using backend.Services.Classes.ChatService;
 using backend.Services.Interfaces.Auth;
 using backend.Services.Classes.Auth;
+using backend.Services.Interfaces.LLM;
+using backend.Services.Classes.LLM;
 
 namespace backend.Extensions;
 

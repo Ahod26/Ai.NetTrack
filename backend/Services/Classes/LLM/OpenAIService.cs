@@ -2,14 +2,13 @@ using System.Text;
 using backend.Models.Configuration;
 using Microsoft.Extensions.Options;
 using OpenAI.Chat;
-using backend.Services.Interfaces;
 using backend.Models.Domain;
-using backend.Models.Dtos;
 using backend.Constants;
 using ChatMessage = backend.Models.Domain.ChatMessage;
-using backend.Services.Interfaces.Chat;
+using backend.Services.Interfaces.LLM;
+using System.Text.Json;
 
-namespace backend.Services.Classes.ChatService;
+namespace backend.Services.Classes.LLM;
 
 public class OpenAIService(
   ChatClient chatClient, IOptions<OpenAISettings> options, ILogger<OpenAIService> logger
@@ -122,4 +121,23 @@ public class OpenAIService(
     }
   }
 
+  public async Task<List<NewsItem>> ProcessGitHubData(string prompt)
+  {
+    var chatOptions = new ChatCompletionOptions
+    {
+      ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()
+    };
+
+    var response = await chatClient.CompleteChatAsync(
+      [
+        new UserChatMessage(prompt)
+      ],
+      chatOptions
+    );
+
+    var jsonResponse = response.Value.Content[0].Text;
+
+    var newsItems = JsonSerializer.Deserialize<List<NewsItem>>(jsonResponse);
+    return newsItems ?? [];
+  }
 }

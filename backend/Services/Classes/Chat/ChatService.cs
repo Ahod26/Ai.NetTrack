@@ -6,6 +6,7 @@ using backend.Models.Domain;
 using Microsoft.Extensions.Options;
 using backend.Services.Interfaces.Chat;
 using backend.Services.Interfaces.Cache;
+using backend.Services.Interfaces.LLM;
 
 namespace backend.Services.Classes.ChatService;
 
