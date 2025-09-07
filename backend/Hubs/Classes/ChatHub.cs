@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using MySqlX.XDevAPI;
-using backend.Services.Interfaces;
 using backend.Models.Dtos;
 using backend.Hubs.Interfaces;
+using backend.Services.Interfaces.Chat;
 
 namespace backend.Hubs.Classes;
 

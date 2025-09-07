@@ -1,4 +1,4 @@
-using backend.Services.Interfaces;
+using backend.Services.Interfaces.NewsAggregation;
 
 namespace backend.Services.Background;
 

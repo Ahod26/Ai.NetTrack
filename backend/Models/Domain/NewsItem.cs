@@ -15,5 +15,6 @@ public enum NewsSourceType
 {
   Github = 1,
   Rss = 2,
-  Youtube = 3
+  Youtube = 3,
+  Docs = 4
 }

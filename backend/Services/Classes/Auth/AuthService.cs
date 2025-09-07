@@ -1,13 +1,12 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
-using backend.Services.Interfaces;
 using backend.Repository.Interfaces;
 using backend.Models.Dtos;
 using backend.Models.Domain;
 
-using ChatMessage = backend.Models.Domain.ChatMessage;
+using backend.Services.Interfaces.Auth;
 
-namespace backend.Services.Classes;
+namespace backend.Services.Classes.Auth;
 
 public class AuthService(ICookieService cookieService, ITokenService tokenService,
   IAuthRepo authRepo) : IAuthService

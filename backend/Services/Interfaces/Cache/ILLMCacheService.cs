@@ -1,6 +1,6 @@
 using backend.Models.Domain;
 
-namespace backend.Services.Interfaces;
+namespace backend.Services.Interfaces.Cache;
 
 public interface ILLMCacheService
 {

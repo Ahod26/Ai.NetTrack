@@ -1,5 +1,11 @@
-using backend.Services.Interfaces;
-using backend.Services.Classes;
+using backend.Services.Interfaces.NewsAggregation;
+using backend.Services.Classes.NewsAggregation;
+using backend.Services.Interfaces.Cache;
+using backend.Services.Classes.Cache;
+using backend.Services.Interfaces.Chat;
+using backend.Services.Classes.ChatService;
+using backend.Services.Interfaces.Auth;
+using backend.Services.Classes.Auth;
 
 namespace backend.Extensions;
 
@@ -15,6 +21,7 @@ public static class ServiceExtensions
     services.AddScoped<IGitHubService, GitHubService>();
     services.AddScoped<IRssService, RssService>();
     services.AddScoped<IYouTubeService, YouTubeService>();
+    services.AddScoped<IDocsService, DocsService>();
 
     services.AddSingleton<IOpenAIService, OpenAIService>();
     services.AddSingleton<ITokenService, TokenService>();

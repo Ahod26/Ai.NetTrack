@@ -1,21 +1,16 @@
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using NRedisStack;
-using NRedisStack.RedisStackCommands;
-using NRedisStack.Search;
 using OpenAI.Embeddings;
-using StackExchange.Redis;
-using static NRedisStack.Search.Schema;
 using backend.Models.Domain;
 using backend.Repository.Interfaces;
 using backend.Models.Configuration;
-using backend.Services.Interfaces;
 
 using ChatMessage = backend.Models.Domain.ChatMessage;
+using backend.Services.Interfaces.Cache;
 
-namespace backend.Services.Classes;
+namespace backend.Services.Classes.Cache;
 
 public class LLMCacheService : ILLMCacheService
 {

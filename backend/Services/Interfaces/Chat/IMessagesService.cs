@@ -1,7 +1,7 @@
 using backend.Models.Dtos;
 using backend.Models.Domain;
 
-namespace backend.Services.Interfaces;
+namespace backend.Services.Interfaces.Chat;
 
 public interface IMessagesService
 {

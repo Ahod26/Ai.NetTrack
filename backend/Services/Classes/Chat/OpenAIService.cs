@@ -6,9 +6,10 @@ using backend.Services.Interfaces;
 using backend.Models.Domain;
 using backend.Models.Dtos;
 using backend.Constants;
-using ChatMessage = backend.Models.Domain.ChatMessage; // Resolve ambiguity
+using ChatMessage = backend.Models.Domain.ChatMessage;
+using backend.Services.Interfaces.Chat;
 
-namespace backend.Services.Classes;
+namespace backend.Services.Classes.ChatService;
 
 public class OpenAIService(
   ChatClient chatClient, IOptions<OpenAISettings> options, ILogger<OpenAIService> logger

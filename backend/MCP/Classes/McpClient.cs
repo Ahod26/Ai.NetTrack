@@ -13,7 +13,7 @@ public class McpClientService(ILogger<McpClientService> logger,
   ConcurrentDictionary<string, IMcpClient> clients,
   ConcurrentDictionary<string, string> toolToServerMap) : IMcpClientService, IAsyncDisposable
 {
-  private McpSettings settings = options.Value; 
+  private McpSettings settings = options.Value;
   private bool _initialized = false;
 
   public async Task InitializeAsync()
@@ -89,14 +89,12 @@ public class McpClientService(ILogger<McpClientService> logger,
 
     try
     {
-      var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
+      var sseTransport = new SseClientTransport(new SseClientTransportOptions
       {
-        Name = "DocsServer",
-        Command = "npx",
-        Arguments = ["-y", "@microsoftdocs/mcp"]
+        Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
       });
 
-      var client = await McpClientFactory.CreateAsync(clientTransport);
+      var client = await McpClientFactory.CreateAsync(sseTransport);
 
       clients.TryAdd(serverName, client);
 
@@ -106,7 +104,7 @@ public class McpClientService(ILogger<McpClientService> logger,
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, $"Failed to initialize Docs MCP server '{serverName}'");
+      logger.LogError(ex, $"Failed to initialize Microsoft Docs MCP server '{serverName}'");
     }
   }
 
@@ -298,3 +296,10 @@ public class McpClientService(ILogger<McpClientService> logger,
     GC.SuppressFinalize(this);
   }
 }
+
+// GitHub MCP server - https://github.com/github/github-mcp-server
+// YouTube MCP server - https://github.com/icraft2170/youtube-data-mcp-server 
+// Microsoft Docs MCP server - https://github.com/microsoftdocs/mcp
+
+// NOT IMPLEMENTED YET
+// https://github.com/MicrosoftDocs/mcp

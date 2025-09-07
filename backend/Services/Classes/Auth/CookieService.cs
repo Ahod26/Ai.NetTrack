@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Options;
 using backend.Models.Configuration;
-using backend.Services.Interfaces;
+using backend.Services.Interfaces.Auth;
 
-namespace backend.Services.Classes;
+namespace backend.Services.Classes.Auth;
 
 public class CookieService(IHttpContextAccessor httpContextAccessor, IOptions<JwtSettings> options) : ICookieService
 {

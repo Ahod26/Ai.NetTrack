@@ -5,9 +5,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using backend.Models.Configuration;
 using backend.Models.Domain;
-using backend.Services.Interfaces;
+using backend.Services.Interfaces.Auth;
 
-namespace backend.Services.Classes;
+namespace backend.Services.Classes.Auth;
 
 public class TokenService(IOptions<JwtSettings> options) : ITokenService
 {
