@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using backend.Mapping;
+using backend.Services.Background;
 
 namespace backend.Extensions;
 
@@ -33,6 +34,8 @@ public static class InfrastructureExtensions
                     .AllowCredentials();
           });
     });
+
+    services.AddHostedService<NewsAggregationService>();
 
     return services;
   }

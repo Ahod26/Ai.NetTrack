@@ -10,6 +10,7 @@ public static class RepositoryExtensions
     services.AddScoped<IChatRepo, ChatRepo>();
     services.AddScoped<IAuthRepo, AuthRepo>();
     services.AddScoped<IMessagesRepo, MessagesRepo>();
+    services.AddScoped<INewsItemRepo, NewsItemsRepo>();
 
     services.AddSingleton<ILLMCacheRepo, LLMCacheRepo>();
     services.AddSingleton<IChatCacheRepo, ChatCacheRepo>();

@@ -8,11 +8,12 @@ using ModelContextProtocol.Protocol;
 
 namespace backend.MCP.Classes;
 
-public class McpClientService(ILogger<McpClientService> logger,
-  IOptions<McpSettings> options,
-  ConcurrentDictionary<string, IMcpClient> clients,
-  ConcurrentDictionary<string, string> toolToServerMap) : IMcpClientService, IAsyncDisposable
+public class McpClientService(
+  ILogger<McpClientService> logger,
+  IOptions<McpSettings> options) : IMcpClientService, IAsyncDisposable
 {
+  private readonly ConcurrentDictionary<string, IMcpClient> clients = new();
+  private readonly ConcurrentDictionary<string, string> toolToServerMap = new();
   private McpSettings settings = options.Value;
   private bool _initialized = false;
 
@@ -57,21 +58,21 @@ public class McpClientService(ILogger<McpClientService> logger,
         return;
       }
 
-      // Set environment variable for the GitHub MCP server
-      Environment.SetEnvironmentVariable("GITHUB_TOKEN", token);
-
+      // Use Docker instead of npm
       var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
       {
         Name = "GitHubServer",
-        Command = "npx",
-        Arguments = ["-y", "@github/github-mcp-server"]
+        Command = "docker",
+        Arguments = [
+              "run", "-i", "--rm",
+                "-e", "GITHUB_PERSONAL_ACCESS_TOKEN=" + token,
+                "ghcr.io/github/github-mcp-server"
+          ]
       });
 
       var client = await McpClientFactory.CreateAsync(clientTransport);
 
       clients.TryAdd(serverName, client);
-
-      // Register tools with server mapping
       await RegisterToolsForServer(client, serverName);
 
       logger.LogInformation($"GitHub MCP server '{serverName}' initialized successfully");
@@ -79,7 +80,6 @@ public class McpClientService(ILogger<McpClientService> logger,
     catch (Exception ex)
     {
       logger.LogError(ex, $"Failed to initialize GitHub MCP server '{serverName}'");
-      // Don't throw - continue with other servers
     }
   }
 
@@ -89,10 +89,22 @@ public class McpClientService(ILogger<McpClientService> logger,
 
     try
     {
-      var sseTransport = new SseClientTransport(new SseClientTransportOptions
+      // Create HttpClient with SSL bypass
+      var handler = new HttpClientHandler()
       {
-        Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
-      });
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+      };
+
+      var httpClient = new HttpClient(handler);
+
+      var sseTransport = new SseClientTransport(
+          new SseClientTransportOptions
+          {
+            Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
+          },
+          httpClient, // Pass the custom HttpClient here
+          ownsHttpClient: true // Let the transport dispose the HttpClient
+      );
 
       var client = await McpClientFactory.CreateAsync(sseTransport);
 

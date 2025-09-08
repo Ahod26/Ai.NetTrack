@@ -3,13 +3,16 @@ using backend.Models.Domain;
 using backend.Services.Interfaces.LLM;
 using backend.Services.Interfaces.NewsAggregation;
 using backend.MCP.Interfaces;
+using backend.Repository.Interfaces;
+using backend.Constants;
 
 namespace backend.Services.Classes.NewsAggregation;
 
 public class GitHubService(
   IOpenAIService openAIService,
   IMcpClientService mcpClientService,
-  ILogger<GitHubService> logger
+  ILogger<GitHubService> logger,
+  INewsItemRepo newsItemRepo
 ) : IGitHubService
 {
   public async Task<List<NewsItem>> GetGitHubAIUpdatesAsync()
@@ -29,27 +32,18 @@ public class GitHubService(
     {
       try
       {
-        // Get commits from last 24 hours
-        var commitsResult = await mcpClientService.CallToolAsync("list_commits", new Dictionary<string, object?>
-        {
-          ["owner"] = owner,
-          ["repo"] = repo,
-          ["since"] = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-ddTHH:mm:ssZ")
-        });
-
-        // Get recent tags
+        // Only get recent releases 
         var releasesResult = await mcpClientService.CallToolAsync("list_releases", new Dictionary<string, object?>
         {
           ["owner"] = owner,
           ["repo"] = repo,
-          ["perPage"] = 5 // Recent releases only
+          ["perPage"] = 5 // Last 5 releases
         });
 
         allData.Add(new
         {
           Owner = owner,
           Repo = repo,
-          Commits = commitsResult,
           Releases = releasesResult
         });
       }
@@ -59,39 +53,9 @@ public class GitHubService(
       }
     }
 
-    var prompt = $@"
-Analyze this GitHub data and return ONLY significant AI/development updates from the LAST 36 HOURS as a JSON array of NewsItem objects.
+    var prompt = PromptConstants.GetGitHubNewsPrompt(DateTime.UtcNow.AddDays(-1), JsonSerializer.Serialize(allData));
 
-IMPORTANT TIME FILTERING:
-- Only include updates from the last 24 hours (since {DateTime.UtcNow.AddDays(-1):yyyy-MM-dd HH:mm:ss} UTC)
-- Commits are already filtered to last 24 hours
-- For releases: ONLY include releases published in the last 24 hours, ignore older releases
-- Check the published_at, created_at, or date fields to verify timing
-
-CONTENT FILTERING RULES - Only include changes that developers should know about:
-- New features and capabilities 
-- Breaking changes and API modifications
-- Major releases and version updates
-- Security fixes and important bug fixes
-- Performance improvements
-- EXCLUDE: Minor bug fixes, typos, dependency updates, CI/build changes, documentation updates, refactoring
-
-GitHub Data:
-{JsonSerializer.Serialize(allData)}
-
-For each significant update from the LAST 24 HOURS, CREATE original content:
-- Title: Write a clear, descriptive title explaining what changed
-- Content: Write detailed explanation of the change and its impact for developers  
-- Summary: Write 1-2 sentence summary of why this matters
-- Url: Use the GitHub URL from the data if available
-- PublishedDate: Use the actual date from the data
-- Id: Always set to 0
-
-Return as JSON array of NewsItem objects. Do NOT include: ImageUrl, SourceType, SourceName
-
-If no significant updates occurred in the last 24 hours, return an empty array.";
-
-    var filteredNews = await openAIService.ProcessGitHubData(prompt);
+    var filteredNews = await openAIService.ProcessNewsData(prompt);
 
     if (filteredNews == null) return [];
 
@@ -100,6 +64,16 @@ If no significant updates occurred in the last 24 hours, return an empty array."
     {
       item.SourceType = NewsSourceType.Github;
       item.SourceName = "GitHub";
+    }
+
+    try
+    {
+      await newsItemRepo.AddItems(filteredNews);
+      logger.LogInformation($"Successfully saved {filteredNews.Count} GitHub news items");
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Failed to save GitHub news items to database");
     }
 
     return filteredNews;

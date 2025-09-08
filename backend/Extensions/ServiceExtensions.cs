@@ -8,6 +8,9 @@ using backend.Services.Interfaces.Auth;
 using backend.Services.Classes.Auth;
 using backend.Services.Interfaces.LLM;
 using backend.Services.Classes.LLM;
+using ModelContextProtocol.Client;
+using backend.MCP.Classes;
+using backend.MCP.Interfaces;
 
 namespace backend.Extensions;
 
@@ -24,6 +27,7 @@ public static class ServiceExtensions
     services.AddScoped<IRssService, RssService>();
     services.AddScoped<IYouTubeService, YouTubeService>();
     services.AddScoped<IDocsService, DocsService>();
+    services.AddScoped<IMcpClientService, McpClientService>();
 
     services.AddSingleton<IOpenAIService, OpenAIService>();
     services.AddSingleton<ITokenService, TokenService>();

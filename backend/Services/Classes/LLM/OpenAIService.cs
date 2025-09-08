@@ -121,7 +121,7 @@ public class OpenAIService(
     }
   }
 
-  public async Task<List<NewsItem>> ProcessGitHubData(string prompt)
+  public async Task<List<NewsItem>> ProcessNewsData(string prompt)
   {
     var chatOptions = new ChatCompletionOptions
     {
@@ -136,8 +136,36 @@ public class OpenAIService(
     );
 
     var jsonResponse = response.Value.Content[0].Text;
+    logger.LogInformation($"LLM Response: {jsonResponse}");
 
-    var newsItems = JsonSerializer.Deserialize<List<NewsItem>>(jsonResponse);
-    return newsItems ?? [];
+
+    // The LLM return value is inconsistent, could return it wrapped with result object, and could return it without wrapper
+    try
+    {
+      // First try to parse as direct array
+      var newsItems = JsonSerializer.Deserialize<List<NewsItem>>(jsonResponse);
+      return newsItems ?? new List<NewsItem>();
+    }
+    catch (JsonException)
+    {
+      try
+      {
+        // If that fails, try parsing as wrapped object
+        using var doc = JsonDocument.Parse(jsonResponse);
+        if (doc.RootElement.TryGetProperty("result", out var resultArray))
+        {
+          var newsItems = JsonSerializer.Deserialize<List<NewsItem>>(resultArray.GetRawText());
+          return newsItems ?? new List<NewsItem>();
+        }
+
+        logger.LogWarning("LLM response doesn't contain 'result' property");
+        return new List<NewsItem>();
+      }
+      catch (JsonException ex)
+      {
+        logger.LogError(ex, $"Failed to parse LLM JSON response: {jsonResponse}");
+        return new List<NewsItem>();
+      }
+    }
   }
 }

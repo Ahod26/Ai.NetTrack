@@ -1,12 +1,11 @@
-using backend.Services.Interfaces;
 using backend.Services.Interfaces.NewsAggregation;
 
 namespace backend.Services.Classes.NewsAggregation;
 
-public class NewsCollectorService : INewsCollectorService
+public class NewsCollectorService(IGitHubService gitHubService) : INewsCollectorService
 {
-  public Task CollectAllNews()
+  public async Task CollectAllNews()
   {
-    throw new NotImplementedException();
+    await gitHubService.GetGitHubAIUpdatesAsync();
   }
 }

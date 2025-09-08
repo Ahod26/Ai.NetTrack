@@ -77,7 +77,6 @@ NO EXCEPTIONS: Do not answer questions about general knowledge, politics, histor
 If redirecting from off-topic, respond with something like:
 'I'm focused on helping with Microsoft stack development and AI integration. Is there anything about .NET, C#, Azure, AI development, or related technologies I can help you with today?'";
 
-
   public const string GET_TITLE_SYSTEM_PROMPT = @"You are a helpful assistant that generates concise, descriptive titles for chat conversations. 
 
 STRICT REQUIREMENT: Generate titles that are EXACTLY 20 characters or less (including spaces). Count characters carefully before responding.
@@ -97,4 +96,99 @@ Examples with character counts:
 - 'Hey what's up' -> 'Greeting' (8 chars)
 
 CRITICAL: Verify your title is 20 characters or less before responding. If over 20 characters, shorten it by removing less important words.";
+
+  public static string GetGitHubNewsPrompt(DateTime sinceDate, string serializedData)
+  {
+    return $@"
+Analyze this GitHub releases data and return ONLY significant AI updates from the LAST 24 HOURS as a JSON array of NewsItem objects.
+
+IMPORTANT TIME FILTERING:
+- Only include releases published in the last 24 hours (since {sinceDate:yyyy-MM-dd HH:mm:ss} UTC)
+- Check the published_at, created_at, or date fields to verify timing
+
+CONTENT FILTERING RULES - Only include releases that developers should know about:
+- New features and capabilities 
+- Breaking changes and API modifications
+- Major releases and version updates
+- Security fixes and important bug fixes
+- Performance improvements
+- EXCLUDE: Minor patch releases with only bug fixes
+
+GitHub Releases Data:
+{serializedData}
+
+For each significant release from the LAST 24 HOURS, CREATE original content:
+- Title: Write a clear, descriptive title explaining what was released
+- Content: Write detailed explanation of the release and its impact for developers  
+- Summary: Write 1-2 sentence summary of why this release matters
+- Url: Use the GitHub release URL from the data
+- PublishedDate: Use the actual release date from the data
+- Id: Always set to 0
+
+CRITICAL: Your response must be a JSON object with a 'result' property containing the array:
+{{
+  ""result"": [
+    {{
+      ""Title"": ""..."",
+      ""Content"": ""..."",
+      ""Summary"": ""..."",
+      ""Url"": ""..."",
+      ""PublishedDate"": ""..."",
+      ""Id"": 0
+    }}
+  ]
+}}
+
+If no significant releases occurred in the last 24 hours, return: {{""result"": []}}
+
+Do NOT include: ImageUrl, SourceType, SourceName";
+  }
+
+  public static string GetYouTubeNewsPrompt(DateTime sinceDate, string serializedData)
+  {
+    return $@"
+Analyze this YouTube channel data and return ONLY significant AI-related videos from the LAST 24 HOURS as a JSON array of NewsItem objects.
+
+IMPORTANT TIME FILTERING:
+- Only include videos published in the last 24 hours (since {sinceDate:yyyy-MM-dd HH:mm:ss} UTC)
+- Check the publishedAt, published_at, or upload date fields to verify timing
+
+CONTENT FILTERING RULES - Only include videos that are AI-related:
+- Videos about AI development, machine learning, artificial intelligence
+- AI tools, frameworks, SDKs (OpenAI, Azure AI, Semantic Kernel, etc.)
+- AI programming tutorials and demos
+- AI announcements and product launches
+- EXCLUDE: General programming videos, non-AI .NET content, infrastructure topics without AI focus
+
+YouTube Channel Data:
+{serializedData}
+
+For each significant AI-related video from the LAST 24 HOURS, CREATE original content:
+- Title: Use the video title from the data
+- Content: Write detailed explanation of what the video covers and its relevance for AI developers
+- Summary: Write 1-2 sentence summary of why this video matters for AI development
+- Url: Use the YouTube video URL from the data
+- ImageUrl: Use the video thumbnail URL from the data (high quality preferred)
+- PublishedDate: Use the actual video publish date from the data
+- Id: Always set to 0
+
+CRITICAL: Your response must be a JSON object with a 'result' property containing the array:
+{{
+  ""result"": [
+    {{
+      ""Title"": ""..."",
+      ""Content"": ""..."",
+      ""Summary"": ""..."",
+      ""Url"": ""..."",
+      ""ImageUrl"": ""..."",
+      ""PublishedDate"": ""..."",
+      ""Id"": 0
+    }}
+  ]
+}}
+
+If no significant AI-related videos were published in the last 24 hours, return: {{""result"": []}}
+
+Do NOT include: SourceType, SourceName";
+  }
 }
