@@ -8,7 +8,7 @@ public class NewsCollectorService(
 {
   public async Task CollectAllNews()
   {
-    await gitHubService.GetGitHubAIUpdatesAsync();
+    //await gitHubService.GetGitHubAIUpdatesAsync();
     await youTubeService.GetYouTubeAIUpdatesAsync();
   }
 }

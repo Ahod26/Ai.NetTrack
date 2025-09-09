@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text.Json;
 using backend.MCP.Interfaces;
 using backend.Models.Configuration;
@@ -32,7 +33,6 @@ public class McpClientService(
       // Initialize all configured servers
       await InitializeGitHubClient();
       await InitializeDocsClient();
-      await InitializeYouTubeClient();
 
       _initialized = true;
       logger.LogInformation($"Successfully initialized {clients.Count} MCP clients");
@@ -117,43 +117,6 @@ public class McpClientService(
     catch (Exception ex)
     {
       logger.LogError(ex, $"Failed to initialize Microsoft Docs MCP server '{serverName}'");
-    }
-  }
-
-  private async Task InitializeYouTubeClient()
-  {
-    const string serverName = "youtube";
-
-    try
-    {
-      var youtubeApiKey = settings.YouTube.Token;
-      if (string.IsNullOrEmpty(youtubeApiKey))
-      {
-        logger.LogWarning("YouTube API key not configured, skipping YouTube MCP server");
-        return;
-      }
-
-      // Set environment variable for the YouTube MCP server
-      Environment.SetEnvironmentVariable("YOUTUBE_API_KEY", youtubeApiKey);
-
-      var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
-      {
-        Name = "YouTubeServer",
-        Command = "npx",
-        Arguments = ["-y", "youtube-data-mcp-server"]
-      });
-
-      var client = await McpClientFactory.CreateAsync(clientTransport);
-
-      clients.TryAdd(serverName, client);
-
-      await RegisterToolsForServer(client, serverName);
-
-      logger.LogInformation($"YouTube MCP server '{serverName}' initialized successfully");
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, $"Failed to initialize YouTube MCP server '{serverName}'");
     }
   }
 
