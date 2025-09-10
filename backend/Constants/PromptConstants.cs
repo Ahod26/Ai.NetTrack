@@ -151,26 +151,45 @@ Analyze this YouTube channel data and return ONLY significant AI-related videos 
 
 IMPORTANT TIME FILTERING:
 - Only include videos published in the last 24 hours (since {sinceDate:yyyy-MM-dd HH:mm:ss} UTC)
-- Check the publishedAt, published_at, or upload date fields to verify timing
+- Check the PublishedAt field to verify timing
 
-CONTENT FILTERING RULES - Only include videos that are AI-related:
-- Videos about AI development, machine learning, artificial intelligence
-- AI tools, frameworks, SDKs (OpenAI, Azure AI, Semantic Kernel, etc.)
-- AI programming tutorials and demos
-- AI announcements and product launches
-- EXCLUDE: General programming videos, non-AI .NET content, infrastructure topics without AI focus
+CONTENT FILTERING RULES:
+1. PRIMARY FILTER - Video Title Analysis:
+   - Determine if the video is related to AI, machine learning, or artificial intelligence based on the title
+   - Use your understanding to identify AI-related content, tools, frameworks, development, or discussions
+
+2. SECONDARY FILTER - Description Analysis (if title is unclear):
+   - If the title doesn't clearly indicate whether it's AI-related, check the Description field
+   - Make an intelligent decision based on the video's actual content focus
+
+3. EXCLUDE from results:
+   - General programming videos without AI focus
+   - Pure infrastructure/DevOps content without AI components
+   - Basic tutorials unrelated to AI development
+   - Non-technical content
+
+VIDEO DATA STRUCTURE:
+Each video object in the data contains these properties:
+- VideoId: YouTube video ID
+- Title: Video title
+- Description: Video description
+- PublishedAt: Publication timestamp (ISO format)
+- Duration: Video length (ISO 8601 format)
+- Thumbnail: Thumbnail image URL
+- LiveBroadcastContent: Indicates if it was a live stream
+- Transcript: Video transcript/subtitles (if available)
+
+For each significant AI-related video from the LAST 24 HOURS, create a NewsItem:
+- Title: Use the exact video title from Title field
+- Content: Write 2-3 detailed paragraphs based on the Transcript content (if available), explaining what the video covers and its relevance for AI developers. If no transcript is available or transcript is empty, use Title and Description instead.
+- Summary: Write 1-2 sentences summarizing the key takeaways from the video content for AI development
+- Url: Construct as https://www.youtube.com/watch?v={{VideoId}}
+- ImageUrl: Use the Thumbnail field value
+- PublishedDate: Use the PublishedAt field value
+- Id: Always set to 0
 
 YouTube Channel Data:
 {serializedData}
-
-For each significant AI-related video from the LAST 24 HOURS, CREATE original content:
-- Title: Use the video title from the data
-- Content: Write detailed explanation of what the video covers and its relevance for AI developers
-- Summary: Write 1-2 sentence summary of why this video matters for AI development
-- Url: Use the YouTube video URL from the data
-- ImageUrl: Use the video thumbnail URL from the data (high quality preferred)
-- PublishedDate: Use the actual video publish date from the data
-- Id: Always set to 0
 
 CRITICAL: Your response must be a JSON object with a 'result' property containing the array:
 {{
@@ -179,7 +198,7 @@ CRITICAL: Your response must be a JSON object with a 'result' property containin
       ""Title"": ""..."",
       ""Content"": ""..."",
       ""Summary"": ""..."",
-      ""Url"": ""..."",
+      ""Url"": ""https://www.youtube.com/watch?v=VIDEO_ID"",
       ""ImageUrl"": ""..."",
       ""PublishedDate"": ""..."",
       ""Id"": 0
@@ -189,6 +208,6 @@ CRITICAL: Your response must be a JSON object with a 'result' property containin
 
 If no significant AI-related videos were published in the last 24 hours, return: {{""result"": []}}
 
-Do NOT include: SourceType, SourceName";
+Do NOT include: SourceType, SourceName properties in the output.";
   }
 }

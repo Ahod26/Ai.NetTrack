@@ -36,7 +36,8 @@ public static class InfrastructureExtensions
     });
 
     services.AddHostedService<NewsAggregationService>();
-
+    services.AddHttpClient();
+    
     return services;
   }
 }
