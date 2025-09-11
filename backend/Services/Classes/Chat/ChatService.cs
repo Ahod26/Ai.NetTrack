@@ -16,7 +16,7 @@ public class ChatService(
     IOpenAIService openAIService,
     IMapper mapper,
     ILLMCacheService LLMCacheService,
-    ICacheService cacheService,
+    IChatCacheService cacheService,
     IOptions<StreamingSettings> streamingOptions) : IChatService
 {
   private readonly StreamingSettings streamingSettings = streamingOptions.Value;

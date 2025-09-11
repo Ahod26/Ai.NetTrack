@@ -11,6 +11,8 @@ using backend.Services.Classes.LLM;
 using ModelContextProtocol.Client;
 using backend.MCP.Classes;
 using backend.MCP.Interfaces;
+using backend.Services.Interfaces.News;
+using backend.Services.Classes.News;
 
 namespace backend.Extensions;
 
@@ -28,11 +30,13 @@ public static class ServiceExtensions
     services.AddScoped<IYouTubeService, YouTubeService>();
     services.AddScoped<IDocsService, DocsService>();
     services.AddScoped<IMcpClientService, McpClientService>();
+    services.AddScoped<INewsService, NewsService>();
 
     services.AddSingleton<IOpenAIService, OpenAIService>();
     services.AddSingleton<ITokenService, TokenService>();
     services.AddSingleton<ILLMCacheService, LLMCacheService>();
-    services.AddSingleton<ICacheService, CacheService>();
+    services.AddSingleton<IChatCacheService, ChatCacheService>();
+    services.AddSingleton<INewsCacheService, NewsCacheService>();
     return services;
   }
 }

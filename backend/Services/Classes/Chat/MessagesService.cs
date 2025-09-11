@@ -9,7 +9,7 @@ using backend.Services.Interfaces.Cache;
 namespace backend.Services.Classes.ChatService;
 
 public class MessagesServices(
-  ICacheService cacheService,
+  IChatCacheService cacheService,
   IMessagesRepo messagesRepo,
   IMapper mapper) : IMessagesService
 {

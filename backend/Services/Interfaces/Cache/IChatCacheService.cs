@@ -3,7 +3,7 @@ using backend.Models.Domain;
 
 namespace backend.Services.Interfaces.Cache;
 
-public interface ICacheService
+public interface IChatCacheService
 {
   Task<CachedChatData?> GetCachedChat(string userId, Guid chatId);
   Task SetCachedChat(string userId, Guid chatId, CachedChatData data);

@@ -46,8 +46,12 @@ public class ChatCacheRepo(IConnectionMultiplexer redis, ILogger<ChatCacheRepo> 
   {
     try
     {
-      var serializedData = JsonSerializer.Serialize(data);
-      await _database.StringSetAsync(cacheKey, serializedData, expiration);
+      var exists = await _database.KeyExistsAsync(cacheKey);
+      if (exists)
+      {
+        var serializedData = JsonSerializer.Serialize(data);
+        await _database.StringSetAsync(cacheKey, serializedData, expiration);
+      }
     }
     catch (Exception ex)
     {

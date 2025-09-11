@@ -9,8 +9,8 @@ using backend.Services.Interfaces.Cache;
 
 namespace backend.Services.Classes.Cache;
 
-public class CacheService(IChatCacheRepo chatCacheRepo,
-IOptions<ChatCacheSettings> cacheOptions) : ICacheService
+public class ChatCacheService(IChatCacheRepo chatCacheRepo,
+IOptions<ChatCacheSettings> cacheOptions) : IChatCacheService
 {
   private readonly ChatCacheSettings cacheSettings = cacheOptions.Value;
 
