@@ -177,11 +177,10 @@ Each video object in the data contains these properties:
 - Duration: Video length (ISO 8601 format)
 - Thumbnail: Thumbnail image URL
 - LiveBroadcastContent: Indicates if it was a live stream
-- Transcript: Video transcript/subtitles (if available)
 
 For each significant AI-related video from the LAST 24 HOURS, create a NewsItem:
 - Title: Use the exact video title from Title field
-- Content: Write 2-3 detailed paragraphs based on the Transcript content (if available), explaining what the video covers and its relevance for AI developers. If no transcript is available or transcript is empty, use Title and Description instead.
+- Content: Write 2-3 detailed paragraphs based on the Title and Description, explaining what the video covers and its relevance for AI developers
 - Summary: Write 1-2 sentences summarizing the key takeaways from the video content for AI development
 - Url: Construct as https://www.youtube.com/watch?v={{VideoId}}
 - ImageUrl: Use the Thumbnail field value
@@ -209,5 +208,141 @@ CRITICAL: Your response must be a JSON object with a 'result' property containin
 If no significant AI-related videos were published in the last 24 hours, return: {{""result"": []}}
 
 Do NOT include: SourceType, SourceName properties in the output.";
+  }
+
+  public static string GetDocsNewsPrompt(DateTime sinceDate, string serializedData)
+  {
+    return $@"
+Analyze this Microsoft documentation and API update data and return ONLY significant AI/development-related updates from the LAST 24 HOURS as a JSON array of NewsItem objects.
+
+IMPORTANT TIME FILTERING:
+- Only include updates published or modified in the last 24 hours (since {sinceDate:yyyy-MM-dd HH:mm:ss} UTC)
+- Check the LastModified or PublishedDate fields to verify timing
+
+CONTENT FILTERING RULES:
+1. PRIMARY FOCUS - AI and Development Content:
+   - Determine if the content is related to AI, machine learning, artificial intelligence, or software development
+   - Use your understanding to identify AI-related tools, frameworks, APIs, development platforms, or discussions
+   - Include .NET, Azure, Microsoft Graph, and other developer-focused updates
+
+2. LEARNING CONTENT ANALYSIS (Microsoft Learn Catalog):
+   - Analyze Title, Summary, Products, Roles, and Subjects to determine relevance
+   - Prioritize content for developer roles: ai-engineer, developer, data-scientist, solution-architect
+   - Focus on AI/ML subjects: artificial-intelligence, machine-learning, cloud-computing, development
+   - Include new learning modules, paths, or significant updates to existing content
+
+3. API UPDATES ANALYSIS (Microsoft Graph Changelog):
+   - Evaluate API changes, new features, deprecations, or developer-impacting updates
+   - Focus on changes that affect developers building applications
+   - Include new endpoints, authentication changes, permission updates, and feature additions
+   - Consider security, integration, and development workflow improvements
+
+4. EXCLUDE from results:
+   - Basic tutorials or content without new features or significant updates
+   - Pure administrative, end-user, or non-technical content
+   - Minor documentation corrections that don't impact functionality
+   - Content not relevant to AI development or software development practices
+
+DATA STRUCTURE EXPLANATION:
+Microsoft Learn Catalog items contain:
+- Type: 'module' or 'learningPath'
+- Title, Summary, Url, LastModified timestamp
+- Products: Array of Microsoft products/services covered
+- Roles: Target audience roles (developer, ai-engineer, etc.)
+- Subjects: Content categories (artificial-intelligence, machine-learning, etc.)
+- Levels: Difficulty level (beginner, intermediate, advanced)
+
+Microsoft Graph Changelog items contain:
+- Title: Update title from RSS feed
+- Content: Description of changes (HTML cleaned)
+- Url: Link to detailed information
+- PublishedDate: When the update was published
+
+For each significant AI/development-related update from the LAST 24 HOURS, create a NewsItem:
+- Title: Use the exact title from the source data
+- Content: Write 2-3 detailed paragraphs explaining:
+  * What was updated, added, or changed and why it matters for developers
+  * How this impacts AI development, Microsoft platform usage, or developer workflows
+  * Key technical details, new capabilities, and practical applications for developers
+- Summary: Write 1-2 sentences highlighting the key benefits and relevance for AI developers and software engineers
+- Url: Use the provided URL from the source data
+- ImageUrl: Use icon_url if available from Learn content, otherwise leave empty string
+- PublishedDate: Use the LastModified or PublishedDate field value
+- Id: Always set to 0
+
+Microsoft Documentation and API Update Data:
+{serializedData}
+
+CRITICAL: Your response must be a JSON object with a 'result' property containing the array:
+{{
+  ""result"": [
+    {{
+      ""Title"": ""..."",
+      ""Content"": ""..."",
+      ""Summary"": ""..."",
+      ""Url"": ""..."",
+      ""ImageUrl"": ""..."",
+      ""PublishedDate"": ""..."",
+      ""Id"": 0
+    }}
+  ]
+}}
+
+If no significant AI/development-related updates were found in the last 24 hours, return: {{""result"": []}}
+
+Do NOT include: SourceType, SourceName properties in the output.";
+  }
+
+  public static string GetRSSNewsPrompt(DateTime sinceDate, string serializedData)
+  {
+    return $@"Analyze this Microsoft .NET DevBlog RSS feed data and return ONLY significant .NET developer-impacting updates (including AI-enabling .NET features) from the LAST 24 HOURS as a JSON array of NewsItem objects.
+
+IMPORTANT TIME FILTERING:
+- Only include posts published in the last 24 hours (since {sinceDate:yyyy-MM-dd HH:mm:ss} UTC)
+- Use the PublishedDate field to verify timing
+
+INCLUDE (any of):
+- .NET runtime / SDK feature announcements or previews
+- Performance improvements (JIT, GC, threading, memory, networking)
+- API / library / tooling enhancements (Roslyn, ASP.NET Core, EF Core, CLI, diagnostics)
+- AI-enabling features (ML.NET, Semantic Kernel, Azure AI integration for .NET)
+- Security fixes, breaking changes, migration-impacting updates
+- Cloud/service integration changes affecting architecture for .NET apps
+
+EXCLUDE:
+- Pure marketing / event recap without new technical substance
+- Basic introductory tutorials / getting started guides without new capability
+- Minor cosmetic or editorial-only changes
+
+DATA PER ITEM (DevBlog): Title, Content (summary/HTML), Url, PublishedDate, Author, Categories
+
+OUTPUT FORMAT FOR EACH INCLUDED ITEM:
+- Title: Exact post title
+- Content: 2–3 paragraphs explaining what changed, why it matters, practical developer impact
+- Summary: 1–2 sentence concise developer-focused takeaway
+- Url: Original post URL
+- PublishedDate: Original timestamp
+- Id: 0
+
+Microsoft .NET DevBlog RSS Feed Data:
+{serializedData}
+
+CRITICAL: Respond ONLY with a JSON object of the form:
+{{
+  ""result"": [
+    {{
+      ""Title"": ""..."",
+      ""Content"": ""..."",
+      ""Summary"": ""..."",
+      ""Url"": ""..."",
+      ""PublishedDate"": ""..."",
+      ""Id"": 0
+    }}
+  ]
+}}
+
+If no significant .NET developer-impacting updates were found in the last 24 hours, return: {{""result"": []}}
+
+Do NOT include: SourceType, SourceName, ImageUrl properties in the output.";
   }
 }

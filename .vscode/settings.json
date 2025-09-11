@@ -7,6 +7,7 @@
     "chathub",
     "CREATECHAT",
     "DELETECHATBYID",
+    "DEVBLOG",
     "Dtos",
     "ergut",
     "GETCHATBYID",

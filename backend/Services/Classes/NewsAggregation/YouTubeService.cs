@@ -15,8 +15,7 @@ public class YouTubeService(
   ILogger<YouTubeService> logger,
   INewsItemRepo newsItemRepo,
   HttpClient httpClient,
-  IOptions<McpSettings> options,
-  IMcpClientService mcpClientService
+  IOptions<McpSettings> options
 ) : IYouTubeService
 {
   private readonly McpSettings settings = options.Value;
@@ -37,45 +36,11 @@ public class YouTubeService(
       {
         var videos = await GetAllChannelVideosLast24HoursAsync(channelId);
 
-        // For each video, get the transcript using MCP
-        var videosWithTranscripts = new List<object>();
-        foreach (var video in videos)
-        {
-          try
-          {
-            var videoDict = video as dynamic ?? new { };
-            var videoId = videoDict?.VideoId?.ToString();
-
-            if (!string.IsNullOrEmpty(videoId))
-            {
-              var transcript = await GetVideoTranscriptViaMcpAsync(videoId);
-
-              videosWithTranscripts.Add(new
-              {
-                VideoId = videoId,
-                Title = videoDict?.Title?.ToString(),
-                Description = videoDict?.Description?.ToString(),
-                PublishedAt = videoDict?.PublishedAt?.ToString(),
-                Duration = videoDict?.Duration?.ToString(),
-                Thumbnail = videoDict?.Thumbnail?.ToString(),
-                LiveBroadcastContent = videoDict?.LiveBroadcastContent?.ToString(),
-                Transcript = transcript
-              });
-            }
-          }
-          catch (Exception ex)
-          {
-            logger.LogWarning(ex, $"Failed to get transcript for video, skipping");
-            // Add video without transcript
-            videosWithTranscripts.Add(video);
-          }
-        }
-
         allData.Add(new
         {
           ChannelId = channelId,
           ChannelName = channelName,
-          Videos = videosWithTranscripts
+          Videos = videos
         });
       }
       catch (Exception ex)
@@ -318,52 +283,6 @@ public class YouTubeService(
     {
       // If parsing fails, assume it's longer than 2 minutes to be safe
       return true;
-    }
-  }
-
-  private async Task<string> GetVideoTranscriptViaMcpAsync(string videoId)
-  {
-    try
-    {
-      var videoUrl = $"https://www.youtube.com/watch?v={videoId}";
-
-      logger.LogDebug($"Attempting to get transcript for video {videoId} from URL: {videoUrl}");
-
-      // Use the specific tool name from ergut/youtube-transcript-mcp
-      var result = await mcpClientService.CallToolAsync("get_transcript", new Dictionary<string, object?>
-      {
-        ["url"] = videoUrl,
-        ["language"] = "en"  // Default to English
-      });
-
-      if (result != null)
-      {
-        var transcriptText = result.ToString();
-        if (!string.IsNullOrWhiteSpace(transcriptText) && transcriptText != "Transcript not available")
-        {
-          logger.LogDebug($"Successfully got transcript for video {videoId} (length: {transcriptText.Length} chars)");
-          return transcriptText;
-        }
-      }
-
-      logger.LogWarning($"Empty or null transcript returned for video {videoId}");
-      return "No transcript available";
-    }
-    catch (Exception ex)
-    {
-      // Log the specific error but don't fail the entire process
-      logger.LogWarning(ex, $"Failed to get transcript for video {videoId}: {ex.Message}");
-
-      // Check if it's a common issue
-      if (ex.Message.Contains("No transcript available") ||
-          ex.Message.Contains("Transcripts are disabled") ||
-          ex.Message.Contains("Video not found"))
-      {
-        logger.LogDebug($"Video {videoId} has no available transcript");
-        return "No transcript available for this video";
-      }
-
-      return "Transcript fetch failed";
     }
   }
 }

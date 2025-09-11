@@ -33,7 +33,6 @@ public class McpClientService(
       // Initialize all configured servers
       await InitializeGitHubClient();
       await InitializeDocsClient();
-      await InitializeYouTubeClient();
 
       _initialized = true;
       logger.LogInformation($"Successfully initialized {clients.Count} MCP clients");
@@ -81,38 +80,6 @@ public class McpClientService(
     catch (Exception ex)
     {
       logger.LogError(ex, $"Failed to initialize GitHub MCP server '{serverName}'");
-    }
-  }
-
-  private async Task InitializeYouTubeClient()
-  {
-    const string serverName = "youtube";
-
-    try
-    {
-      // Use the remote YouTube transcript MCP server - no local installation required
-      // This server runs on Cloudflare Workers and provides transcript extraction
-
-      var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
-      {
-        Name = "YouTubeTranscriptServer",
-        Command = "npx",
-        Arguments = [
-          "mcp-remote",
-        "https://youtube-transcript-mcp.ergut.workers.dev/sse"
-        ]
-      });
-
-      var client = await McpClientFactory.CreateAsync(clientTransport);
-
-      clients.TryAdd(serverName, client);
-      await RegisterToolsForServer(client, serverName);
-
-      logger.LogInformation($"YouTube Transcript MCP server '{serverName}' initialized successfully");
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, $"Failed to initialize YouTube Transcript MCP server '{serverName}'. Make sure you have internet connection and mcp-remote is available.");
     }
   }
 

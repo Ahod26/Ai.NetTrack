@@ -4,11 +4,15 @@ namespace backend.Services.Classes.NewsAggregation;
 
 public class NewsCollectorService(
   IGitHubService gitHubService,
-  IYouTubeService youTubeService) : INewsCollectorService
+  IYouTubeService youTubeService,
+  IDocsService docsService,
+  IRssService rssService) : INewsCollectorService
 {
   public async Task CollectAllNews()
   {
     await gitHubService.GetGitHubAIUpdatesAsync();
     await youTubeService.GetYouTubeAIUpdatesAsync();
+    await docsService.GetMicrosoftDocsUpdatesAsync();
+    await rssService.GetRSSUpdatesAsync();
   }
 }
