@@ -10,11 +10,12 @@ namespace backend.Controllers;
 public class NewsController(INewsService newsService, ILogger<NewsController> logger) : ControllerBase
 {
   [HttpGet("")]
-  public async Task<IActionResult> GetNews([FromQuery] int? lastId = null)
+  public async Task<IActionResult> GetNewsPerDate([FromQuery] DateTime? date = null)
   {
     try
     {
-      var news = await newsService.GetNewsItems(lastId, 10);
+      var targetDate = date?.Date ?? DateTime.UtcNow.Date;
+      var news = await newsService.GetNewsItems(targetDate);
       return Ok(news);
     }
     catch (Exception ex)

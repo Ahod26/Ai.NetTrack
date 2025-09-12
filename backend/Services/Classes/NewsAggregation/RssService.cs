@@ -8,6 +8,7 @@ using backend.Models.Configuration;
 using Microsoft.Extensions.Options;
 using backend.Constants;
 using System.Xml.Linq;
+using backend.Services.Interfaces.Cache;
 // using System.Net; // removed unused after image extraction removal
 
 namespace backend.Services.Classes.NewsAggregation;
@@ -16,6 +17,7 @@ public class RssService(
   IOpenAIService openAIService,
   ILogger<RssService> logger,
   INewsItemRepo newsItemRepo,
+  INewsCacheService newsCacheService,
   HttpClient httpClient
 ) : IRssService
 {
@@ -60,6 +62,7 @@ public class RssService(
 
       try
       {
+        await newsCacheService.UpdateNewsGroupsAsync(filteredNews);
         await newsItemRepo.AddItems(filteredNews);
         logger.LogInformation($"Successfully saved {filteredNews.Count} RSS news items");
       }

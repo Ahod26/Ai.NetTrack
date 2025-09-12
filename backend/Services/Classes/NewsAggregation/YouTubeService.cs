@@ -7,6 +7,7 @@ using backend.Services.Interfaces.NewsAggregation;
 using backend.Models.Configuration;
 using Microsoft.Extensions.Options;
 using backend.MCP.Interfaces;
+using backend.Services.Interfaces.Cache;
 
 namespace backend.Services.Classes.NewsAggregation;
 
@@ -14,6 +15,7 @@ public class YouTubeService(
   IOpenAIService openAIService,
   ILogger<YouTubeService> logger,
   INewsItemRepo newsItemRepo,
+  INewsCacheService newsCacheService,
   HttpClient httpClient,
   IOptions<McpSettings> options
 ) : IYouTubeService
@@ -66,6 +68,7 @@ public class YouTubeService(
 
     try
     {
+      await newsCacheService.UpdateNewsGroupsAsync(filteredNews);
       await newsItemRepo.AddItems(filteredNews);
       logger.LogInformation($"Successfully saved {filteredNews.Count} YouTube news items");
     }

@@ -30,4 +30,15 @@ public class NewsItemsRepo(ApplicationDbContext dbContext) : INewsItemRepo
       await dbContext.SaveChangesAsync();
     }
   }
+
+  public async Task<List<NewsItem>> GetNewsByDateAsync(DateTime targetDate)
+  {
+    var start = targetDate.Date;
+    var end = start.AddDays(1);
+
+    return await dbContext.NewsItems
+      .Where(n => n.PublishedDate >= start && n.PublishedDate < end)
+      .OrderByDescending(n => n.PublishedDate)
+      .ToListAsync();
+  }
 }

@@ -8,6 +8,7 @@ using backend.Models.Configuration;
 using Microsoft.Extensions.Options;
 using backend.Constants;
 using System.Xml.Linq;
+using backend.Services.Interfaces.Cache;
 
 namespace backend.Services.Classes.NewsAggregation;
 
@@ -15,12 +16,10 @@ public class DocsService(
     IOpenAIService openAIService,
     ILogger<DocsService> logger,
     INewsItemRepo newsItemRepo,
-    HttpClient httpClient,
-    IOptions<McpSettings> options
+    INewsCacheService newsCacheService,
+    HttpClient httpClient
 ) : IDocsService
 {
-  private readonly McpSettings settings = options.Value;
-
   public async Task<List<NewsItem>> GetMicrosoftDocsUpdatesAsync()
   {
     var allData = new List<object>();
@@ -74,6 +73,7 @@ public class DocsService(
 
       try
       {
+        await newsCacheService.UpdateNewsGroupsAsync(filteredNews);
         await newsItemRepo.AddItems(filteredNews);
         logger.LogInformation($"Successfully saved {filteredNews.Count} documentation news items");
       }

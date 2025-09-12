@@ -1,7 +1,6 @@
 using System.Text.Json;
 using backend.Models.Domain;
 using backend.Repository.Interfaces;
-using OpenAI.FineTuning;
 using StackExchange.Redis;
 
 namespace backend.Repository.Classes;
@@ -10,11 +9,11 @@ public class NewsCacheRepo(IConnectionMultiplexer redis, ILogger<NewsCacheRepo> 
 {
   private readonly IDatabase _database = redis.GetDatabase();
 
-  public async Task<List<NewsItem>?> GetNewsAsync(string cachedKey)
+  public async Task<List<NewsItem>?> GetNewsByDateAsync(string dateKey)
   {
     try
     {
-      var cachedData = await _database.StringGetAsync(cachedKey);
+      var cachedData = await _database.StringGetAsync(dateKey);
       if (cachedData.HasValue)
       {
         return JsonSerializer.Deserialize<List<NewsItem>>(cachedData!);
@@ -23,63 +22,43 @@ public class NewsCacheRepo(IConnectionMultiplexer redis, ILogger<NewsCacheRepo> 
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "Error getting cached news");
+      logger.LogError(ex, "Error getting cached news for date key {DateKey}", dateKey);
       return null;
     }
   }
 
-  public async Task SetNewsAsync(string cacheKey, List<NewsItem> news, TimeSpan expiration)
+  public async Task SetNewsByDateAsync(string dateKey, List<NewsItem> news)
   {
     try
     {
       var serializedNews = JsonSerializer.Serialize(news);
-      await _database.StringSetAsync(cacheKey, serializedNews, expiration);
+      // Set expiration to 15 days, news doesn't change
+      await _database.StringSetAsync(dateKey, serializedNews, TimeSpan.FromDays(15));
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "Error setting cached news for key {CacheKey}", cacheKey);
+      logger.LogError(ex, "Error setting cached news for date key {DateKey}", dateKey);
     }
   }
 
-  public async Task DeleteNewsAsync(string cacheKey)
+  public async Task ClearAllNewsCacheAsync()
   {
     try
     {
-      await _database.KeyDeleteAsync(cacheKey);
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Error deleting cached news for key {CacheKey}", cacheKey);
-    }
-  }
+      var server = redis.GetServer(redis.GetEndPoints().First());
+      var keys = server.Keys(pattern: "news:date:*");
 
-  public async Task<int> GetLatestGroupNumberAsync()
-  {
-    try
-    {
-      var groupNumberData = await _database.StringGetAsync("news:latest_group");
-      if (groupNumberData.HasValue)
+      if (keys.Any())
       {
-        return int.Parse(groupNumberData!);
+        await _database.KeyDeleteAsync(keys.ToArray());
+        logger.LogInformation("Cleared {Count} news cache keys", keys.Count());
       }
-      return 1; // Start with group 1 if no groups exist
     }
     catch (Exception ex)
     {
-      logger.LogWarning(ex, "Error getting latest group number, defaulting to 1");
-      return 1;
+      logger.LogError(ex, "Error clearing all news cache");
+      throw;
     }
   }
 
-  public async Task SetLatestGroupNumberAsync(int groupNumber)
-  {
-    try
-    {
-      await _database.StringSetAsync("news:latest_group", groupNumber.ToString());
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Error setting latest group number");
-    }
-  }
 }

@@ -5,6 +5,7 @@ using backend.Services.Interfaces.NewsAggregation;
 using backend.MCP.Interfaces;
 using backend.Repository.Interfaces;
 using backend.Constants;
+using backend.Services.Interfaces.Cache;
 
 namespace backend.Services.Classes.NewsAggregation;
 
@@ -12,7 +13,8 @@ public class GitHubService(
   IOpenAIService openAIService,
   IMcpClientService mcpClientService,
   ILogger<GitHubService> logger,
-  INewsItemRepo newsItemRepo
+  INewsItemRepo newsItemRepo,
+  INewsCacheService newsCacheService
 ) : IGitHubService
 {
   public async Task<List<NewsItem>> GetGitHubAIUpdatesAsync()
@@ -68,6 +70,7 @@ public class GitHubService(
 
     try
     {
+      await newsCacheService.UpdateNewsGroupsAsync(filteredNews);
       await newsItemRepo.AddItems(filteredNews);
       logger.LogInformation($"Successfully saved {filteredNews.Count} GitHub news items");
     }
