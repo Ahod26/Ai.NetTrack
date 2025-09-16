@@ -1,3 +1,4 @@
+using backend.Models.Domain;
 using backend.Services.Interfaces.News;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,13 +11,22 @@ namespace backend.Controllers;
 public class NewsController(INewsService newsService, ILogger<NewsController> logger) : ControllerBase
 {
   [HttpGet("")]
-  public async Task<IActionResult> GetNewsPerDate([FromQuery] DateTime? date = null)
+  public async Task<IActionResult> GetNewsPerDate([FromQuery] List<DateTime>? dates = null)
   {
     try
     {
-      var targetDate = date?.Date ?? DateTime.UtcNow.Date;
-      var news = await newsService.GetNewsItems(targetDate);
-      return Ok(news);
+      var targetDates = dates?.Select(d => d.Date).ToList()?? new List<DateTime> { DateTime.UtcNow.Date };
+
+      var allNews = new List<NewsItem>();
+
+      foreach (var date in targetDates)
+      {
+        var newsForDate = await newsService.GetNewsItems(date);
+        allNews.AddRange(newsForDate);
+      }
+
+      // Return sorted by date, newest first
+      return Ok(allNews.OrderByDescending(n => n.PublishedDate));
     }
     catch (Exception ex)
     {
