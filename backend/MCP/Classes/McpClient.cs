@@ -11,10 +11,10 @@ namespace backend.MCP.Classes;
 
 public class McpClientService(
   ILogger<McpClientService> logger,
-  IOptions<McpSettings> options) : IMcpClientService, IAsyncDisposable
+  IOptions<McpSettings> options) : IMcpClientService
 {
   private readonly ConcurrentDictionary<string, IMcpClient> clients = new();
-  private readonly ConcurrentDictionary<string, string> toolToServerMap = new();
+  private readonly ConcurrentDictionary<string, McpClientTool> toolToServerMap = new();
   private McpSettings settings = options.Value;
   private bool _initialized = false;
 
@@ -30,7 +30,6 @@ public class McpClientService(
 
     try
     {
-      // Initialize all configured servers
       await InitializeGitHubClient();
       await InitializeDocsClient();
 
@@ -40,7 +39,6 @@ public class McpClientService(
     catch (Exception ex)
     {
       logger.LogError(ex, "Failed to initialize MCP clients");
-      await ShutdownAsync(); // Cleanup on failure
       throw;
     }
   }
@@ -98,12 +96,12 @@ public class McpClientService(
       var httpClient = new HttpClient(handler);
 
       var sseTransport = new SseClientTransport(
-          new SseClientTransportOptions
-          {
-            Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
-          },
-          httpClient, // Pass the custom HttpClient here
-          ownsHttpClient: true // Let the transport dispose the HttpClient
+        new SseClientTransportOptions
+        {
+          Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
+        },
+        httpClient, // Pass the custom HttpClient here
+        ownsHttpClient: true // Let the transport dispose the HttpClient
       );
 
       var client = await McpClientFactory.CreateAsync(sseTransport);
@@ -130,12 +128,12 @@ public class McpClientService(
       {
         // Use prefixed tool names to avoid conflicts between servers
         var toolKey = $"{serverName}_{tool.Name}";
-        toolToServerMap.TryAdd(toolKey, serverName);
+        toolToServerMap.TryAdd(toolKey, tool);
 
         // Also register without prefix for backward compatibility if no conflict exists
         if (!toolToServerMap.ContainsKey(tool.Name))
         {
-          toolToServerMap.TryAdd(tool.Name, serverName);
+          toolToServerMap.TryAdd(tool.Name, tool);
         }
       }
 
@@ -147,25 +145,9 @@ public class McpClientService(
     }
   }
 
-  public async Task<IList<McpClientTool>> GetAllAvailableToolsAsync()
+  public IList<McpClientTool> GetAllAvailableToolsAsync()
   {
-    var allTools = new List<McpClientTool>();
-
-    foreach (var kvp in clients)
-    {
-      try
-      {
-        var tools = await kvp.Value.ListToolsAsync();
-        allTools.AddRange(tools);
-      }
-      catch (Exception ex)
-      {
-        logger.LogError(ex, $"Failed to get tools from server '{kvp.Key}'");
-      }
-    }
-
-    logger.LogDebug($"Retrieved {allTools.Count} tools across {clients.Count} servers");
-    return allTools;
+    return toolToServerMap.Values.Distinct().ToList();
   }
 
   public async Task<CallToolResult> CallToolAsync(string toolName, Dictionary<string, object?> parameters)
@@ -175,10 +157,23 @@ public class McpClientService(
       throw new InvalidOperationException("MCP clients not initialized. Call InitializeAsync() first.");
     }
 
-    // Find the server for this tool
-    if (!toolToServerMap.TryGetValue(toolName, out var serverName))
+    // Find the tool
+    if (!toolToServerMap.TryGetValue(toolName, out var tool))
     {
       throw new InvalidOperationException($"Tool '{toolName}' not found in any connected server");
+    }
+
+    // Determine server name from tool name prefix or search through clients
+    string serverName;
+    if (toolName.Contains('_'))
+    {
+      serverName = toolName.Split('_')[0];
+    }
+    else
+    {
+      // Find which server has this tool by checking all clients
+      serverName = clients.Keys.FirstOrDefault(s => toolToServerMap.ContainsKey($"{s}_{toolName}"))
+                  ?? throw new InvalidOperationException($"Could not determine server for tool '{toolName}'");
     }
 
     if (!clients.TryGetValue(serverName, out var client))
@@ -207,69 +202,6 @@ public class McpClientService(
     }
   }
 
-  public bool IsConnected(string serverName)
-  {
-    return clients.ContainsKey(serverName);
-  }
-
-  public async Task<List<string>> GetConnectedServersAsync()
-  {
-    var connectedServers = new List<string>();
-
-    foreach (var kvp in clients)
-    {
-      try
-      {
-        // Try to ping the server to verify it's actually responsive
-        await kvp.Value.ListToolsAsync();
-        connectedServers.Add(kvp.Key);
-      }
-      catch (Exception ex)
-      {
-        logger.LogWarning(ex, $"Server '{kvp.Key}' appears disconnected");
-      }
-    }
-
-    return connectedServers;
-  }
-
-  public async Task ShutdownAsync()
-  {
-    logger.LogInformation("Shutting down MCP clients...");
-
-    var shutdownTasks = new List<Task>();
-
-    // Dispose clients
-    foreach (var kvp in clients)
-    {
-      shutdownTasks.Add(Task.Run(async () =>
-      {
-        try
-        {
-          await kvp.Value.DisposeAsync();
-          logger.LogDebug($"Disposed client for server '{kvp.Key}'");
-        }
-        catch (Exception ex)
-        {
-          logger.LogError(ex, $"Error disposing client for server '{kvp.Key}'");
-        }
-      }));
-    }
-
-    await Task.WhenAll(shutdownTasks);
-
-    clients.Clear();
-    toolToServerMap.Clear();
-    _initialized = false;
-
-    logger.LogInformation("All MCP clients shut down successfully");
-  }
-
-  public async ValueTask DisposeAsync()
-  {
-    await ShutdownAsync();
-    GC.SuppressFinalize(this);
-  }
 }
 
 // GitHub MCP server - https://github.com/github/github-mcp-server
