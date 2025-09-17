@@ -3,14 +3,12 @@ using backend.Constants;
 using backend.Models.Domain;
 using backend.Repository.Interfaces;
 using backend.Services.Interfaces.LLM;
-using backend.Services.Interfaces.NewsAggregation;
 using backend.Models.Configuration;
 using Microsoft.Extensions.Options;
-using backend.MCP.Interfaces;
 using backend.Services.Interfaces.Cache;
+using backend.Background.Interfaces;
 
-namespace backend.Services.Classes.NewsAggregation;
-
+namespace backend.Background.Classes;
 public class YouTubeService(
   IOpenAIService openAIService,
   ILogger<YouTubeService> logger,

@@ -1,5 +1,3 @@
-using backend.Services.Interfaces.NewsAggregation;
-using backend.Services.Classes.NewsAggregation;
 using backend.Services.Interfaces.Cache;
 using backend.Services.Classes.Cache;
 using backend.Services.Interfaces.Chat;
@@ -13,6 +11,8 @@ using backend.MCP.Classes;
 using backend.MCP.Interfaces;
 using backend.Services.Interfaces.News;
 using backend.Services.Classes.News;
+using backend.Background.Interfaces;
+using backend.Background.Classes;
 
 namespace backend.Extensions;
 

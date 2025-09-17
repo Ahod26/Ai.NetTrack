@@ -1,4 +1,4 @@
-namespace backend.Services.Interfaces.NewsAggregation;
+namespace backend.Background.Interfaces;
 
 public interface INewsCollectorService
 {

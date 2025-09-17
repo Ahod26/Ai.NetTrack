@@ -1,14 +1,13 @@
 using System.Text.Json;
 using backend.Models.Domain;
 using backend.Services.Interfaces.LLM;
-using backend.Services.Interfaces.NewsAggregation;
 using backend.MCP.Interfaces;
 using backend.Repository.Interfaces;
 using backend.Constants;
 using backend.Services.Interfaces.Cache;
+using backend.Background.Interfaces;
 
-namespace backend.Services.Classes.NewsAggregation;
-
+namespace backend.Background.Classes;
 public class GitHubService(
   IOpenAIService openAIService,
   IMcpClientService mcpClientService,

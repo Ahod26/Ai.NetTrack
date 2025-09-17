@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
+using backend.Background;
 using backend.Mapping;
-using backend.Services.Background;
-using backend.Services.Classes.NewsAggregation;
 
 namespace backend.Extensions;
 

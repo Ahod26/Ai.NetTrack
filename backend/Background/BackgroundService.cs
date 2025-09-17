@@ -1,7 +1,6 @@
+using backend.Background.Interfaces;
 using backend.MCP.Interfaces;
-using backend.Services.Interfaces.NewsAggregation;
-
-namespace backend.Services.Background;
+namespace backend.Background;
 
 public class NewsAggregationService(
   IServiceScopeFactory scopeFactory,
@@ -26,7 +25,7 @@ public class NewsAggregationService(
         await newsCollector.CollectAllNews();
 
         logger.LogInformation("News aggregation completed successfully");
-        await Task.Delay(TimeSpan.FromDays(1), cancellationToken); 
+        await Task.Delay(TimeSpan.FromDays(1), cancellationToken);
       }
       catch (Exception ex)
       {

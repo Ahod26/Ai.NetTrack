@@ -3,16 +3,12 @@ using System.Xml;
 using backend.Models.Domain;
 using backend.Repository.Interfaces;
 using backend.Services.Interfaces.LLM;
-using backend.Services.Interfaces.NewsAggregation;
-using backend.Models.Configuration;
-using Microsoft.Extensions.Options;
 using backend.Constants;
 using System.Xml.Linq;
 using backend.Services.Interfaces.Cache;
-// using System.Net; // removed unused after image extraction removal
+using backend.Background.Interfaces;
 
-namespace backend.Services.Classes.NewsAggregation;
-
+namespace backend.Background.Classes;
 public class RssService(
   IOpenAIService openAIService,
   ILogger<RssService> logger,
@@ -138,8 +134,7 @@ public class RssService(
       return [];
     }
   }
-
-  // OpenAI RSS feed support removed 
+  
   private static string CleanHtmlContent(string htmlContent)
   {
     if (string.IsNullOrEmpty(htmlContent))

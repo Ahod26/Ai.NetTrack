@@ -1,7 +1,7 @@
-using backend.Services.Interfaces.NewsAggregation;
 
-namespace backend.Services.Classes.NewsAggregation;
+using backend.Background.Interfaces;
 
+namespace backend.Background.Classes;
 public class NewsCollectorService(
   IGitHubService gitHubService,
   IYouTubeService youTubeService,
