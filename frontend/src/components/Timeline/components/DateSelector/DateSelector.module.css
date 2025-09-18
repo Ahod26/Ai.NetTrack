@@ -1,0 +1,313 @@
+.dateSelector {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.selectorButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  min-width: 160px;
+}
+
+.selectorButton:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
+}
+
+.icon {
+  font-size: 1rem;
+}
+
+.label {
+  flex: 1;
+  text-align: left;
+}
+
+.arrow {
+  transition: transform 0.2s ease;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.arrow.open {
+  transform: rotate(180deg);
+}
+
+.selectedDates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 320px;
+}
+
+.dateTag {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.removeDate {
+  background: none;
+  border: none;
+  color: var(--bg-primary);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  margin-left: 0.25rem;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.removeDate:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dropdown {
+  position: fixed;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  padding: 0;
+  margin-top: 0.5rem;
+  min-width: 320px;
+  overflow: hidden;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.quickOptions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.quickOption {
+  flex: 1;
+  padding: 0.625rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.quickOption:hover {
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-color: var(--accent);
+}
+
+.calendar {
+  padding: 1rem;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.monthYear {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.weekday {
+  padding: 0.5rem 0.25rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.125rem;
+}
+
+.calendarDay {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.calendarDay:hover:not(.disabled) {
+  background: var(--bg-tertiary);
+}
+
+.calendarDay.otherMonth {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.calendarDay.today {
+  background: var(--accent);
+  color: var(--bg-primary);
+  font-weight: 600;
+}
+
+.calendarDay.today:hover {
+  background: var(--accent-hover);
+}
+
+.calendarDay.selected {
+  background: var(--accent);
+  color: var(--bg-primary);
+  font-weight: 600;
+}
+
+.calendarDay.selected:hover {
+  background: var(--accent-hover);
+}
+
+.calendarDay.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
+.calendarDay.disabled:hover {
+  background: transparent;
+}
+
+.tempSelection {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-tertiary);
+}
+
+.tempSelectionText {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  text-align: center;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.cancelButton,
+.applyButton {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.cancelButton:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.applyButton {
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-color: var(--accent);
+}
+
+.applyButton:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.applyButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .selectorButton {
+    min-width: 140px;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .selectedDates {
+    max-width: 280px;
+  }
+
+  .dropdown {
+    min-width: 280px;
+    left: 0;
+    right: 0;
+  }
+
+  .calendar {
+    padding: 0.75rem;
+  }
+
+  .calendarDay {
+    font-size: 0.8125rem;
+  }
+
+  .quickOptions {
+    padding: 0.75rem;
+  }
+
+  .actionButtons {
+    padding: 0.75rem;
+  }
+}

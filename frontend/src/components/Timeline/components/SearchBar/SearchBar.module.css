@@ -1,0 +1,92 @@
+.searchBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+  min-width: 250px;
+  max-width: 400px;
+  flex: 1;
+}
+
+.searchBar:hover {
+  border-color: var(--accent);
+}
+
+.searchBar.focused {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.1);
+}
+
+.searchIcon {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  padding: 0;
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.searchInput:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.searchInput:disabled::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.clearButton {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.25rem;
+  margin-left: 0.5rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.clearButton:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .searchBar {
+    min-width: 200px;
+    max-width: 300px;
+    padding: 0.625rem 0.75rem;
+  }
+
+  .searchInput {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .searchBar {
+    min-width: 150px;
+    max-width: 100%;
+  }
+}

@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text.Json;
 using backend.MCP.Interfaces;
 using backend.Models.Configuration;

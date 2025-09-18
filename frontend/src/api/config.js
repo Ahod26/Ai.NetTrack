@@ -17,5 +17,8 @@ export const API_ENDPOINTS = {
   MESSAGES: {
     STARREDMESSAGES: "messages/starred",
     TOGGLESTAR: "messages" // Base route, append /{messageId}/starred
+  },
+  NEWS:{
+    GETNEWSBYDATE: "/news"
   }
 };

@@ -1,0 +1,144 @@
+import { useEffect } from "react";
+import styles from "./NewsModal.module.css";
+import { sourceTypeIcons, sourceTypeNames } from "../../shared";
+import { useDateUtils } from "../../../../hooks/useDateUtils";
+
+export default function NewsModal({ newsItem, isOpen, onClose }) {
+  const {
+    title,
+    content,
+    summary,
+    url,
+    imageUrl,
+    sourceType,
+    sourceName,
+    publishedDate,
+  } = newsItem || {};
+
+  const { formatFullDate } = useDateUtils();
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    const handleBodyScroll = () => {
+      if (isOpen) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "unset";
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscape);
+      handleBodyScroll();
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, onClose]);
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const handleExternalLink = () => {
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  if (!isOpen || !newsItem) return null;
+
+  return (
+    <div className={styles.modalOverlay} onClick={handleBackdropClick}>
+      <div className={styles.modalContent}>
+        <header className={styles.modalHeader}>
+          <div className={styles.sourceInfo}>
+            <img
+              src={
+                sourceTypeIcons[sourceType] ||
+                "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23666' viewBox='0 0 24 24'%3E%3Cpath d='M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z'/%3E%3C/svg%3E"
+              }
+              alt={sourceTypeNames[sourceType] || "Unknown"}
+              className={styles.sourceIcon}
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+            <div className={styles.sourceDetails}>
+              <span className={styles.sourceName}>
+                {sourceName || sourceTypeNames[sourceType] || "Unknown"}
+              </span>
+              <time className={styles.publishedDate} dateTime={publishedDate}>
+                {formatFullDate(publishedDate)}
+              </time>
+            </div>
+          </div>
+          <button
+            className={styles.closeButton}
+            onClick={onClose}
+            aria-label="Close modal"
+          >
+            ✕
+          </button>
+        </header>
+
+        <div className={styles.modalBody}>
+          <h1 className={styles.title}>{title || "Untitled"}</h1>
+
+          {imageUrl && (
+            <div className={styles.imageContainer}>
+              <img
+                src={imageUrl}
+                alt={title || "News image"}
+                className={styles.image}
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
+            </div>
+          )}
+
+          {summary && (
+            <div className={styles.summarySection}>
+              <h2 className={styles.sectionTitle}>Summary</h2>
+              <p className={styles.summary}>{summary}</p>
+            </div>
+          )}
+
+          {content && (
+            <div className={styles.contentSection}>
+              <h2 className={styles.sectionTitle}>Content</h2>
+              <div className={styles.content}>
+                <p className={styles.contentText}>{content}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <footer className={styles.modalFooter}>
+          {url && (
+            <button
+              className={styles.externalLinkButton}
+              onClick={handleExternalLink}
+            >
+              <span>Read Original Article</span>
+              <span className={styles.externalIcon}>↗</span>
+            </button>
+          )}
+          <button className={styles.closeButtonSecondary} onClick={onClose}>
+            Close
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}

@@ -34,7 +34,7 @@ public class GitHubService(
       try
       {
         // Only get recent releases 
-        var releasesResult = await mcpClientService.CallToolAsync("list_releases", new Dictionary<string, object?>
+        var releasesResult = await mcpClientService.CallToolAsync("github_list_releases", new Dictionary<string, object?>
         {
           ["owner"] = owner,
           ["repo"] = repo,

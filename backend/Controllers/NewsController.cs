@@ -11,7 +11,7 @@ namespace backend.Controllers;
 public class NewsController(INewsService newsService, ILogger<NewsController> logger) : ControllerBase
 {
   [HttpGet("")]
-  public async Task<IActionResult> GetNewsPerDate([FromQuery] List<DateTime>? dates = null)
+  public async Task<IActionResult> GetNewsByDate([FromQuery] List<DateTime>? dates = null)
   {
     try
     {
