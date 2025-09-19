@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { sidebarActions } from "../../store/sidebarSlice";
 import { getNewsByDate } from "../../api/news";
+import { useDatePagination } from "../../hooks/useDatePagination";
 import DateSelector from "./components/DateSelector/DateSelector";
 import NewsTypeFilter from "./components/NewsTypeFilter/NewsTypeFilter";
 import SearchBar from "./components/SearchBar/SearchBar";
@@ -16,6 +17,7 @@ export default function Timeline() {
 
   const [newsItems, setNewsItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDates, setSelectedDates] = useState(() => {
     const today = new Date();
@@ -23,19 +25,91 @@ export default function Timeline() {
     yesterday.setDate(today.getDate() - 1);
     return [yesterday, today];
   });
-  const [selectedNewsTypes, setSelectedNewsTypes] = useState([]);
+  const [selectedNewsType, setSelectedNewsType] = useState(null); // Single news type
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedNewsItem, setSelectedNewsItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Date pagination hook
+  const {
+    getCurrentDateBatch,
+    loadNextBatch,
+    hasMore,
+    resetPagination,
+    currentPage,
+    dateBatches,
+  } = useDatePagination(selectedDates, 5);
+
+  // Load more function for infinite scroll
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loadingMore) return;
+
+    try {
+      setLoadingMore(true);
+      // Do not change global error state during incremental loads
+
+      // Determine the next batch based on current pagination state
+      const nextIndex = currentPage + 1;
+      const nextBatch = dateBatches[nextIndex];
+      if (!nextBatch || nextBatch.length === 0) {
+        // Nothing more to load
+        return;
+      }
+
+      // Fetch using the next batch, then advance the pagination cursor
+      const newData = await getNewsByDate(nextBatch, selectedNewsType);
+      setNewsItems((prev) => [...prev, ...(newData || [])]);
+      loadNextBatch();
+    } catch (err) {
+      console.error("Error loading more news:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [
+    hasMore,
+    loadingMore,
+    currentPage,
+    dateBatches,
+    selectedNewsType,
+    loadNextBatch,
+  ]);
+
+  // IntersectionObserver to trigger loadMore when reaching the bottom sentinel
+  const contentRef = useRef(null);
+  const sentinelRef = useRef(null);
+  useEffect(() => {
+    const el = contentRef.current;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    // If the content container isn't scrollable, observe against the viewport
+    const useViewportRoot = !el || el.scrollHeight <= el.clientHeight;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && !loading && !loadingMore && hasMore) {
+          loadMore();
+        }
+      },
+      {
+        root: useViewportRoot ? null : el,
+        rootMargin: "200px 0px 200px 0px",
+        threshold: 0.01,
+      }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMore, loading, loadingMore, hasMore]);
 
   // Close sidebar when Timeline component mounts
   useEffect(() => {
     dispatch(sidebarActions.closeSidebar());
   }, [dispatch]);
 
-  // Load news when dates change
+  // Initial load and reload when dates or news type change
   useEffect(() => {
-    const loadNewsData = async () => {
+    const loadInitialNews = async () => {
       if (selectedDates.length === 0) {
         setNewsItems([]);
         return;
@@ -44,8 +118,19 @@ export default function Timeline() {
       try {
         setLoading(true);
         setError(null);
-        const data = await getNewsByDate(selectedDates);
+        resetPagination(); // Reset pagination when dates or type change
+
+        // Always load the first batch explicitly to avoid async state race
+        const firstBatch = dateBatches[0] || [];
+        const data = await getNewsByDate(firstBatch, selectedNewsType);
         setNewsItems(data || []);
+        // Ensure pagination knows we've consumed the first batch
+        // so the next call targets the second batch
+        if (dateBatches.length > 1) {
+          // Advance to page 1 if applicable
+          // Safe to call; will no-op if already at 0->1 boundary not allowed
+          // We rely on loadMore to fetch next using currentPage+1
+        }
       } catch (err) {
         setError("Failed to load news. Please try again.");
         console.error("Error loading news:", err);
@@ -54,8 +139,8 @@ export default function Timeline() {
       }
     };
 
-    loadNewsData();
-  }, [selectedDates]);
+    loadInitialNews();
+  }, [selectedDates, selectedNewsType, resetPagination, dateBatches]);
 
   const loadNews = async () => {
     if (selectedDates.length === 0) {
@@ -66,7 +151,10 @@ export default function Timeline() {
     try {
       setLoading(true);
       setError(null);
-      const data = await getNewsByDate(selectedDates);
+      resetPagination();
+
+      const dateBatch = getCurrentDateBatch();
+      const data = await getNewsByDate(dateBatch, selectedNewsType);
       setNewsItems(data || []);
     } catch (err) {
       setError("Failed to load news. Please try again.");
@@ -90,8 +178,8 @@ export default function Timeline() {
     setSelectedDates(dates);
   };
 
-  const handleNewsTypeChange = (types) => {
-    setSelectedNewsTypes(types);
+  const handleNewsTypeChange = (newsType) => {
+    setSelectedNewsType(newsType);
   };
 
   const handleSearchChange = (query) => {
@@ -104,14 +192,14 @@ export default function Timeline() {
         !isSidebarOpen ? styles.sidebarClosed : ""
       }`}
     >
-      <div className={styles.content}>
+      <div className={styles.content} ref={contentRef}>
         <div className={styles.controls}>
           <DateSelector
             selectedDates={selectedDates}
             onDateChange={handleDateChange}
           />
           <NewsTypeFilter
-            selectedTypes={selectedNewsTypes}
+            selectedType={selectedNewsType}
             onTypeChange={handleNewsTypeChange}
           />
           <SearchBar
@@ -154,6 +242,21 @@ export default function Timeline() {
             ))}
           </div>
         )}
+
+        {/* Sentinel used to detect when user reached the bottom to load more */}
+        <div ref={sentinelRef} style={{ height: 1 }} />
+
+        {loadingMore && (
+          <div className={styles.loadingMoreContainer}>
+            <LoadingSpinner />
+            <p className={styles.loadingText}>Loading more news...</p>
+          </div>
+        )}
+
+        {/* Removed end-of-results message per request */}
+
+        {/* Sentinel at the very bottom to detect when to load more */}
+        <div ref={sentinelRef} style={{ height: 1 }} />
       </div>
 
       <NewsModal

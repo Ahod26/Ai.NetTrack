@@ -9,11 +9,18 @@ public class NewsCacheRepo(IConnectionMultiplexer redis, ILogger<NewsCacheRepo> 
 {
   private readonly IDatabase _database = redis.GetDatabase();
 
-  public async Task<List<NewsItem>?> GetNewsByDateAsync(string dateKey)
+  public async Task<List<NewsItem>?> GetNewsAsync(string dateKey, int newsType)
   {
     try
     {
       var cachedData = await _database.StringGetAsync(dateKey);
+
+      if (cachedData.HasValue && newsType != 0)
+      {
+        var dataList = JsonSerializer.Deserialize<List<NewsItem>>(cachedData!);
+        return dataList!.Where(n => (int)n.SourceType == newsType).ToList();
+      }
+
       if (cachedData.HasValue)
       {
         return JsonSerializer.Deserialize<List<NewsItem>>(cachedData!);

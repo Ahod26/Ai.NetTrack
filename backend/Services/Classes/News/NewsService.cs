@@ -11,17 +11,19 @@ public class NewsService(
   ILogger<NewsService> logger
 ) : INewsService
 {
-  public async Task<List<NewsItem>> GetNewsItems(DateTime targetDate)
+  public async Task<List<NewsItem>> GetNewsItems(DateTime targetDates, int newsType)
   {
     try
     {
-      var newsList = await newsCacheService.GetNewsByDateAsync(targetDate);
+      var newsList = await newsCacheService.GetNewsAsync(targetDates, newsType);
       if (newsList.Count != 0)
       {
+        logger.LogWarning("cache hit");
         return newsList;
       }
-      var newsListFromDB = await newsRepo.GetNewsByDateAsync(targetDate);
+      var newsListFromDB = await newsRepo.GetNewsAsync(targetDates, newsType);
       await newsCacheService.UpdateNewsGroupsAsync(newsListFromDB);
+      logger.LogWarning("DB hit");
       return newsListFromDB;
     }
     catch (Exception ex)

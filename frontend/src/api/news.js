@@ -1,8 +1,13 @@
 import { API_BASE_URL, API_ENDPOINTS } from "./config";
 
-export async function getNewsByDate(dates = null) {
+export async function getNewsByDate(dates = null, newsType = null) {
   try {
     let url = `${API_BASE_URL}${API_ENDPOINTS.NEWS.GETNEWSBYDATE}`;
+
+    // Add news type to route if provided
+    if (newsType && newsType > 0) {
+      url = `${API_BASE_URL}${API_ENDPOINTS.NEWS.GETNEWSBYDATE}/${newsType}`;
+    }
 
     // Add dates as query parameters if provided
     if (dates && dates.length > 0) {

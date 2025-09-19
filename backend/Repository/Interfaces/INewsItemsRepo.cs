@@ -5,5 +5,5 @@ namespace backend.Repository.Interfaces;
 public interface INewsItemRepo
 {
   Task AddItems(List<NewsItem> items);
-  Task<List<NewsItem>> GetNewsByDateAsync(DateTime targetDate);
+  Task<List<NewsItem>> GetNewsAsync(DateTime targetDate, int newsType);
 }

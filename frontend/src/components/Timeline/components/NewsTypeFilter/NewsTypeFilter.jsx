@@ -32,7 +32,7 @@ const newsTypes = [
   },
 ];
 
-export default function NewsTypeFilter({ selectedTypes, onTypeChange }) {
+export default function NewsTypeFilter({ selectedType, onTypeChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -47,31 +47,21 @@ export default function NewsTypeFilter({ selectedTypes, onTypeChange }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleType = (typeValue) => {
-    const updatedTypes = selectedTypes.includes(typeValue)
-      ? selectedTypes.filter((type) => type !== typeValue)
-      : [...selectedTypes, typeValue];
-
-    onTypeChange(updatedTypes);
-  };
-
-  const selectAll = () => {
-    onTypeChange(newsTypes.map((type) => type.value));
+  const toggleType = (typeId) => {
+    // If clicking the same type, clear selection (show all)
+    // Otherwise, select the new type
+    const newSelectedType = selectedType === typeId ? null : typeId;
+    onTypeChange(newSelectedType);
   };
 
   const clearAll = () => {
-    onTypeChange([]);
-  };
-
-  const getSelectedCount = () => {
-    return selectedTypes.length;
+    onTypeChange(null); // null means show all types
   };
 
   const getDisplayText = () => {
-    const count = getSelectedCount();
-    if (count === 0) return "All news types";
-    if (count === newsTypes.length) return "All types";
-    return `${count} type${count > 1 ? "s" : ""}`;
+    if (!selectedType) return "All news types";
+    const selectedTypeObj = newsTypes.find((type) => type.id === selectedType);
+    return selectedTypeObj ? selectedTypeObj.name : "All news types";
   };
 
   return (
@@ -94,17 +84,10 @@ export default function NewsTypeFilter({ selectedTypes, onTypeChange }) {
             <div className={styles.headerActions}>
               <button
                 className={styles.headerAction}
-                onClick={selectAll}
-                disabled={selectedTypes.length === newsTypes.length}
-              >
-                All
-              </button>
-              <button
-                className={styles.headerAction}
                 onClick={clearAll}
-                disabled={selectedTypes.length === 0}
+                disabled={!selectedType}
               >
-                None
+                Clear
               </button>
             </div>
           </div>
@@ -113,10 +96,11 @@ export default function NewsTypeFilter({ selectedTypes, onTypeChange }) {
             {newsTypes.map((type) => (
               <label key={type.id} className={styles.typeItem}>
                 <input
-                  type="checkbox"
+                  type="radio"
+                  name="newsType"
                   className={styles.checkbox}
-                  checked={selectedTypes.includes(type.value)}
-                  onChange={() => toggleType(type.value)}
+                  checked={selectedType === type.id}
+                  onChange={() => toggleType(type.id)}
                 />
                 <div className={styles.typeContent}>
                   <div className={styles.typeHeader}>

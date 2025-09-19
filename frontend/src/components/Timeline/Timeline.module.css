@@ -44,6 +44,30 @@
   font-size: 0.875rem;
 }
 
+.loadingMoreContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.endMessageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.endMessage {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
 .errorContainer {
   display: flex;
   flex-direction: column;

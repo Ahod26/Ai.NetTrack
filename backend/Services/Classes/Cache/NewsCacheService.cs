@@ -9,42 +9,6 @@ public class NewsCacheService(
     ILogger<NewsCacheService> logger
 ) : INewsCacheService
 {
-  public async Task<List<NewsItem>> GetNewsAsync(int count)
-  {
-    try
-    {
-      var allNews = new List<NewsItem>();
-      var currentDate = DateTime.UtcNow.Date;
-      var daysChecked = 0;
-
-      // Keep going back in time until we have enough news or checked 30 days
-      while (allNews.Count < count && daysChecked < 30)
-      {
-        var dateKey = GenerateDateKey(currentDate);
-        var dayNews = await newsCacheRepo.GetNewsByDateAsync(dateKey);
-
-        if (dayNews != null && dayNews.Any())
-        {
-          allNews.AddRange(dayNews);
-        }
-
-        currentDate = currentDate.AddDays(-1);
-        daysChecked++;
-      }
-
-      // Sort by PublishedDate descending (newest first) and take requested count
-      return allNews
-          .OrderByDescending(n => n.PublishedDate)
-          .Take(count)
-          .ToList();
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Error getting cached news");
-      return [];
-    }
-  }
-
   public async Task UpdateNewsGroupsAsync(List<NewsItem> newNewsItems)
   {
     try
@@ -60,7 +24,7 @@ public class NewsCacheService(
         var dateKey = GenerateDateKey(dateGroup.Key);
 
         // Get existing news for this date
-        var existingNews = await newsCacheRepo.GetNewsByDateAsync(dateKey) ?? [];
+        var existingNews = await newsCacheRepo.GetNewsAsync(dateKey, 0) ?? [];
 
         // Add new items to existing ones
         var allNewsForDate = existingNews.ToList();
@@ -87,12 +51,12 @@ public class NewsCacheService(
     }
   }
 
-  public async Task<List<NewsItem>> GetNewsByDateAsync(DateTime date)
+  public async Task<List<NewsItem>> GetNewsAsync(DateTime date, int newsType)
   {
     try
     {
       var dateKey = GenerateDateKey(date.Date);
-      return await newsCacheRepo.GetNewsByDateAsync(dateKey) ?? [];
+      return await newsCacheRepo.GetNewsAsync(dateKey, newsType) ?? [];
     }
     catch (Exception ex)
     {

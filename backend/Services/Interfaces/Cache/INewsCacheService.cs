@@ -4,8 +4,7 @@ namespace backend.Services.Interfaces.Cache;
 
 public interface INewsCacheService
 {
-  Task<List<NewsItem>> GetNewsAsync(int count);
   Task UpdateNewsGroupsAsync(List<NewsItem> newNewsItems);
-  Task<List<NewsItem>> GetNewsByDateAsync(DateTime date);
+  Task<List<NewsItem>> GetNewsAsync(DateTime date, int newsType);
   Task InvalidateNewsCache();
 }

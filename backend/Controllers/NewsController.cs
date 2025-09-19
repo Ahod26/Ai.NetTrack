@@ -11,17 +11,21 @@ namespace backend.Controllers;
 public class NewsController(INewsService newsService, ILogger<NewsController> logger) : ControllerBase
 {
   [HttpGet("")]
-  public async Task<IActionResult> GetNewsByDate([FromQuery] List<DateTime>? dates = null)
+  [HttpGet("{newsType:int:range(1,4)}")]
+  public async Task<IActionResult> GetNewsByDate([FromRoute] int? newsType, [FromQuery] List<DateTime>? dates = null)
   {
     try
     {
-      var targetDates = dates?.Select(d => d.Date).ToList()?? new List<DateTime> { DateTime.UtcNow.Date };
+      var targetDates = dates?.Select(d => d.Date).ToList() ?? new List<DateTime> { DateTime.UtcNow.Date };
+
+      if (targetDates.Count > 5)
+        return BadRequest("Too many dates requested");
 
       var allNews = new List<NewsItem>();
 
       foreach (var date in targetDates)
       {
-        var newsForDate = await newsService.GetNewsItems(date);
+        var newsForDate = await newsService.GetNewsItems(date, newsType.HasValue ? newsType.Value : 0);
         allNews.AddRange(newsForDate);
       }
 

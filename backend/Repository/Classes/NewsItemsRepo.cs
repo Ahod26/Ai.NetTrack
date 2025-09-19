@@ -31,13 +31,24 @@ public class NewsItemsRepo(ApplicationDbContext dbContext) : INewsItemRepo
     }
   }
 
-  public async Task<List<NewsItem>> GetNewsByDateAsync(DateTime targetDate)
+  public async Task<List<NewsItem>> GetNewsAsync(DateTime targetDate, int newsType)
   {
     var start = targetDate.Date;
     var end = start.AddDays(1);
 
-    return await dbContext.NewsItems
-      .Where(n => n.PublishedDate >= start && n.PublishedDate < end)
+    IQueryable<NewsItem> query;
+
+    if (newsType != 0)
+    {
+      query = dbContext.NewsItems
+        .Where(n => n.PublishedDate >= start && n.PublishedDate < end && (int)n.SourceType == newsType);
+    }
+    else
+    {
+      query = dbContext.NewsItems
+        .Where(n => n.PublishedDate >= start && n.PublishedDate < end);
+    }
+    return await query
       .OrderByDescending(n => n.PublishedDate)
       .ToListAsync();
   }
