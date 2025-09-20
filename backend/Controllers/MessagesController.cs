@@ -2,12 +2,14 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using backend.Services.Interfaces.Chat;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace backend.Controllers;
 
 [Route("[controller]")]
 [ApiController]
 [Authorize]
+[EnableRateLimiting("messages")]
 public class MessagesController(IMessagesService messagesService, ILogger<MessagesController> logger)
 : ControllerBase
 {

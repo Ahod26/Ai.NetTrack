@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using backend.Models.Dtos;
 using backend.Services.Interfaces.Auth;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace backend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[EnableRateLimiting("auth")]
 public class AuthController
 (ILogger<AuthController> logger, IAuthService authService) : ControllerBase
 {

@@ -5,12 +5,14 @@ using Microsoft.AspNetCore.Mvc;
 using backend.Models.Dtos;
 using backend.Filters;
 using backend.Services.Interfaces.Chat;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace backend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
 [Authorize]
+[EnableRateLimiting("chat")]
 public class ChatController
 (IChatService chatService, ILogger<ChatController> logger) : ControllerBase
 {

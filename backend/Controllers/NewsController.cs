@@ -2,12 +2,14 @@ using backend.Models.Domain;
 using backend.Services.Interfaces.News;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace backend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
 [Authorize]
+[EnableRateLimiting("news")]
 public class NewsController(INewsService newsService, ILogger<NewsController> logger) : ControllerBase
 {
   [HttpGet("")]

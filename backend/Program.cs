@@ -12,6 +12,7 @@ builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddAuthentication(builder.Configuration);
 builder.Services.AddInfrastructure();
 builder.Services.AddExternalServices(builder.Configuration);
+builder.Services.AddRateLimitingServices();
 
 // business logic extensions
 builder.Services.AddRepositoriesServices();
@@ -28,6 +29,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
