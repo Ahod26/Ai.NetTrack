@@ -28,7 +28,6 @@ public static class ServiceExtensions
     services.AddScoped<IGitHubService, GitHubService>();
     services.AddScoped<IRssService, RssService>();
     services.AddScoped<IYouTubeService, YouTubeService>();
-    services.AddScoped<IDocsService, DocsService>();
     services.AddScoped<IMcpClientService, McpClientService>();
     services.AddScoped<INewsService, NewsService>();
 

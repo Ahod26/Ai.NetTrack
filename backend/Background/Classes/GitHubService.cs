@@ -23,8 +23,7 @@ public class GitHubService(
         ("microsoft", "semantic-kernel"),
         ("openai", "openai-dotnet"),
         ("dotnet", "extensions"),
-        ("modelcontextprotocol", "csharp-sdk"),
-        ("Azure", "azure-sdk-for-net")
+        ("modelcontextprotocol", "csharp-sdk")
     };
 
     var allData = new List<object>();

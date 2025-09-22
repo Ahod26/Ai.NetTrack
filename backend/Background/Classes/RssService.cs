@@ -9,14 +9,25 @@ using backend.Services.Interfaces.Cache;
 using backend.Background.Interfaces;
 
 namespace backend.Background.Classes;
+
 public class RssService(
   IOpenAIService openAIService,
   ILogger<RssService> logger,
   INewsItemRepo newsItemRepo,
-  INewsCacheService newsCacheService,
-  HttpClient httpClient
+  INewsCacheService newsCacheService
 ) : IRssService
 {
+  // SSL bypass, some issue with mac
+  private readonly HttpClient _httpClient = CreateHttpClientWithSslBypass();
+
+  private static HttpClient CreateHttpClientWithSslBypass()
+  {
+    var handler = new HttpClientHandler()
+    {
+      ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
+    return new HttpClient(handler);
+  }
   public async Task<List<NewsItem>> GetRSSUpdatesAsync()
   {
     var allData = new List<object>();
@@ -86,7 +97,7 @@ public class RssService(
       // Microsoft .NET DevBlog RSS feed
       var rssUrl = "https://devblogs.microsoft.com/dotnet/feed/";
 
-      var response = await httpClient.GetStringAsync(rssUrl);
+      var response = await _httpClient.GetStringAsync(rssUrl);
 
       // Parse RSS feed using XDocument
       var doc = XDocument.Parse(response);
@@ -134,7 +145,7 @@ public class RssService(
       return [];
     }
   }
-  
+
   private static string CleanHtmlContent(string htmlContent)
   {
     if (string.IsNullOrEmpty(htmlContent))

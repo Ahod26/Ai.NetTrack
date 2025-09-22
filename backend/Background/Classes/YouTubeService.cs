@@ -25,7 +25,10 @@ public class YouTubeService(
     var channels = new[]
     {
       ("UCsMica-v34Irf9KVTh6xx-g", "Microsoft Developer"), // @MicrosoftDeveloper
-      ("UCvtT19MZW8dq5Wwfu6B0oxw", ".NET")                 // @dotnet
+      ("UCvtT19MZW8dq5Wwfu6B0oxw", ".NET"),                // @dotnet
+      ("UCXZCJLdBC09xxGZ6gcdrc6A", "OpenAI"),              // @OpenAI
+      ("UCrDwWp7EBBv4NwvScIpBDOA", "Anthropic"),           // @anthropic-ai
+      ("UC0m-80FnNY2Qb7obvTL_2fA", "Microsoft Azure")      // @MicrosoftAzure
     };
 
     var allData = new List<object>();

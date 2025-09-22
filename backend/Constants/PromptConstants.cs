@@ -100,27 +100,36 @@ CRITICAL: Verify your title is 20 characters or less before responding. If over 
   public static string GetGitHubNewsPrompt(DateTime sinceDate, string serializedData)
   {
     return $@"
-Analyze this GitHub releases data and return ONLY significant AI updates from the LAST 24 HOURS as a JSON array of NewsItem objects.
+Analyze this GitHub releases data and return ONLY releases that directly enable or enhance AI application development from the LAST 24 HOURS as a JSON array of NewsItem objects.
 
-IMPORTANT TIME FILTERING:
+FOCUS: AI Application Development
+Only include releases where the primary purpose is building, integrating, or orchestrating AI applications. The release must provide tools, APIs, or frameworks that developers use to create AI-powered software.
+
+Core AI Development Areas:
+- Large Language Model integrations and APIs
+- AI agent frameworks and orchestration
+- Vector search and embedding technologies  
+- Chat completion and reasoning systems
+- AI model deployment and serving platforms
+- Conversational AI and natural language processing tools
+
+TIME FILTERING:
 - Only include releases published in the last 24 hours (since {sinceDate:yyyy-MM-dd HH:mm:ss} UTC)
-- Check the published_at, created_at, or date fields to verify timing
+- Check published_at, created_at, or date fields for verification
 
-CONTENT FILTERING RULES - Only include releases that developers should know about:
-- New features and capabilities 
-- Breaking changes and API modifications
-- Major releases and version updates
-- Security fixes and important bug fixes
-- Performance improvements
-- EXCLUDE: Minor patch releases with only bug fixes
+SIGNIFICANCE CRITERIA:
+- New capabilities that change how developers build AI applications
+- API changes that require developer attention
+- Major version releases with substantial new features
+- Critical fixes affecting AI development workflows
 
 GitHub Releases Data:
 {serializedData}
 
-For each significant release from the LAST 24 HOURS, CREATE original content:
-- Title: Write a clear, descriptive title explaining what was released
-- Content: Write detailed explanation of the release and its impact for developers  
-- Summary: Write 1-2 sentence summary of why this release matters
+For each qualifying release from the LAST 24 HOURS, create original content:
+- Title: Clear description of what was released and its AI development impact
+- Content: Detailed explanation of the release, new capabilities, and practical implications for AI developers
+- Summary: 1-2 sentences explaining why AI developers should care about this release
 - Url: Use the GitHub release URL from the data
 - PublishedDate: Use the actual release date from the data
 - Id: Always set to 0
@@ -139,7 +148,7 @@ CRITICAL: Your response must be a JSON object with a 'result' property containin
   ]
 }}
 
-If no significant releases occurred in the last 24 hours, return: {{""result"": []}}
+If no qualifying AI development releases occurred in the last 24 hours, return: {{""result"": []}}
 
 Do NOT include: ImageUrl, SourceType, SourceName";
   }
@@ -147,48 +156,39 @@ Do NOT include: ImageUrl, SourceType, SourceName";
   public static string GetYouTubeNewsPrompt(DateTime sinceDate, string serializedData)
   {
     return $@"
-Analyze this YouTube channel data and return ONLY significant AI-related videos from the LAST 24 HOURS as a JSON array of NewsItem objects.
+Analyze this YouTube channel data and return ONLY videos about AI development topics from the LAST 24 HOURS as a JSON array of NewsItem objects.
 
-IMPORTANT TIME FILTERING:
+FOCUS: AI Development Content
+Include any video content relevant to developers working with AI technologies. This includes tutorials, discussions, conferences, industry insights, and technical analysis related to AI development.
+
+AI Development Content Types:
+- Tutorials and implementations (any skill level)
+- Conference presentations and talks about AI development
+- Framework discussions (Semantic Kernel, OpenAI SDKs, MCP, etc.)
+- AI architecture and design pattern discussions
+- Industry trends and challenges in AI development
+- Tool demonstrations and reviews for AI workflows
+- Developer community discussions about AI topics
+
+TIME FILTERING:
 - Only include videos published in the last 24 hours (since {sinceDate:yyyy-MM-dd HH:mm:ss} UTC)
 - Check the PublishedAt field to verify timing
 
-CONTENT FILTERING RULES:
-1. PRIMARY FILTER - Video Title Analysis:
-   - Determine if the video is related to AI, machine learning, or artificial intelligence based on the title
-   - Use your understanding to identify AI-related content, tools, frameworks, development, or discussions
+AI RELEVANCE TEST:
+Ask: ""Is this video primarily about AI development, AI tools, or AI implementation for developers?""
+Only include content where the answer is clearly yes.
 
-2. SECONDARY FILTER - Description Analysis (if title is unclear):
-   - If the title doesn't clearly indicate whether it's AI-related, check the Description field
-   - Make an intelligent decision based on the video's actual content focus
+YouTube Channel Data:
+{serializedData}
 
-3. EXCLUDE from results:
-   - General programming videos without AI focus
-   - Pure infrastructure/DevOps content without AI components
-   - Basic tutorials unrelated to AI development
-   - Non-technical content
-
-VIDEO DATA STRUCTURE:
-Each video object in the data contains these properties:
-- VideoId: YouTube video ID
-- Title: Video title
-- Description: Video description
-- PublishedAt: Publication timestamp (ISO format)
-- Duration: Video length (ISO 8601 format)
-- Thumbnail: Thumbnail image URL
-- LiveBroadcastContent: Indicates if it was a live stream
-
-For each significant AI-related video from the LAST 24 HOURS, create a NewsItem:
+For each qualifying AI development video from the LAST 24 HOURS, create a NewsItem:
 - Title: Use the exact video title from Title field
-- Content: Write 2-3 detailed paragraphs based on the Title and Description, explaining what the video covers and its relevance for AI developers
-- Summary: Write 1-2 sentences summarizing the key takeaways from the video content for AI development
+- Content: Write 2-3 detailed paragraphs explaining the AI development topics covered, insights shared, and relevance for developers working with AI technologies
+- Summary: Write 1-2 sentences summarizing the key insights or information valuable for AI developers
 - Url: Construct as https://www.youtube.com/watch?v={{VideoId}}
 - ImageUrl: Use the Thumbnail field value
 - PublishedDate: Use the PublishedAt field value
 - Id: Always set to 0
-
-YouTube Channel Data:
-{serializedData}
 
 CRITICAL: Your response must be a JSON object with a 'result' property containing the array:
 {{
@@ -205,7 +205,7 @@ CRITICAL: Your response must be a JSON object with a 'result' property containin
   ]
 }}
 
-If no significant AI-related videos were published in the last 24 hours, return: {{""result"": []}}
+If no qualifying AI development videos were published in the last 24 hours, return: {{""result"": []}}
 
 Do NOT include: SourceType, SourceName properties in the output.";
   }
@@ -213,65 +213,47 @@ Do NOT include: SourceType, SourceName properties in the output.";
   public static string GetDocsNewsPrompt(DateTime sinceDate, string serializedData)
   {
     return $@"
-Analyze this Microsoft documentation and API update data and return ONLY significant AI/development-related updates from the LAST 24 HOURS as a JSON array of NewsItem objects.
+Analyze this Microsoft documentation data and return ONLY updates that directly advance AI application development capabilities from the LAST 24 HOURS as a JSON array of NewsItem objects.
 
-IMPORTANT TIME FILTERING:
+FOCUS: AI Development Enablement
+Only include documentation updates that introduce new capabilities, APIs, or guidance specifically for building AI applications. The content must provide developers with concrete tools or knowledge for AI implementation.
+
+AI Development Documentation:
+- New AI service APIs and integration methods
+- AI framework documentation and implementation guides
+- Developer tools specifically designed for AI workflows
+- Authentication, deployment, and scaling guidance for AI applications
+- Code examples and practical implementation patterns for AI features
+
+TIME FILTERING:
 - Only include updates published or modified in the last 24 hours (since {sinceDate:yyyy-MM-dd HH:mm:ss} UTC)
-- Check the LastModified or PublishedDate fields to verify timing
+- Check LastModified or PublishedDate fields to verify timing
 
-CONTENT FILTERING RULES:
-1. PRIMARY FOCUS - AI and Development Content:
-   - Determine if the content is related to AI, machine learning, artificial intelligence, or software development
-   - Use your understanding to identify AI-related tools, frameworks, APIs, development platforms, or discussions
-   - Include .NET, Azure, Microsoft Graph, and other developer-focused updates
+IMPLEMENTATION VALUE TEST:
+Ask: ""Does this documentation help developers implement specific AI capabilities in their applications?""
+Only include content where this is the primary purpose.
 
-2. LEARNING CONTENT ANALYSIS (Microsoft Learn Catalog):
-   - Analyze Title, Summary, Products, Roles, and Subjects to determine relevance
-   - Prioritize content for developer roles: ai-engineer, developer, data-scientist, solution-architect
-   - Focus on AI/ML subjects: artificial-intelligence, machine-learning, cloud-computing, development
-   - Include new learning modules, paths, or significant updates to existing content
+Learning Content Evaluation:
+- Prioritize content targeting ai-engineer, developer roles building AI applications
+- Focus on artificial-intelligence, machine-learning subjects with practical implementation
+- Include new modules or significant updates to existing AI development content
 
-3. API UPDATES ANALYSIS (Microsoft Graph Changelog):
-   - Evaluate API changes, new features, deprecations, or developer-impacting updates
-   - Focus on changes that affect developers building applications
-   - Include new endpoints, authentication changes, permission updates, and feature additions
-   - Consider security, integration, and development workflow improvements
-
-4. EXCLUDE from results:
-   - Basic tutorials or content without new features or significant updates
-   - Pure administrative, end-user, or non-technical content
-   - Minor documentation corrections that don't impact functionality
-   - Content not relevant to AI development or software development practices
-
-DATA STRUCTURE EXPLANATION:
-Microsoft Learn Catalog items contain:
-- Type: 'module' or 'learningPath'
-- Title, Summary, Url, LastModified timestamp
-- Products: Array of Microsoft products/services covered
-- Roles: Target audience roles (developer, ai-engineer, etc.)
-- Subjects: Content categories (artificial-intelligence, machine-learning, etc.)
-- Levels: Difficulty level (beginner, intermediate, advanced)
-
-Microsoft Graph Changelog items contain:
-- Title: Update title from RSS feed
-- Content: Description of changes (HTML cleaned)
-- Url: Link to detailed information
-- PublishedDate: When the update was published
-
-For each significant AI/development-related update from the LAST 24 HOURS, create a NewsItem:
-- Title: Use the exact title from the source data
-- Content: Write 2-3 detailed paragraphs explaining:
-  * What was updated, added, or changed and why it matters for developers
-  * How this impacts AI development, Microsoft platform usage, or developer workflows
-  * Key technical details, new capabilities, and practical applications for developers
-- Summary: Write 1-2 sentences highlighting the key benefits and relevance for AI developers and software engineers
-- Url: Use the provided URL from the source data
-- ImageUrl: Use icon_url if available from Learn content, otherwise leave empty string
-- PublishedDate: Use the LastModified or PublishedDate field value
-- Id: Always set to 0
+API Update Evaluation:
+- Focus on new endpoints, features, or changes affecting AI application development
+- Include authentication, permissions, or integration updates for AI services
+- Prioritize changes that directly impact how developers build with AI APIs
 
 Microsoft Documentation and API Update Data:
 {serializedData}
+
+For each qualifying AI development update from the LAST 24 HOURS, create a NewsItem:
+- Title: Use the exact title from the source data
+- Content: Write 2-3 detailed paragraphs explaining the new AI development capabilities, how developers can implement them, and the practical impact on AI application development
+- Summary: Write 1-2 sentences highlighting the specific benefits for developers building AI applications
+- Url: Use the provided URL from the source data
+- ImageUrl: Use icon_url if available from Learn content, otherwise empty string
+- PublishedDate: Use the LastModified or PublishedDate field value
+- Id: Always set to 0
 
 CRITICAL: Your response must be a JSON object with a 'result' property containing the array:
 {{
@@ -288,46 +270,48 @@ CRITICAL: Your response must be a JSON object with a 'result' property containin
   ]
 }}
 
-If no significant AI/development-related updates were found in the last 24 hours, return: {{""result"": []}}
+If no qualifying AI development updates were found in the last 24 hours, return: {{""result"": []}}
 
 Do NOT include: SourceType, SourceName properties in the output.";
   }
 
   public static string GetRSSNewsPrompt(DateTime sinceDate, string serializedData)
   {
-    return $@"Analyze this Microsoft .NET DevBlog RSS feed data and return ONLY significant .NET developer-impacting updates (including AI-enabling .NET features) from the LAST 24 HOURS as a JSON array of NewsItem objects.
+    return $@"
+Analyze this Microsoft .NET DevBlog RSS feed data and return ONLY posts relevant to AI development in the .NET ecosystem from the LAST 24 HOURS as a JSON array of NewsItem objects.
 
-IMPORTANT TIME FILTERING:
+FOCUS: .NET AI Development Content
+Include blog posts that discuss AI development topics, tools, frameworks, or industry insights relevant to .NET developers working with AI technologies.
+
+.NET AI Development Content:
+- .NET integrations with AI services and frameworks
+- AI-related library announcements and updates
+- Performance improvements beneficial for AI workloads
+- Developer tooling for AI workflows in .NET
+- Conference presentations or industry discussions about AI and .NET
+- Case studies or experiences building AI applications with .NET
+- Security or deployment considerations for AI applications
+
+TIME FILTERING:
 - Only include posts published in the last 24 hours (since {sinceDate:yyyy-MM-dd HH:mm:ss} UTC)
 - Use the PublishedDate field to verify timing
 
-INCLUDE (any of):
-- .NET runtime / SDK feature announcements or previews
-- Performance improvements (JIT, GC, threading, memory, networking)
-- API / library / tooling enhancements (Roslyn, ASP.NET Core, EF Core, CLI, diagnostics)
-- AI-enabling features (ML.NET, Semantic Kernel, Azure AI integration for .NET)
-- Security fixes, breaking changes, migration-impacting updates
-- Cloud/service integration changes affecting architecture for .NET apps
-
-EXCLUDE:
-- Pure marketing / event recap without new technical substance
-- Basic introductory tutorials / getting started guides without new capability
-- Minor cosmetic or editorial-only changes
-
-DATA PER ITEM (DevBlog): Title, Content (summary/HTML), Url, PublishedDate, Author, Categories
-
-OUTPUT FORMAT FOR EACH INCLUDED ITEM:
-- Title: Exact post title
-- Content: 2–3 paragraphs explaining what changed, why it matters, practical developer impact
-- Summary: 1–2 sentence concise developer-focused takeaway
-- Url: Original post URL
-- PublishedDate: Original timestamp
-- Id: 0
+AI DEVELOPMENT RELEVANCE TEST:
+Ask: ""Is this post primarily about AI development topics in the .NET ecosystem?""
+Only include content where this connection is clear and direct.
 
 Microsoft .NET DevBlog RSS Feed Data:
 {serializedData}
 
-CRITICAL: Respond ONLY with a JSON object of the form:
+For each qualifying .NET AI development post from the LAST 24 HOURS, create a NewsItem:
+- Title: Use the exact post title
+- Content: Write 2-3 paragraphs explaining the AI development topics discussed, insights shared, and relevance for .NET developers working with AI technologies
+- Summary: Write 1-2 sentences summarizing why this content is valuable for .NET developers in the AI space
+- Url: Use the original post URL
+- PublishedDate: Use the original timestamp
+- Id: Always set to 0
+
+CRITICAL: Your response must be a JSON object with a 'result' property containing the array:
 {{
   ""result"": [
     {{
@@ -341,7 +325,7 @@ CRITICAL: Respond ONLY with a JSON object of the form:
   ]
 }}
 
-If no significant .NET developer-impacting updates were found in the last 24 hours, return: {{""result"": []}}
+If no qualifying .NET AI development updates were found in the last 24 hours, return: {{""result"": []}}
 
 Do NOT include: SourceType, SourceName, ImageUrl properties in the output.";
   }
