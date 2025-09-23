@@ -55,6 +55,19 @@ export default function NewsModal({ newsItem, isOpen, onClose }) {
     }
   };
 
+  const getButtonText = () => {
+    switch (sourceType) {
+      case 1:
+        return "Go to Repository";
+      case 2:
+        return "Read Article";
+      case 3:
+        return "Watch Video";
+      default:
+        return "View Source";
+    }
+  };
+
   if (!isOpen || !newsItem) return null;
 
   return (
@@ -94,23 +107,26 @@ export default function NewsModal({ newsItem, isOpen, onClose }) {
         <div className={styles.modalBody}>
           <h1 className={styles.title}>{title || "Untitled"}</h1>
 
-          {imageUrl && (
-            <div className={styles.imageContainer}>
-              <img
-                src={imageUrl}
-                alt={title || "News image"}
-                className={styles.image}
-                onError={(e) => {
-                  e.target.style.display = "none";
-                }}
-              />
-            </div>
-          )}
-
           {summary && (
             <div className={styles.summarySection}>
               <h2 className={styles.sectionTitle}>Summary</h2>
-              <p className={styles.summary}>{summary}</p>
+              <div className={styles.summaryContent}>
+                <p className={styles.summary}>{summary}</p>
+                {imageUrl && sourceType === 3 && (
+                  <div className={styles.thumbnailContainer}>
+                    <img
+                      src={imageUrl}
+                      alt={title || "Video thumbnail"}
+                      className={styles.youtubeThumbnail}
+                      width="120"
+                      height="90"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -130,7 +146,7 @@ export default function NewsModal({ newsItem, isOpen, onClose }) {
               className={styles.externalLinkButton}
               onClick={handleExternalLink}
             >
-              <span>Read Original Article</span>
+              <span>{getButtonText()}</span>
               <span className={styles.externalIcon}>↗</span>
             </button>
           )}

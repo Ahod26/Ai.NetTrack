@@ -9,6 +9,7 @@ using backend.Services.Interfaces.Cache;
 using backend.Background.Interfaces;
 
 namespace backend.Background.Classes;
+
 public class YouTubeService(
   IOpenAIService openAIService,
   ILogger<YouTubeService> logger,
@@ -248,7 +249,6 @@ public class YouTubeService(
         var contentDetails = item.GetProperty("contentDetails");
         var duration = contentDetails.GetProperty("duration").GetString();
 
-        // Only include videos longer than 2 minutes
         if (IsVideoLongerThan2Minutes(duration!))
         {
           videos.Add(new
@@ -258,7 +258,7 @@ public class YouTubeService(
             Description = snippet.GetProperty("description").GetString(),
             PublishedAt = snippet.GetProperty("publishedAt").GetString(),
             Duration = duration,
-            Thumbnail = snippet.GetProperty("thumbnails").GetProperty("default").GetProperty("url").GetString(),
+            Thumbnail = GetHighestQualityThumbnailUrl(snippet.GetProperty("thumbnails")),
             LiveBroadcastContent = snippet.GetProperty("liveBroadcastContent").GetString()
           });
         }
@@ -271,6 +271,28 @@ public class YouTubeService(
       logger.LogError(ex, "Failed to get video details");
       return [];
     }
+  }
+
+  private static string GetHighestQualityThumbnailUrl(JsonElement thumbnails)
+  {
+    // Try thumbnail qualities in order of preference (highest to lowest resolution)
+    var qualities = new[] { "maxres", "standard", "high", "medium", "default" };
+
+    foreach (var quality in qualities)
+    {
+      if (thumbnails.TryGetProperty(quality, out var thumbnail) &&
+          thumbnail.TryGetProperty("url", out var urlElement))
+      {
+        var url = urlElement.GetString();
+        if (!string.IsNullOrEmpty(url))
+        {
+          return url;
+        }
+      }
+    }
+
+    // Final fallback - should never reach here if API returns valid data
+    return thumbnails.GetProperty("default").GetProperty("url").GetString()!;
   }
 
   private static bool IsVideoLongerThan2Minutes(string isoDuration)

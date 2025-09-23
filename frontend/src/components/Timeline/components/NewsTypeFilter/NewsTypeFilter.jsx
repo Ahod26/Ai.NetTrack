@@ -23,13 +23,6 @@ const newsTypes = [
     icon: "📺",
     description: "Video content and tutorials",
   },
-  {
-    id: 4,
-    name: "Microsoft Docs",
-    value: "Docs",
-    icon: "📚",
-    description: "Documentation updates",
-  },
 ];
 
 export default function NewsTypeFilter({ selectedType, onTypeChange }) {
