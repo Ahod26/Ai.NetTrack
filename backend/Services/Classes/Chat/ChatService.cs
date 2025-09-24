@@ -110,32 +110,48 @@ public class ChatService(
   {
     // 1. Get chat context
     var contextFromCache = await GetChatMessagesAsync(chatId, userId);
-    // I should make copy for the context so i will work with the original context without the user message or the ai message. I get REFERENCE for the cached item
+    // I should make copy for the context so it will work with the original context without the user message or the ai message. I get REFERENCE for the cached item
     var context = new List<ChatMessage>(contextFromCache);
 
-    // 2. Check cache 
-    var cachedResponse = await LLMCacheService.GetCachedResponseAsync(content, context);
-    if (cachedResponse != null)
+    // 2. Check cache (skip if cancellation already requested)
+    if (!cancellationToken.IsCancellationRequested)
     {
-      await SimulateStreamingAsync(cachedResponse, onChunkReceived, cancellationToken);
-      await AddMessageAsync(chatId, content, MessageType.User, userId);
-      var cachedAiMessage = await AddMessageAsync(chatId, cachedResponse, MessageType.Assistant, userId);
-      return cachedAiMessage;
+      var cachedResponse = await LLMCacheService.GetCachedResponseAsync(content, context);
+      if (cachedResponse != null)
+      {
+        // cache hit
+        await SimulateStreamingAsync(cachedResponse, onChunkReceived, cancellationToken);
+        await AddMessageAsync(chatId, content, MessageType.User, userId);
+        var cachedAiMessage = await AddMessageAsync(chatId, cachedResponse, MessageType.Assistant, userId);
+        return cachedAiMessage;
+      }
     }
 
     // 3. Cache miss - save user message first
     var userMessage = await AddMessageAsync(chatId, content, MessageType.User, userId);
 
+    // Wrap the chunk handler to collect partial content for saving if canceled
+    string partialCollected = string.Empty;
+    async Task OnChunk(string chunk)
+    {
+      partialCollected += chunk;         // 1. Save chunk locally
+      if (onChunkReceived != null)
+        await onChunkReceived(chunk);    // 2. Forward to SignalR clients
+    }
+   
     // 4. Generate AI response using the original context (before user message was added)
-    var aiResponse = await openAIService.GenerateResponseAsync(content, context, cancellationToken, onChunkReceived);
+    var aiResponse = await openAIService.GenerateResponseAsync(content, context, cancellationToken, OnChunk);
 
     // 5. Save AI message
-    var aiMessage = await AddMessageAsync(chatId, aiResponse.response, MessageType.Assistant, userId);
+    var finalText = aiResponse.response;
+    var aiMessage = await AddMessageAsync(chatId, finalText, MessageType.Assistant, userId);
 
     // 6. Cache the response using the original context (conversation history before user message)
+    // Cache only if not canceled and response is valid
     if (!cancellationToken.IsCancellationRequested &&
         aiResponse.response != "Sorry, I'm having trouble responding right now. Please try again.")
     {
+      // caching response
       await LLMCacheService.SetCachedResponseAsync(content, context, aiResponse.response);
       if (aiResponse.totalTokenUsed >= 50000)
       {

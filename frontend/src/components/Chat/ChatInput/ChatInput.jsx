@@ -3,6 +3,8 @@ import styles from "./ChatInput.module.css";
 
 export default function ChatInput({
   onSendMessage,
+  onCancel,
+  isGenerating = false,
   placeholder = "Ask anything...",
   disabled = false,
 }) {
@@ -63,26 +65,53 @@ export default function ChatInput({
             rows={1}
             disabled={disabled}
           />
-          <button
-            type="button"
-            className={styles.sendButton}
-            onClick={handleButtonClick}
-            disabled={disabled || !message.trim()}
-          >
-            {/* Send icon - arrow */}
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {isGenerating ? (
+            <button
+              type="button"
+              className={`${styles.sendButton} ${styles.cancelButton}`}
+              onClick={onCancel}
+              disabled={false}
+              aria-label="Stop response"
+              title="Stop response"
             >
-              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-            </svg>
-          </button>
+              {/* Stop icon: square */}
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="6" y="6" width="12" height="12" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.sendButton}
+              onClick={handleButtonClick}
+              disabled={disabled || !message.trim()}
+              aria-label="Send"
+              title="Send"
+            >
+              {/* Send icon - arrow */}
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+              </svg>
+            </button>
+          )}
         </div>
       </form>
     </div>

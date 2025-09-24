@@ -94,3 +94,11 @@
   cursor: not-allowed;
   transform: none;
 }
+
+.cancelButton {
+  background: var(--danger, #d9534f);
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: var(--danger-hover, #c9302c);
+}

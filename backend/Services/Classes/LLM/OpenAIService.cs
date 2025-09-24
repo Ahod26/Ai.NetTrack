@@ -17,6 +17,8 @@ public class OpenAIService(
   private readonly OpenAISettings settings = options.Value;
   public async Task<(string response, int totalTokenUsed)> GenerateResponseAsync(string userMessage, List<ChatMessage> context, CancellationToken cancellationToken, Func<string, Task>? onChunkReceived = null)
   {
+    var responseBuilder = new StringBuilder();
+    int totalTokensUsed = 0;
     try
     {
       // Build messages list using new message types
@@ -47,10 +49,7 @@ public class OpenAIService(
         MaxOutputTokenCount = settings.MaxToken
       };
 
-      var responseBuilder = new StringBuilder();
-      int totalTokensUsed = 0;
-
-      // Use streaming API
+      // streaming started
       await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, options, cancellationToken))
       {
         if (update.ContentUpdate.Count > 0)
@@ -70,12 +69,14 @@ public class OpenAIService(
           totalTokensUsed = update.Usage.TotalTokenCount;
         }
       }
+      // streaming completed
       return (responseBuilder.ToString(), totalTokensUsed);
     }
     catch (OperationCanceledException)
     {
-      logger.LogInformation("OpenAI streaming was cancelled");
-      throw;
+      // streaming was cancelled
+      // Return the partial content accumulated so far so i can save it to DB
+      return (responseBuilder.ToString(), totalTokensUsed);
     }
     catch (Exception ex)
     {

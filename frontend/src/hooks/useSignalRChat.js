@@ -15,6 +15,7 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
   const [errorMessage, setErrorMessage] = useState("");
   const errorTimeoutRef = useRef(null);
   const messageIdCounterRef = useRef(0);
+  const isCancellingRef = useRef(false);
 
   // useCallback for functions that are passed as event handler to signalr. I do not want resubscribe every render
 
@@ -74,7 +75,7 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
       type: msg.type === 0 ? "user" : "assistant",
       createdAt: msg.createdAt,
       id: msg.id,
-      isStarred: msg.isStarred
+      isStarred: msg.isStarred,
     }));
 
     setMessages(transformedMessages);
@@ -223,12 +224,29 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
     }
   };
 
+  const cancelGeneration = async () => {
+    if (!isUserLoggedIn || !chatId || !isSendingMessage) return;
+    try {
+      isCancellingRef.current = true;
+      await chatHubService.stopGeneration(chatId);
+      // Keep isSendingMessage true until backend emits final partial message;
+      // it will be set false in handleFullMessageReceived or error handler.
+    } catch (err) {
+      console.error("Error cancelling generation:", err);
+      // As a fallback, stop waiting state to unblock UI.
+      setIsSendingMessage(false);
+    } finally {
+      isCancellingRef.current = false;
+    }
+  };
+
   return {
     messages,
     isLoading,
     error,
     isSendingMessage,
     sendMessage,
+    cancelGeneration,
     errorMessage,
   };
 }

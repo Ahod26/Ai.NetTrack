@@ -100,6 +100,18 @@ class ChatHubService {
     }
   }
 
+  async stopGeneration(chatId) {
+    try {
+      if (!this.isConnected) {
+        throw new Error("Connection not established");
+      }
+      await this.connection.invoke("StopGeneration", chatId);
+    } catch (err) {
+      console.error("Failed to stop generation:", err);
+      throw err;
+    }
+  }
+
   // Event handlers
   onFullMessageReceived(handler) {
     this.fullMessageHandlers.add(handler);

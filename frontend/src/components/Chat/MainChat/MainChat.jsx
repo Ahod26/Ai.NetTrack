@@ -23,6 +23,7 @@ const MainChat = memo(function MainChat() {
     error,
     isSendingMessage,
     sendMessage,
+    cancelGeneration,
     errorMessage,
   } = useSignalRChat(chatId, isUserLoggedIn);
 
@@ -94,6 +95,8 @@ const MainChat = memo(function MainChat() {
       />
       <ChatInput
         onSendMessage={sendMessage}
+        onCancel={cancelGeneration}
+        isGenerating={isSendingMessage}
         disabled={isSendingMessage}
         placeholder={
           isSendingMessage
