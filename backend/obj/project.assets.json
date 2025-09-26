@@ -579,7 +579,7 @@
           "Microsoft.EntityFrameworkCore.Design": "9.0.8"
         }
       },
-      "Microsoft.Extensions.AI.Abstractions/9.7.1": {
+      "Microsoft.Extensions.AI.Abstractions/9.9.1": {
         "type": "package",
         "compile": {
           "lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll": {
@@ -753,10 +753,10 @@
           }
         }
       },
-      "ModelContextProtocol/0.3.0-preview.4": {
+      "ModelContextProtocol/0.4.0-preview.1": {
         "type": "package",
         "dependencies": {
-          "ModelContextProtocol.Core": "0.3.0-preview.4"
+          "ModelContextProtocol.Core": "0.4.0-preview.1"
         },
         "compile": {
           "lib/net9.0/ModelContextProtocol.dll": {
@@ -769,10 +769,10 @@
           }
         }
       },
-      "ModelContextProtocol.AspNetCore/0.3.0-preview.4": {
+      "ModelContextProtocol.AspNetCore/0.4.0-preview.1": {
         "type": "package",
         "dependencies": {
-          "ModelContextProtocol": "0.3.0-preview.4"
+          "ModelContextProtocol": "0.4.0-preview.1"
         },
         "compile": {
           "lib/net9.0/ModelContextProtocol.AspNetCore.dll": {
@@ -788,10 +788,10 @@
           "Microsoft.AspNetCore.App"
         ]
       },
-      "ModelContextProtocol.Core/0.3.0-preview.4": {
+      "ModelContextProtocol.Core/0.4.0-preview.1": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.AI.Abstractions": "9.7.1"
+          "Microsoft.Extensions.AI.Abstractions": "9.9.1"
         },
         "compile": {
           "lib/net9.0/ModelContextProtocol.Core.dll": {
@@ -2675,10 +2675,10 @@
         "tools/netcoreapp2.0/any/ef.runtimeconfig.json"
       ]
     },
-    "Microsoft.Extensions.AI.Abstractions/9.7.1": {
-      "sha512": "fcAMMDxGgdl7vgkiFQ2yojdEwvGIkIpxsv6SQ33enA+q2iGuv3jsFUZmq6ZJ0YvMgrce7mG6GHFkEVcNxjIl0A==",
+    "Microsoft.Extensions.AI.Abstractions/9.9.1": {
+      "sha512": "khnPyY46Yk2OTOY3z+hUsXxxl58RkMeSYxrWHr/eKYtM3Zp4UfY6Z7C75uMJTpt6l8eCJjoQ7tVj/R0Fmz/nPw==",
       "type": "package",
-      "path": "microsoft.extensions.ai.abstractions/9.7.1",
+      "path": "microsoft.extensions.ai.abstractions/9.9.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2692,7 +2692,7 @@
         "lib/net9.0/Microsoft.Extensions.AI.Abstractions.xml",
         "lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll",
         "lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.xml",
-        "microsoft.extensions.ai.abstractions.9.7.1.nupkg.sha512",
+        "microsoft.extensions.ai.abstractions.9.9.1.nupkg.sha512",
         "microsoft.extensions.ai.abstractions.nuspec"
       ]
     },
@@ -2936,10 +2936,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "ModelContextProtocol/0.3.0-preview.4": {
-      "sha512": "W+fBq9ZJwgmcThMH0xHpwlC51TsnlJHrlnot2cG5ryzKcpOI40IP1R9s55fGvE8ivhSAQ4/s7BuTIWCqda/s6w==",
+    "ModelContextProtocol/0.4.0-preview.1": {
+      "sha512": "CAMi/lfd9yXa/gBH4mJzA4XL9+r90hzUZMXrsXsNhxFC252kAs1SqztaWRX3nEgQGWcRYMeZCstodnLzQcLRMQ==",
       "type": "package",
-      "path": "modelcontextprotocol/0.3.0-preview.4",
+      "path": "modelcontextprotocol/0.4.0-preview.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2951,14 +2951,14 @@
         "lib/netstandard2.0/ModelContextProtocol.dll",
         "lib/netstandard2.0/ModelContextProtocol.xml",
         "logo.png",
-        "modelcontextprotocol.0.3.0-preview.4.nupkg.sha512",
+        "modelcontextprotocol.0.4.0-preview.1.nupkg.sha512",
         "modelcontextprotocol.nuspec"
       ]
     },
-    "ModelContextProtocol.AspNetCore/0.3.0-preview.4": {
-      "sha512": "80wCheA2EoC13k8XXwMnfr4ffWIkpgqROVrv+0GvF01UbAwcxyqBjMaDNH1fHMmg1vNmjLc98xbkOA+MutWnKA==",
+    "ModelContextProtocol.AspNetCore/0.4.0-preview.1": {
+      "sha512": "ySCtzeS6Bs9IynlY6u7o2P2OvVHoTL/6COYyeB4iqKoz04INuQPBqak1eqkDVchamThtwK6blfvDbjhAYFtHKA==",
       "type": "package",
-      "path": "modelcontextprotocol.aspnetcore/0.3.0-preview.4",
+      "path": "modelcontextprotocol.aspnetcore/0.4.0-preview.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2968,14 +2968,14 @@
         "lib/net9.0/ModelContextProtocol.AspNetCore.dll",
         "lib/net9.0/ModelContextProtocol.AspNetCore.xml",
         "logo.png",
-        "modelcontextprotocol.aspnetcore.0.3.0-preview.4.nupkg.sha512",
+        "modelcontextprotocol.aspnetcore.0.4.0-preview.1.nupkg.sha512",
         "modelcontextprotocol.aspnetcore.nuspec"
       ]
     },
-    "ModelContextProtocol.Core/0.3.0-preview.4": {
-      "sha512": "VZ3gd+1St3Kbg9UCTrOB0m7GE9Y2Elk73pBGvv4E13nIA0g4uV4rd4NXX0ffS2nV37K957dXa9CtAstfn9kb/Q==",
+    "ModelContextProtocol.Core/0.4.0-preview.1": {
+      "sha512": "DQ6YkkX/mf7mfmfc/jxPnRO3psqRfNSWPhjMz8WKDm1c2kV/FII38PpjAmK4scRnNArvKGkB8sq4VH7DNfnBMQ==",
       "type": "package",
-      "path": "modelcontextprotocol.core/0.3.0-preview.4",
+      "path": "modelcontextprotocol.core/0.4.0-preview.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2987,7 +2987,7 @@
         "lib/netstandard2.0/ModelContextProtocol.Core.dll",
         "lib/netstandard2.0/ModelContextProtocol.Core.xml",
         "logo.png",
-        "modelcontextprotocol.core.0.3.0-preview.4.nupkg.sha512",
+        "modelcontextprotocol.core.0.4.0-preview.1.nupkg.sha512",
         "modelcontextprotocol.core.nuspec"
       ]
     },
@@ -3849,7 +3849,7 @@
       "Microsoft.EntityFrameworkCore.Design >= 9.0.8",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.8",
       "Microsoft.Extensions.Caching.StackExchangeRedis >= 9.0.8",
-      "ModelContextProtocol.AspNetCore >= 0.3.0-preview.4",
+      "ModelContextProtocol.AspNetCore >= 0.4.0-preview.1",
       "NRedisStack >= 1.1.0",
       "OpenAI >= 2.3.0",
       "Pomelo.EntityFrameworkCore.MySql >= 9.0.0-rc.1.efcore.9.0.0",
@@ -3945,7 +3945,7 @@
           },
           "ModelContextProtocol.AspNetCore": {
             "target": "Package",
-            "version": "[0.3.0-preview.4, )"
+            "version": "[0.4.0-preview.1, )"
           },
           "NRedisStack": {
             "target": "Package",

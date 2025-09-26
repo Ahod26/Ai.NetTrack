@@ -12,7 +12,7 @@ public class McpClientService(
   ILogger<McpClientService> logger,
   IOptions<McpSettings> options) : IMcpClientService
 {
-  private readonly ConcurrentDictionary<string, IMcpClient> clients = new();
+  private readonly ConcurrentDictionary<string, McpClient> clients = new();
   private readonly ConcurrentDictionary<string, McpClientTool> toolToServerMap = new();
   private McpSettings settings = options.Value;
   private bool _initialized = false;
@@ -67,7 +67,7 @@ public class McpClientService(
           ]
       });
 
-      var client = await McpClientFactory.CreateAsync(clientTransport);
+      var client = await McpClient.CreateAsync(clientTransport);
 
       clients.TryAdd(serverName, client);
       await RegisterToolsForServer(client, serverName);
@@ -94,8 +94,8 @@ public class McpClientService(
 
       var httpClient = new HttpClient(handler);
 
-      var sseTransport = new SseClientTransport(
-        new SseClientTransportOptions
+      var httpTransport = new HttpClientTransport(
+        new HttpClientTransportOptions
         {
           Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
         },
@@ -103,7 +103,7 @@ public class McpClientService(
         ownsHttpClient: true // Let the transport dispose the HttpClient
       );
 
-      var client = await McpClientFactory.CreateAsync(sseTransport);
+      var client = await McpClient.CreateAsync(httpTransport);
 
       clients.TryAdd(serverName, client);
 
@@ -117,7 +117,7 @@ public class McpClientService(
     }
   }
 
-  private async Task RegisterToolsForServer(IMcpClient client, string serverName)
+  private async Task RegisterToolsForServer(McpClient client, string serverName)
   {
     try
     {
