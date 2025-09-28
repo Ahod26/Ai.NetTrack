@@ -7,11 +7,15 @@ using backend.Constants;
 using ChatMessage = backend.Models.Domain.ChatMessage;
 using backend.Services.Interfaces.LLM;
 using System.Text.Json;
+using backend.MCP.Interfaces;
 
 namespace backend.Services.Classes.LLM;
 
 public class OpenAIService(
-  ChatClient chatClient, IOptions<OpenAISettings> options, ILogger<OpenAIService> logger
+  ChatClient chatClient,
+  IOptions<OpenAISettings> options,
+  ILogger<OpenAIService> logger,
+  IMcpClientService mcpClient
 ) : IOpenAIService
 {
   private readonly OpenAISettings settings = options.Value;
@@ -21,11 +25,11 @@ public class OpenAIService(
     int totalTokensUsed = 0;
     try
     {
-      // Build messages list using new message types
+      // Build base messages list using existing system prompt
       var messages = new List<OpenAI.Chat.ChatMessage>
-       {
-           new SystemChatMessage(PromptConstants.SYSTEM_PROMPT)
-       };
+      {
+        new SystemChatMessage(PromptConstants.SYSTEM_PROMPT)
+      };
 
       // Add context (previous messages)
       foreach (var msg in context)
@@ -43,14 +47,93 @@ public class OpenAIService(
       // Add current user message
       messages.Add(new UserChatMessage(userMessage));
 
-      // Create completion options
-      var options = new ChatCompletionOptions
+      // 1) TOOL DECISION PHASE (non-streaming, small token budget)
+      var availableTools = mcpClient.GetAllAvailableToolsAsync();
+      if (availableTools.Count > 0)
+      {
+        var toolsCatalog = string.Join("\n", availableTools.Select(t => $"- {t.Name}: {t.Description}"));
+        var decisionInstruction =
+          "You have access to external tools. Decide if one tool would substantially improve answering the user's LAST message.\n" +
+          "TOOLS AVAILABLE:\n" + toolsCatalog + "\n" +
+          "If you want to call a tool output ONLY a single line JSON object: {\"tool\":\"tool_name\",\"arguments\":{...}}. " +
+          "Use only valid JSON. If no tool is needed output EXACTLY: NO_TOOL. Do not add any other text.";
+
+        // Insert decision system message just before the user message (already added) or at end before decision call.
+        var decisionMessages = new List<OpenAI.Chat.ChatMessage>();
+        decisionMessages.AddRange(messages); // system + context + user
+        decisionMessages.Add(new SystemChatMessage(decisionInstruction));
+
+        var decisionOptions = new ChatCompletionOptions
+        {
+          MaxOutputTokenCount = 200
+        };
+
+        var decision = await chatClient.CompleteChatAsync(decisionMessages, decisionOptions, cancellationToken);
+        var decisionText = decision.Value.Content[0].Text?.Trim();
+        if (decision.Value.Usage != null)
+        {
+          totalTokensUsed += decision.Value.Usage.TotalTokenCount;
+        }
+
+        if (!string.IsNullOrWhiteSpace(decisionText) && !string.Equals(decisionText, "NO_TOOL", StringComparison.OrdinalIgnoreCase))
+        {
+          try
+          {
+            // Attempt to parse tool JSON
+            var jsonDoc = JsonDocument.Parse(decisionText);
+            if (jsonDoc.RootElement.TryGetProperty("tool", out var toolNameEl))
+            {
+              var toolName = toolNameEl.GetString() ?? string.Empty;
+              if (!string.IsNullOrWhiteSpace(toolName))
+              {
+                Dictionary<string, object?> args = new();
+                if (jsonDoc.RootElement.TryGetProperty("arguments", out var argsEl) && argsEl.ValueKind == JsonValueKind.Object)
+                {
+                  try
+                  {
+                    args = JsonSerializer.Deserialize<Dictionary<string, object?>>(argsEl.GetRawText()) ?? new();
+                  }
+                  catch { /* ignore parse issues */ }
+                }
+
+                try
+                {
+                  var toolResult = await mcpClient.CallToolAsync(toolName, args);
+                  var serialized = JsonSerializer.Serialize(toolResult, new JsonSerializerOptions { WriteIndented = false });
+                  // Truncate overly long tool responses to protect token budget
+                  const int maxToolResultChars = 4000;
+                  if (serialized.Length > maxToolResultChars)
+                  {
+                    serialized = serialized.Substring(0, maxToolResultChars) + "...<truncated>";
+                  }
+                  messages.Add(new SystemChatMessage($"Tool result from '{toolName}':\n{serialized}\nUse this information to craft the best answer."));
+                }
+                catch (Exception ex)
+                {
+                  messages.Add(new SystemChatMessage($"Tool '{toolName}' invocation failed: {ex.Message}. Proceed without tool."));
+                }
+              }
+            }
+          }
+          catch
+          {
+            // If JSON parse fails, just continue without tool
+          }
+        }
+        else
+        {
+          // Add explicit note so model knows no tool was executed if we want; optional (can omit)
+          messages.Add(new SystemChatMessage("No external tool used."));
+        }
+      }
+
+      // 2) ANSWER PHASE (streaming final assistant response)
+      var answerOptions = new ChatCompletionOptions
       {
         MaxOutputTokenCount = settings.MaxToken
       };
 
-      // streaming started
-      await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, options, cancellationToken))
+      await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, answerOptions, cancellationToken))
       {
         if (update.ContentUpdate.Count > 0)
         {
@@ -66,10 +149,10 @@ public class OpenAIService(
         }
         if (update.Usage != null)
         {
-          totalTokensUsed = update.Usage.TotalTokenCount;
+          totalTokensUsed += update.Usage.TotalTokenCount; // accumulate
         }
       }
-      // streaming completed
+
       return (responseBuilder.ToString(), totalTokensUsed);
     }
     catch (OperationCanceledException)

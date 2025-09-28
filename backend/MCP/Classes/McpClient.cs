@@ -99,8 +99,8 @@ public class McpClientService(
         {
           Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
         },
-        httpClient, // Pass the custom HttpClient here
-        ownsHttpClient: true // Let the transport dispose the HttpClient
+        httpClient, 
+        ownsHttpClient: true 
       );
 
       var client = await McpClient.CreateAsync(httpTransport);
@@ -206,6 +206,3 @@ public class McpClientService(
 // GitHub MCP server - https://github.com/github/github-mcp-server
 // YouTube MCP server - https://github.com/icraft2170/youtube-data-mcp-server 
 // Microsoft Docs MCP server - https://github.com/microsoftdocs/mcp
-
-// NOT IMPLEMENTED YET
-// https://github.com/MicrosoftDocs/mcp
