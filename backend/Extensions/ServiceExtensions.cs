@@ -28,10 +28,11 @@ public static class ServiceExtensions
     services.AddScoped<IGitHubService, GitHubService>();
     services.AddScoped<IRssService, RssService>();
     services.AddScoped<IYouTubeService, YouTubeService>();
-    services.AddScoped<IMcpClientService, McpClientService>();
+    services.AddSingleton<IMcpClientService, McpClientService>();
     services.AddScoped<INewsService, NewsService>();
 
     services.AddSingleton<IOpenAIService, OpenAIService>();
+    services.AddSingleton<IMcpClientService, McpClientService>();
     services.AddSingleton<ITokenService, TokenService>();
     services.AddSingleton<ILLMCacheService, LLMCacheService>();
     services.AddSingleton<IChatCacheService, ChatCacheService>();
