@@ -99,8 +99,8 @@ public class McpClientService(
         {
           Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
         },
-        httpClient, 
-        ownsHttpClient: true 
+        httpClient,
+        ownsHttpClient: true
       );
 
       var client = await McpClient.CreateAsync(httpTransport);
@@ -162,18 +162,10 @@ public class McpClientService(
       throw new InvalidOperationException($"Tool '{toolName}' not found in any connected server");
     }
 
-    // Determine server name from tool name prefix or search through clients
-    string serverName;
-    if (toolName.Contains('_'))
-    {
-      serverName = toolName.Split('_')[0];
-    }
-    else
-    {
-      // Find which server has this tool by checking all clients
-      serverName = clients.Keys.FirstOrDefault(s => toolToServerMap.ContainsKey($"{s}_{toolName}"))
-                  ?? throw new InvalidOperationException($"Could not determine server for tool '{toolName}'");
-    }
+    // Find which server has this tool by checking all registered mappings
+    string serverName = clients.Keys.FirstOrDefault(s =>
+        toolToServerMap.ContainsKey($"{s}_{toolName}"))
+        ?? throw new InvalidOperationException($"Could not determine server for tool '{toolName}'");
 
     if (!clients.TryGetValue(serverName, out var client))
     {
