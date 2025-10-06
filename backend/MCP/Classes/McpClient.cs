@@ -164,8 +164,17 @@ public class McpClientService(
 
     // Find which server has this tool by checking all registered mappings
     string serverName = clients.Keys.FirstOrDefault(s =>
-        toolToServerMap.ContainsKey($"{s}_{toolName}"))
-        ?? throw new InvalidOperationException($"Could not determine server for tool '{toolName}'");
+    {
+      // Check if tool exists with server prefix ("github_list_releases")
+      if (toolToServerMap.ContainsKey($"{s}_{toolName}"))
+        return true;
+
+      // Check if tool already has the server prefix (tool is "github_list_releases" and server is "github")
+      if (toolName.StartsWith($"{s}_") && toolToServerMap.ContainsKey(toolName))
+        return true;
+
+      return false;
+    }) ?? throw new InvalidOperationException($"Could not determine server for tool '{toolName}'");
 
     if (!clients.TryGetValue(serverName, out var client))
     {
