@@ -1,8 +1,14 @@
+import { useState } from "react";
 import { useDateSelector } from "../../../../hooks/useDateSelector";
 import { useDateUtils } from "../../../../hooks/useDateUtils";
 import styles from "./DateSelector.module.css";
 
 export default function DateSelector({ selectedDates, onDateChange }) {
+  // Month navigation state
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+
   const {
     isOpen,
     tempSelectedDates,
@@ -24,12 +30,68 @@ export default function DateSelector({ selectedDates, onDateChange }) {
     isDateSelected,
     isTempDateSelected,
     handleDateClick,
-    generateCalendarDays,
     monthNames,
   } = useDateUtils(selectedDates, tempSelectedDates, minDate, maxDate);
 
-  const today = new Date();
-  const calendarDays = generateCalendarDays();
+  // Month navigation functions
+  const canGoPrevious = () => {
+    const firstOfPreviousMonth = new Date(currentYear, currentMonth - 1, 1);
+    return (
+      firstOfPreviousMonth >=
+      new Date(minDate.getFullYear(), minDate.getMonth(), 1)
+    );
+  };
+
+  const canGoNext = () => {
+    const firstOfNextMonth = new Date(currentYear, currentMonth + 1, 1);
+    const firstOfMaxMonth = new Date(
+      maxDate.getFullYear(),
+      maxDate.getMonth(),
+      1
+    );
+    return firstOfNextMonth <= firstOfMaxMonth;
+  };
+
+  const handlePreviousMonth = () => {
+    if (canGoPrevious()) {
+      if (currentMonth === 0) {
+        setCurrentMonth(11);
+        setCurrentYear(currentYear - 1);
+      } else {
+        setCurrentMonth(currentMonth - 1);
+      }
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (canGoNext()) {
+      if (currentMonth === 11) {
+        setCurrentMonth(0);
+        setCurrentYear(currentYear + 1);
+      } else {
+        setCurrentMonth(currentMonth + 1);
+      }
+    }
+  };
+
+  // Generate calendar days for current displayed month
+  const generateCurrentMonthCalendarDays = () => {
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+    const days = [];
+    const current = new Date(startDate);
+
+    for (let i = 0; i < 42; i++) {
+      days.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+
+    return days;
+  };
+
+  const calendarDays = generateCurrentMonthCalendarDays();
 
   return (
     <div className={styles.dateSelector} ref={dropdownRef}>
@@ -78,9 +140,25 @@ export default function DateSelector({ selectedDates, onDateChange }) {
         >
           <div className={styles.calendar}>
             <div className={styles.calendarHeader}>
+              <button
+                className={styles.navButton}
+                onClick={handlePreviousMonth}
+                disabled={!canGoPrevious()}
+                title="Previous month"
+              >
+                ‹
+              </button>
               <h3 className={styles.monthYear}>
-                {monthNames[today.getMonth()]} {today.getFullYear()}
+                {monthNames[currentMonth]} {currentYear}
               </h3>
+              <button
+                className={styles.navButton}
+                onClick={handleNextMonth}
+                disabled={!canGoNext()}
+                title="Next month"
+              >
+                ›
+              </button>
             </div>
 
             <div className={styles.weekdays}>
@@ -93,7 +171,7 @@ export default function DateSelector({ selectedDates, onDateChange }) {
 
             <div className={styles.calendarGrid}>
               {calendarDays.map((date, index) => {
-                const isCurrentMonth = date.getMonth() === today.getMonth();
+                const isCurrentMonth = date.getMonth() === currentMonth;
                 const isCurrentlySelected = isDateSelected(date);
                 const isTempSelected = isTempDateSelected(date);
                 const isDisabled = isDateDisabled(date);

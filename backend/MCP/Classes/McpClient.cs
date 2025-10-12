@@ -31,6 +31,7 @@ public class McpClientService(
     {
       await InitializeGitHubClient();
       await InitializeDocsClient();
+      await InitializeYouTubeClient();
 
       _initialized = true;
       logger.LogInformation($"Successfully initialized {clients.Count} MCP clients");
@@ -117,6 +118,35 @@ public class McpClientService(
     }
   }
 
+  private async Task InitializeYouTubeClient()
+  {
+    const string serverName = "youtube";
+
+    try
+    {
+      var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
+      {
+        Name = "YouTubeTranscriptServer",
+        Command = "npx",
+        Arguments = [
+          "-y",
+        "@kimtaeyoon83/mcp-server-youtube-transcript"
+        ]
+      });
+
+      var client = await McpClient.CreateAsync(clientTransport);
+
+      clients.TryAdd(serverName, client);
+      await RegisterToolsForServer(client, serverName);
+
+      logger.LogInformation($"YouTube MCP server '{serverName}' initialized successfully");
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, $"Failed to initialize YouTube MCP server '{serverName}'");
+    }
+  }
+
   private async Task RegisterToolsForServer(McpClient client, string serverName)
   {
     try
@@ -191,6 +221,48 @@ public class McpClientService(
       logger.LogDebug($"Calling tool '{actualToolName}' on server '{serverName}' with parameters: {JsonSerializer.Serialize(parameters)}");
 
       var result = await client.CallToolAsync(actualToolName, parameters);
+
+      // Add specific logging for YouTube transcript results
+      if (serverName == "youtube" && actualToolName == "get_transcript")
+      {
+        logger.LogInformation($"YouTube transcript result - Content items: {result.Content?.Count ?? 0}");
+        logger.LogInformation($"YouTube transcript result - IsError: {result.IsError}");
+        if (result.Content?.Count == 0)
+        {
+          var url = parameters.GetValueOrDefault("url", "unknown");
+          var lang = parameters.GetValueOrDefault("lang", "en");
+          logger.LogWarning($"YouTube transcript returned empty content for URL: {url} with language: {lang}");
+
+          // Try fallback languages if the first attempt failed
+          if (lang?.ToString() == "en")
+          {
+            logger.LogInformation("Attempting fallback: trying 'auto' language for auto-generated transcripts");
+            try
+            {
+              var fallbackParams = new Dictionary<string, object?>(parameters) { ["lang"] = "auto" };
+              var fallbackResult = await client.CallToolAsync(actualToolName, fallbackParams);
+              if (fallbackResult.Content?.Count > 0)
+              {
+                logger.LogInformation($"Fallback successful! Got {fallbackResult.Content.Count} content items with 'auto' language");
+                result = fallbackResult;
+              }
+              else
+              {
+                logger.LogInformation("Fallback with 'auto' language also returned empty content");
+              }
+            }
+            catch (Exception fallbackEx)
+            {
+              logger.LogWarning(fallbackEx, "Fallback attempt with 'auto' language failed");
+            }
+          }
+
+          if (result.Content?.Count == 0)
+          {
+            logger.LogWarning("Possible causes: 1) Auto-generated transcripts not accessible via API, 2) Server rate limiting, 3) MCP server bug, 4) Network issues");
+          }
+        }
+      }
 
       logger.LogDebug($"Successfully called tool '{actualToolName}' on server '{serverName}'");
       return result;

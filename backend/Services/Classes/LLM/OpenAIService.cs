@@ -250,6 +250,7 @@ public class OpenAIService(
     try
     {
       var toolResult = await mcpClient.CallToolAsync(toolName, arguments);
+      logger.LogInformation($"Raw MCP tool result: {JsonSerializer.Serialize(toolResult, new JsonSerializerOptions { WriteIndented = true })}");
       var resultText = SerializeAndLimitToolResult(toolResult, toolName);
 
       messages.Add(new SystemChatMessage(
