@@ -6,22 +6,29 @@ const getTimezoneOffset = () => {
 };
 
 // Create a new chat
-export async function createChat(firstMessage) {
+export async function createChat(
+  firstMessage,
+  timezoneOffset = null,
+  relatedNewsSource = null
+) {
   try {
-    const timezoneOffset = getTimezoneOffset();
-    const response = await fetch(
-      `${API_BASE_URL}${API_ENDPOINTS.CHAT.CREATECHAT}?timezoneOffset=${timezoneOffset}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          firstMessage: firstMessage,
-        }),
-      }
-    );
+    const actualTimezoneOffset = timezoneOffset ?? getTimezoneOffset();
+    let url = `${API_BASE_URL}${API_ENDPOINTS.CHAT.CREATECHAT}?timezoneOffset=${actualTimezoneOffset}`;
+
+    if (relatedNewsSource) {
+      url += `&relatedNewsSource=${encodeURIComponent(relatedNewsSource)}`;
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        firstMessage: firstMessage,
+      }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();

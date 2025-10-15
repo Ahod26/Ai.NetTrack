@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using backend.Models.Domain;
 using backend.Repository.Interfaces;
 using backend.Data;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace backend.Repository.Classes;
 
@@ -74,4 +76,20 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
   {
     return await dbContext.Chats.CountAsync(c => c.UserId == userId);
   }
+
+  // public async Task<bool> GetChatNewsRelationStatus(Guid chatId)
+  // {
+  //   var chat = await dbContext.Chats.FirstOrDefaultAsync(c => c.Id == chatId);
+  //   if (chat != null)
+  //     return chat.isChatRelatedToNewsSource;
+  //   return false;
+  // }
+
+  // public async Task<string?> GetNewsSourceContent(Guid chatId)
+  // {
+  //   var chat = await dbContext.Chats.FirstOrDefaultAsync(c => c.Id == chatId);
+  //   if (chat != null)
+  //     return chat.relatedNewsSourceContent;
+  //   return null;
+  // }
 }

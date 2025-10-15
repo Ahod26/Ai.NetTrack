@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using backend.Services.Interfaces.Chat;
 using backend.Services.Interfaces.Cache;
 using backend.Services.Interfaces.LLM;
+using backend.Services.Interfaces.News;
 
 namespace backend.Services.Classes.ChatService;
 
@@ -17,13 +18,19 @@ public class ChatService(
     IMapper mapper,
     ILLMCacheService LLMCacheService,
     IChatCacheService cacheService,
+    INewsService newsService,
+    ILogger<ChatService> logger,
     IOptions<StreamingSettings> streamingOptions) : IChatService
 {
   private readonly StreamingSettings streamingSettings = streamingOptions.Value;
 
-  public async Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null)
+  public async Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null, string? relatedNewsSource = null)
   {
     string title = await openAIService.GenerateChatTitle(firstMessage);
+    string? content = "";
+
+    if (relatedNewsSource != null) 
+      content = await newsService.GetContentForRelatedNews(relatedNewsSource);
 
     var chat = new Chat
     {
@@ -31,9 +38,12 @@ public class ChatService(
       UserId = userId,
       Title = title,
       CreatedAt = DateTime.UtcNow,
-      LastMessageAt = DateTime.UtcNow
+      LastMessageAt = DateTime.UtcNow,
+      isChatRelatedToNewsSource = relatedNewsSource != null,
+      relatedNewsSourceContent = content
     };
 
+    logger.LogWarning($"[CreateChat] Saving chat with content length: {chat.relatedNewsSourceContent?.Length ?? 0}");
     var chatCreated = await chatRepo.CreateChatAsync(chat);
     var chatDto = mapper.Map<ChatMetaDataDto>(chatCreated);
 
@@ -138,18 +148,21 @@ public class ChatService(
       if (onChunkReceived != null)
         await onChunkReceived(chunk);    // 2. Forward to SignalR clients
     }
-   
+
+    var chat = await chatRepo.GetChatByIdAndUserIdAsync(chatId, userId);
+    
     // 4. Generate AI response using the original context (before user message was added)
-    var aiResponse = await openAIService.GenerateResponseAsync(content, context, cancellationToken, OnChunk);
+    var aiResponse = await openAIService.GenerateResponseAsync(content, context, cancellationToken, chat!.isChatRelatedToNewsSource, chat!.MessageCount == 1, OnChunk, chat!.relatedNewsSourceContent);
 
     // 5. Save AI message
     var finalText = aiResponse.response;
     var aiMessage = await AddMessageAsync(chatId, finalText, MessageType.Assistant, userId);
 
     // 6. Cache the response using the original context (conversation history before user message)
-    // Cache only if not canceled and response is valid
+    // Cache only if not canceled and response is valid and no built in message from interaction with the news resources
     if (!cancellationToken.IsCancellationRequested &&
-        aiResponse.response != "Sorry, I'm having trouble responding right now. Please try again.")
+        aiResponse.response != "Sorry, I'm having trouble responding right now. Please try again." &&
+        content != "Summarize this YouTube video" && content != "Summarize this article")
     {
       // caching response
       await LLMCacheService.SetCachedResponseAsync(content, context, aiResponse.response);

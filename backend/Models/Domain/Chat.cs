@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace backend.Models.Domain;
 
 public class Chat
@@ -9,6 +11,8 @@ public class Chat
   public DateTime LastMessageAt { get; set; }
   public int MessageCount { get; set; } = 0;
   public bool IsContextFull { get; set; } = false;
+  public bool isChatRelatedToNewsSource { get; set; }
+  public string? relatedNewsSourceContent { get; set; } = "";
 
   //navigation properties
   public ApiUser User { get; set; } = null!;

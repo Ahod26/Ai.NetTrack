@@ -4,7 +4,7 @@ using backend.Models.Dtos;
 
 public interface IChatService
 {
-  Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null);
+  Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null, string? relatedNewsSource = null);
   Task<ChatMetaDataDto?> GetUserChatAsync(Guid chatId, string userId, int? timezoneOffset = null);
   Task<List<ChatMetaDataDto>> GetUserChatsMetadataAsync(string userId, int? timezoneOffset = null);
   Task<List<FullMessageDto>> GetAllChatMessagesAsync(Guid chatId, string userId);

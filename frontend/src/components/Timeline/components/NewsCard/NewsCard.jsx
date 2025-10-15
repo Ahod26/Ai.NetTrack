@@ -1,12 +1,20 @@
+import { useNavigate } from "react-router-dom";
 import styles from "./NewsCard.module.css";
 import { sourceTypeIcons, sourceTypeNames } from "../../shared";
 import { useDateUtils } from "../../../../hooks/useDateUtils";
+import { createChat } from "../../../../api/chat";
+import { useSelector, useDispatch } from "react-redux";
+import { chatSliceActions } from "../../../../store/chat";
+import chatHubService from "../../../../api/chatHub";
 
 export default function NewsCard({ newsItem, onOpenModal }) {
   const { title, summary, url, sourceType, sourceName, publishedDate } =
     newsItem;
 
   const { formatRelativeDate } = useDateUtils();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { isUserLoggedIn } = useSelector((state) => state.userAuth);
 
   const handleCardClick = () => {
     onOpenModal(newsItem);
@@ -25,6 +33,55 @@ export default function NewsCard({ newsItem, onOpenModal }) {
       window.open(url, "_blank", "noopener,noreferrer");
     }
   };
+
+  const handleAskChat = async (e) => {
+    e.stopPropagation();
+
+    if (!isUserLoggedIn || !url) {
+      return;
+    }
+
+    try {
+      const initialMessage =
+        sourceType === 3
+          ? "Summarize this YouTube video"
+          : "Summarize this article";
+
+      const newChat = await createChat(initialMessage, null, url);
+
+      const chatTitle =
+        title && title.length > 50
+          ? title.slice(0, 50) + "..."
+          : title || initialMessage;
+
+      // Add chat optimistically to Redux store
+      dispatch(
+        chatSliceActions.addChat({
+          id: newChat.id,
+          title: chatTitle,
+          time: "Just now",
+          lastMessageAt: new Date().toISOString(),
+        })
+      );
+
+      // Navigate to the new chat immediately
+      navigate(`/chat/${newChat.id}`, {
+        replace: true,
+        state: { initialMessage },
+      });
+
+      // Join the chat via SignalR
+      await chatHubService.joinChat(newChat.id);
+
+      // Send the initial message
+      await chatHubService.sendMessage(newChat.id, initialMessage);
+    } catch (error) {
+      console.error("Error creating chat:", error);
+    }
+  };
+
+  // Show Ask Chat button only for YouTube (3) and RSS/Blog (2) sources
+  const showAskChatButton = sourceType === 2 || sourceType === 3;
 
   return (
     <article
@@ -65,15 +122,26 @@ export default function NewsCard({ newsItem, onOpenModal }) {
 
       <div className={styles.cardFooter}>
         <span className={styles.readMore}>Click to read more →</span>
-        {url && (
-          <button
-            className={styles.externalLinkButton}
-            onClick={handleExternalLink}
-            aria-label="Open original article"
-          >
-            🔗 Source
-          </button>
-        )}
+        <div className={styles.actionButtons}>
+          {showAskChatButton && isUserLoggedIn && (
+            <button
+              className={styles.askChatButton}
+              onClick={handleAskChat}
+              aria-label="Ask chat about this content"
+            >
+              💬 Ask Chat
+            </button>
+          )}
+          {url && (
+            <button
+              className={styles.externalLinkButton}
+              onClick={handleExternalLink}
+              aria-label="Open original article"
+            >
+              🔗 Source
+            </button>
+          )}
+        </div>
       </div>
     </article>
   );

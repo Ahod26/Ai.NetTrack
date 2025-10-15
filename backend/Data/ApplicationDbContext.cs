@@ -17,6 +17,10 @@ public class ApplicationDbContext : IdentityDbContext<ApiUser>
     base.OnModelCreating(modelBuilder);
 
     modelBuilder.Entity<Chat>()
+            .Property(c => c.relatedNewsSourceContent)
+            .HasColumnType("LONGTEXT");
+
+    modelBuilder.Entity<Chat>()
       .HasIndex(c => c.UserId);  // GetChatsByUserIdAsync, GetUserChatCountAsync
 
     modelBuilder.Entity<Chat>()

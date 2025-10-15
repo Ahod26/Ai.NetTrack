@@ -8,9 +8,10 @@ using ChatMessage = backend.Models.Domain.ChatMessage;
 using backend.Services.Interfaces.LLM;
 using System.Text.Json;
 using backend.MCP.Interfaces;
-using OpenAI.Audio;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Client;
+using backend.Repository.Interfaces;
+using Org.BouncyCastle.Crypto.Engines;
 
 namespace backend.Services.Classes.LLM;
 
@@ -24,14 +25,22 @@ public class OpenAIService(
   private readonly OpenAISettings settings = options.Value;
 
   #region Public Interface Methods
-  public async Task<(string response, int totalTokenUsed)> GenerateResponseAsync(string userMessage, List<ChatMessage> context, CancellationToken cancellationToken, Func<string, Task>? onChunkReceived = null)
+  public async Task<(string response, int totalTokenUsed)> GenerateResponseAsync(
+    string userMessage,
+    List<ChatMessage> context,
+    CancellationToken cancellationToken,
+    bool isChatRelatedToNewsSource,
+    bool isInitialMessage,
+    Func<string, Task>? onChunkReceived = null,
+    string? relatedNewsSourceContent = null)
   {
+    logger.LogWarning($"[GenerateResponse] Received content length: {relatedNewsSourceContent?.Length ?? 0}");
     var responseBuilder = new StringBuilder();
     int totalTokensUsed = 0;
     try
     {
       // Build messages with optional tool result
-      var (messages, toolTokens) = await BuildMessagesWithOptionalToolAsync(userMessage, context, cancellationToken);
+      var (messages, toolTokens) = await BuildMessagesWithOptionalToolAsync(userMessage, context, cancellationToken, isChatRelatedToNewsSource, isInitialMessage, relatedNewsSourceContent);
       totalTokensUsed += toolTokens;
 
       // 2) ANSWER PHASE (streaming final assistant response)
@@ -167,11 +176,18 @@ public class OpenAIService(
   private async Task<(List<OpenAI.Chat.ChatMessage> messages, int tokensUsed)> BuildMessagesWithOptionalToolAsync(
       string userMessage,
       List<ChatMessage> context,
-      CancellationToken cancellationToken)
+      CancellationToken cancellationToken,
+      bool isChatRelatedToNewsSource,
+      bool isInitialMessage,
+      string? relatedNewsSourceContent)
   {
     int tokensUsed = 0;
 
-    var messages = BuildBaseMessages(userMessage, context);
+    var messages = BuildBaseMessages(userMessage, context, isChatRelatedToNewsSource, relatedNewsSourceContent);
+
+    // Return early on news interaction, no tool needed
+    if (isChatRelatedToNewsSource && isInitialMessage)
+      return (messages, 0);
 
     var availableTools = mcpClient.GetAllAvailableToolsAsync();
     logger.LogInformation($"Available MCP tools count: {availableTools.Count}");
@@ -251,7 +267,7 @@ public class OpenAIService(
     {
       var toolResult = await mcpClient.CallToolAsync(toolName, arguments);
       logger.LogInformation($"Raw MCP tool result: {JsonSerializer.Serialize(toolResult, new JsonSerializerOptions { WriteIndented = true })}");
-      var resultText = SerializeAndLimitToolResult(toolResult, toolName);
+      var resultText = SerializeToolResult(toolResult, toolName);
 
       messages.Add(new SystemChatMessage(
           $"Tool result from '{toolName}':\n{resultText}\n" +
@@ -307,29 +323,29 @@ public class OpenAIService(
     }
   }
 
-  private string SerializeAndLimitToolResult(CallToolResult result, string toolName)
+  private string SerializeToolResult(CallToolResult result, string toolName)
   {
     var serialized = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = false });
 
     logger.LogInformation($"Tool '{toolName}' executed successfully! Result length: {serialized.Length} chars");
     logger.LogDebug($"Tool result preview: {(serialized.Length > 200 ? serialized.Substring(0, 200) + "..." : serialized)}");
 
-    const int maxToolResultChars = 4000;
-    if (serialized.Length > maxToolResultChars)
-    {
-      serialized = serialized.Substring(0, maxToolResultChars) + "...<shortened>";
-      logger.LogWarning($"Tool result shortened from {serialized.Length} to {maxToolResultChars} chars");
-    }
-
     return serialized;
   }
 
-  private List<OpenAI.Chat.ChatMessage> BuildBaseMessages(string userMessage, List<ChatMessage> context)
+  private List<OpenAI.Chat.ChatMessage> BuildBaseMessages(string userMessage, List<ChatMessage> context, bool isChatRelatedToNewsSource, string? relatedNewsSourceContent = null)
   {
-    var messages = new List<OpenAI.Chat.ChatMessage>
+    var messages = new List<OpenAI.Chat.ChatMessage>();
+    logger.LogInformation(relatedNewsSourceContent);
+    if (isChatRelatedToNewsSource)
     {
-        new SystemChatMessage(PromptConstants.SYSTEM_PROMPT)
-    };
+      messages.Add(new SystemChatMessage(
+            $"Reference Content:\n{relatedNewsSourceContent}\n\n" +
+            $"Use this content to provide accurate answers based on the source material."
+        ));
+    }
+
+    messages.Add(new SystemChatMessage(PromptConstants.SYSTEM_PROMPT));
 
     foreach (var msg in context)
     {

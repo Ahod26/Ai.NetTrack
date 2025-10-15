@@ -18,12 +18,12 @@ public class ChatController
 {
   [HttpPost]
   [TypeFilter(typeof(MaxChatsAttribute))]
-  public async Task<IActionResult> CreateChat([FromBody] CreateChatDTO createChatDTO, [FromQuery] int? timezoneOffset = null)
+  public async Task<IActionResult> CreateChat([FromBody] CreateChatDTO createChatDTO, [FromQuery] int? timezoneOffset = null, [FromQuery] string? relatedNewsSource = null)
   {
     try
     {
       var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-      var chat = await chatService.CreateChatAsync(userId, createChatDTO.FirstMessage, timezoneOffset);
+      var chat = await chatService.CreateChatAsync(userId, createChatDTO.FirstMessage, timezoneOffset, relatedNewsSource);
 
       return Ok(chat);
     }
