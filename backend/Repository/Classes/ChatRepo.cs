@@ -43,12 +43,7 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
 
   public async Task DeleteChatAsync(Guid chatId)
   {
-    var chat = await dbContext.Chats.FindAsync(chatId);
-    if (chat != null)
-    {
-      dbContext.Chats.Remove(chat);
-      await dbContext.SaveChangesAsync();
-    }
+    await dbContext.Chats.Where(c => c.Id == chatId).ExecuteDeleteAsync();
   }
 
   public async Task ChangeChatTitleAsync(Guid chatId, string newTitle)
