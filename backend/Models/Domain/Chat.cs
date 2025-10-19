@@ -12,6 +12,7 @@ public class Chat
   public int MessageCount { get; set; } = 0;
   public bool IsContextFull { get; set; } = false;
   public bool isChatRelatedToNewsSource { get; set; }
+  public string? relatedNewsSourceURL { get; set; } = "";
   public string? relatedNewsSourceContent { get; set; } = "";
 
   //navigation properties

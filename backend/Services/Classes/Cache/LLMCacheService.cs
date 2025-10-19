@@ -60,7 +60,7 @@ public class LLMCacheService : ILLMCacheService
       {
         var exactCacheKey = GenerateCacheKey(userMessage, context);
 
-        await _LLMCacheRepo.StoreExactCacheAsync(exactCacheKey, response, expiration);
+        await _LLMCacheRepo.StoreExactCacheAsync(exactCacheKey, response, expiration, false);
       }
 
       await SetSemanticCacheAsync(userMessage, context, response, expiration);
@@ -84,7 +84,7 @@ public class LLMCacheService : ILLMCacheService
 
       // 1. Exact cache first (fastest)
       var exactCacheKey = GenerateCacheKey(userMessage, context);
-      var exactResult = await _LLMCacheRepo.GetExactCachedResponseAsync(exactCacheKey);
+      var exactResult = await _LLMCacheRepo.GetExactCachedResponseAsync(exactCacheKey, false);
       if (exactResult != null)
       {
         return exactResult;
@@ -105,36 +105,42 @@ public class LLMCacheService : ILLMCacheService
     }
   }
 
-  // Could be used later with MCP redis server for delete integration
-
-  // public async Task InvalidateByTopicsAsync(params string[] topics)
-  // {
-  //   try
-  //   {
-  //     var ft = _database.FT();
-
-  //     // Build query to find entries with any of the specified topics
-  //     var topicQueries = topics.Select(topic => $"@topics:{{{topic}}}");
-  //     var queryString = string.Join("|", topicQueries);
-
-  //     var query = new Query(queryString);
-  //     var results = await ft.SearchAsync(EMBEDDINGS_INDEX_NAME, query);
-
-  //     foreach (var doc in results.Documents)
-  //     {
-  //       await _database.KeyDeleteAsync(doc.Id);
-  //       _logger.LogDebug("Invalidated cache entry: {CacheKey}", doc.Id);
-  //     }
-
-  //     _logger.LogInformation("Invalidated {Count} cache entries for topics: {Topics}",
-  //         results.TotalResults, string.Join(", ", topics));
-  //   }
-  //   catch (Exception ex)
-  //   {
-  //     _logger.LogError(ex, "Failed to invalidate cache by topics: {Topics}", string.Join(", ", topics));
-  //   }
-  // }
-
+  // Getting cached response for news card interaction
+  public async Task<string?> GetCachedResponseForNewsResourceAsync(string url)
+  {
+    try
+    {
+      _logger.LogWarning($"[NewsCache GET] Looking for URL: {url}");
+      var exactResult = await _LLMCacheRepo.GetExactCachedResponseAsync(url, true);
+      _logger.LogWarning($"[NewsCache GET] Result: {(exactResult != null ? $"FOUND ({exactResult.Length} chars)" : "NOT FOUND")}");
+      if (exactResult != null)
+      {
+        return exactResult;
+      }
+      return null;
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error in GetCachedResponseForNewsResourceAsync for url {url}", url);
+      return null;
+    }
+  }
+  
+  // Setting cached response for news card interaction. Only for 2 day assuming most of the interaction will happen in this timeline
+  public async Task SetCachedResponseForNewsResourceAsync(string url, string response)
+  {
+    try
+    {
+       _logger.LogWarning($"[NewsCache SET] Storing URL: {url}, Response length: {response.Length}");
+      var expiration = TimeSpan.FromDays(2);
+      await _LLMCacheRepo.StoreExactCacheAsync(url, response, expiration, true);
+      _logger.LogWarning($"[NewsCache SET] Successfully stored");
+    }
+    catch(Exception ex)
+    {
+      _logger.LogError(ex, "Error in SetCachedResponseForNewsResourceAsync for url {url}", url);
+    }
+  }
   #endregion
 
   #region Private Implementation Methods

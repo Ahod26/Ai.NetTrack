@@ -29,7 +29,7 @@ public class ChatService(
     string title = await openAIService.GenerateChatTitle(firstMessage);
     string? content = "";
 
-    if (relatedNewsSource != null) 
+    if (relatedNewsSource != null)
       content = await newsService.GetContentForRelatedNews(relatedNewsSource);
 
     var chat = new Chat
@@ -40,6 +40,7 @@ public class ChatService(
       CreatedAt = DateTime.UtcNow,
       LastMessageAt = DateTime.UtcNow,
       isChatRelatedToNewsSource = relatedNewsSource != null,
+      relatedNewsSourceURL = relatedNewsSource,
       relatedNewsSourceContent = content
     };
 
@@ -119,17 +120,37 @@ public class ChatService(
   public async Task<FullMessageDto> ProcessUserMessageAsync(Guid chatId, string content, string userId, CancellationToken cancellationToken, Func<string, Task>? onChunkReceived = null)
   {
     // 1. Get chat context
-    var contextFromCache = await GetChatMessagesAsync(chatId, userId);
+    var contextFromChat = await GetChatMessagesAsync(chatId, userId);
     // I should make copy for the context so it will work with the original context without the user message or the ai message. I get REFERENCE for the cached item
-    var context = new List<ChatMessage>(contextFromCache);
+    var context = new List<ChatMessage>(contextFromChat);
+    var chat = await chatRepo.GetChatByIdAndUserIdAsync(chatId, userId);
+
+    var isInitialMessage = chat!.MessageCount == 0;
+    var isNewsRelated = chat.isChatRelatedToNewsSource;
+
+    logger.LogWarning($"[Cache] MessageCount: {chat!.MessageCount}, isNewsRelated: {chat.isChatRelatedToNewsSource}, URL: {chat.relatedNewsSourceURL ?? "NULL"}");
 
     // 2. Check cache (skip if cancellation already requested)
     if (!cancellationToken.IsCancellationRequested)
     {
-      var cachedResponse = await LLMCacheService.GetCachedResponseAsync(content, context);
+      string? cachedResponse = null;
+
+      if (isInitialMessage && isNewsRelated)
+      {
+        logger.LogWarning($"[Cache] Checking news resource cache for URL: {chat.relatedNewsSourceURL}");
+        cachedResponse = await LLMCacheService.GetCachedResponseForNewsResourceAsync(chat.relatedNewsSourceURL!);
+        logger.LogWarning($"[Cache] News resource cache result: {(cachedResponse != null ? "HIT" : "MISS")}");
+      }
+      else
+      {
+        logger.LogWarning($"[Cache] Checking regular LLM cache");
+        cachedResponse = await LLMCacheService.GetCachedResponseAsync(content, context);
+        logger.LogWarning($"[Cache] Regular cache result: {(cachedResponse != null ? "HIT" : "MISS")}");
+      }
+
       if (cachedResponse != null)
       {
-        // cache hit
+        logger.LogWarning($"[Cache] Returning cached response ({cachedResponse.Length} chars)");
         await SimulateStreamingAsync(cachedResponse, onChunkReceived, cancellationToken);
         await AddMessageAsync(chatId, content, MessageType.User, userId);
         var cachedAiMessage = await AddMessageAsync(chatId, cachedResponse, MessageType.Assistant, userId);
@@ -149,8 +170,6 @@ public class ChatService(
         await onChunkReceived(chunk);    // 2. Forward to SignalR clients
     }
 
-    var chat = await chatRepo.GetChatByIdAndUserIdAsync(chatId, userId);
-    
     // 4. Generate AI response using the original context (before user message was added)
     var aiResponse = await openAIService.GenerateResponseAsync(content, context, cancellationToken, chat!.isChatRelatedToNewsSource, chat!.MessageCount == 1, OnChunk, chat!.relatedNewsSourceContent);
 
@@ -158,14 +177,29 @@ public class ChatService(
     var finalText = aiResponse.response;
     var aiMessage = await AddMessageAsync(chatId, finalText, MessageType.Assistant, userId);
 
+    logger.LogWarning($"[Cache] Response generated ({finalText.Length} chars), checking if should cache...");
+    logger.LogWarning($"[Cache] Canceled: {cancellationToken.IsCancellationRequested}, Error response: {aiResponse.response == "Sorry, I'm having trouble responding right now. Please try again."}");
+
     // 6. Cache the response using the original context (conversation history before user message)
     // Cache only if not canceled and response is valid and no built in message from interaction with the news resources
     if (!cancellationToken.IsCancellationRequested &&
-        aiResponse.response != "Sorry, I'm having trouble responding right now. Please try again." &&
-        content != "Summarize this YouTube video" && content != "Summarize this article")
+        aiResponse.response != "Sorry, I'm having trouble responding right now. Please try again.")
     {
       // caching response
-      await LLMCacheService.SetCachedResponseAsync(content, context, aiResponse.response);
+      if (isInitialMessage && isNewsRelated)
+      {
+        logger.LogWarning($"[Cache] Storing news resource cache for URL: {chat.relatedNewsSourceURL}");
+        await LLMCacheService.SetCachedResponseForNewsResourceAsync(chat.relatedNewsSourceURL!, aiResponse.response);
+        logger.LogWarning($"[Cache] News resource cache stored successfully");
+      }
+
+      else
+      {
+        logger.LogWarning($"[Cache] Storing regular LLM cache");
+        await LLMCacheService.SetCachedResponseAsync(content, context, aiResponse.response);
+        logger.LogWarning($"[Cache] Regular cache stored successfully");
+      }
+        
       if (aiResponse.totalTokenUsed >= 50000)
       {
         await ChangeContextStatus(chatId, userId);

@@ -29,17 +29,17 @@ public class LLMCacheRepo : ILLMCacheRepo
     _logger = logger;
   }
 
-  public async Task StoreExactCacheAsync(string cacheKey, string response, TimeSpan expiration)
+  public async Task StoreExactCacheAsync(string cacheKey, string response, TimeSpan expiration, bool isURL)
   {
-    await _distributedCache.SetStringAsync(EXACT_CACHE_PREFIX + cacheKey, response, new DistributedCacheEntryOptions
+    await _distributedCache.SetStringAsync((isURL ? "" : EXACT_CACHE_PREFIX) + cacheKey, response, new DistributedCacheEntryOptions
     {
       AbsoluteExpirationRelativeToNow = expiration
     });
   }
 
-  public async Task<string?> GetExactCachedResponseAsync(string cacheKey)
+  public async Task<string?> GetExactCachedResponseAsync(string cacheKey, bool isURL)
   {
-    var result = await _distributedCache.GetStringAsync(EXACT_CACHE_PREFIX + cacheKey);
+    var result = await _distributedCache.GetStringAsync((isURL ? "" : EXACT_CACHE_PREFIX) + cacheKey);
     return result;
   }
 
