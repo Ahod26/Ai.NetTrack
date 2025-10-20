@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Xml;
 using System.Xml.Linq;
+using backend.MCP.Interfaces;
 using backend.Models.Domain;
 using backend.Repository.Interfaces;
 using backend.Services.Interfaces.Cache;
@@ -56,6 +57,10 @@ public class NewsService(
       else if (relatedNewsURL.Contains("devblogs.microsoft.com/dotnet"))
       {
         return await GetBlogContentAsync(relatedNewsURL);
+      }
+      else if (relatedNewsURL.Contains("github.com"))
+      {
+        return "Github content accessible through MCP server";
       }
       else
       {

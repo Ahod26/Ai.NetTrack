@@ -37,20 +37,57 @@ public class OpenAIService(
     logger.LogWarning($"[GenerateResponse] Received content length: {relatedNewsSourceContent?.Length ?? 0}");
     var responseBuilder = new StringBuilder();
     int totalTokensUsed = 0;
+
     try
     {
-      // Build messages with optional tool result
-      var (messages, toolTokens) = await BuildMessagesWithOptionalToolAsync(userMessage, context, cancellationToken, isChatRelatedToNewsSource, isInitialMessage, relatedNewsSourceContent);
-      totalTokensUsed += toolTokens;
+      // Build base messages
+      var messages = BuildBaseMessages(userMessage, context, isChatRelatedToNewsSource, relatedNewsSourceContent);
 
-      // 2) ANSWER PHASE (streaming final assistant response)
-      var answerOptions = new ChatCompletionOptions
+      // Early return for news-related chats without tool calling
+      if (isChatRelatedToNewsSource && isInitialMessage)
+      {
+        var result = await StreamChatResponseAsync(messages, responseBuilder, totalTokensUsed, onChunkReceived, cancellationToken);
+        totalTokensUsed = result.tokensUsed;
+        return result;
+      }
+
+      // Get available tools
+      var availableTools = mcpClient.GetAllAvailableToolsAsync();
+      logger.LogInformation($"Available MCP tools count: {availableTools.Count}");
+
+      if (availableTools.Count == 0)
+      {
+        logger.LogInformation("No MCP tools available - proceeding without tools");
+        var result = await StreamChatResponseAsync(messages, responseBuilder, totalTokensUsed, onChunkReceived, cancellationToken);
+        totalTokensUsed = result.tokensUsed;
+        return result;
+      }
+
+      // Create options with tools
+      var chatOptions = new ChatCompletionOptions
       {
         MaxOutputTokenCount = settings.MaxToken
       };
 
-      await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, answerOptions, cancellationToken))
+      // Add tools to options
+      foreach (var tool in availableTools)
       {
+        var chatTool = ConvertMcpToolToChatTool(tool);
+        if (chatTool != null)
+        {
+          chatOptions.Tools.Add(chatTool);
+        }
+      }
+
+      // Start streaming with tools enabled
+      bool requiresToolExecution = false;
+      List<ChatToolCall> toolCalls = new();
+      var toolCallsBuilder = new Dictionary<int, StringBuilder>();
+      var toolCallsInfo = new Dictionary<int, (string id, string functionName)>();
+
+      await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken))
+      {
+        // Handle content updates (regular text response)
         if (update.ContentUpdate.Count > 0)
         {
           var chunk = update.ContentUpdate[0].Text;
@@ -63,18 +100,94 @@ public class OpenAIService(
             }
           }
         }
+
+        // Handle tool call updates (streaming tool calls)
+        if (update.ToolCallUpdates.Count > 0)
+        {
+          foreach (var toolCallUpdate in update.ToolCallUpdates)
+          {
+            int index = toolCallUpdate.Index;
+
+            // Initialize builders for this tool call index
+            if (!toolCallsBuilder.ContainsKey(index))
+            {
+              toolCallsBuilder[index] = new StringBuilder();
+            }
+
+            // Accumulate tool call ID
+            if (!string.IsNullOrEmpty(toolCallUpdate.ToolCallId))
+            {
+              if (!toolCallsInfo.ContainsKey(index))
+              {
+                toolCallsInfo[index] = (toolCallUpdate.ToolCallId, string.Empty);
+              }
+            }
+
+            // Accumulate function name
+            if (!string.IsNullOrEmpty(toolCallUpdate.FunctionName))
+            {
+              var current = toolCallsInfo.GetValueOrDefault(index, (string.Empty, string.Empty));
+              toolCallsInfo[index] = (current.Item1, toolCallUpdate.FunctionName);
+            }
+
+            // Accumulate function arguments (comes as BinaryData)
+            if (toolCallUpdate.FunctionArgumentsUpdate != null && toolCallUpdate.FunctionArgumentsUpdate.ToMemory().Length > 0)
+            {
+              toolCallsBuilder[index].Append(toolCallUpdate.FunctionArgumentsUpdate.ToString());
+            }
+
+            requiresToolExecution = true;
+          }
+        }
+
+        // Track token usage
         if (update.Usage != null)
         {
-          totalTokensUsed += update.Usage.TotalTokenCount; // accumulate
+          totalTokensUsed += update.Usage.TotalTokenCount;
         }
+
+        // Check finish reason
+        if (update.FinishReason == ChatFinishReason.ToolCalls)
+        {
+          requiresToolExecution = true;
+        }
+      }
+
+      // If tools were called, execute them and continue
+      if (requiresToolExecution && toolCallsInfo.Count > 0)
+      {
+        logger.LogInformation($"LLM requested {toolCallsInfo.Count} tool calls during streaming");
+
+        // Build ChatToolCall objects from accumulated data
+        foreach (var kvp in toolCallsInfo)
+        {
+          int index = kvp.Key;
+          var (id, functionName) = kvp.Value;
+          var arguments = toolCallsBuilder[index].ToString();
+
+          toolCalls.Add(ChatToolCall.CreateFunctionToolCall(id, functionName, BinaryData.FromString(arguments)));
+        }
+
+        // Add assistant message with tool calls to conversation
+        messages.Add(new AssistantChatMessage(toolCalls));
+
+        // Execute each tool call and add results
+        foreach (var toolCall in toolCalls)
+        {
+          await ExecuteToolAndAddResultMessage(messages, toolCall);
+        }
+
+        // Make another streaming request with tool results
+        responseBuilder.Clear(); // Clear any partial content before tool execution
+        var finalResult = await StreamChatResponseAsync(messages, responseBuilder, totalTokensUsed, onChunkReceived, cancellationToken);
+        totalTokensUsed = finalResult.tokensUsed;
+        return finalResult;
       }
 
       return (responseBuilder.ToString(), totalTokensUsed);
     }
     catch (OperationCanceledException)
     {
-      // streaming was cancelled
-      // Return the partial content accumulated so far so i can save it to DB
       return (responseBuilder.ToString(), totalTokensUsed);
     }
     catch (Exception ex)
@@ -173,153 +286,84 @@ public class OpenAIService(
 
 
   #region Private Implementation Methods
-  private async Task<(List<OpenAI.Chat.ChatMessage> messages, int tokensUsed)> BuildMessagesWithOptionalToolAsync(
-      string userMessage,
-      List<ChatMessage> context,
-      CancellationToken cancellationToken,
-      bool isChatRelatedToNewsSource,
-      bool isInitialMessage,
-      string? relatedNewsSourceContent)
-  {
-    int tokensUsed = 0;
 
-    var messages = BuildBaseMessages(userMessage, context, isChatRelatedToNewsSource, relatedNewsSourceContent);
-
-    // Return early on news interaction, no tool needed
-    if (isChatRelatedToNewsSource && isInitialMessage)
-      return (messages, 0);
-
-    var availableTools = mcpClient.GetAllAvailableToolsAsync();
-    logger.LogInformation($"Available MCP tools count: {availableTools.Count}");
-
-    if (availableTools.Count == 0)
-    {
-      logger.LogInformation("No MCP tools available - skipping tool decision phase");
-      return (messages, tokensUsed);
-    }
-
-    var toolsCatalog = BuildToolsCatalog(availableTools);
-    var decisionText = await GetToolDecisionFromLLM(messages, toolsCatalog, cancellationToken);
-    tokensUsed += decisionText.tokensUsed;
-
-    if (ShouldUseTool(decisionText.response))
-    {
-      await ExecuteToolAndAddResult(messages, decisionText.response);
-    }
-    else
-    {
-      logger.LogInformation("LLM decided no tool is needed");
-    }
-
-    return (messages, tokensUsed);
-  }
-
-  private async Task<(string response, int tokensUsed)> GetToolDecisionFromLLM(
+  private async Task<(string response, int tokensUsed)> StreamChatResponseAsync(
       List<OpenAI.Chat.ChatMessage> messages,
-      string toolsCatalog,
+      StringBuilder responseBuilder,
+      int currentTokensUsed,
+      Func<string, Task>? onChunkReceived,
       CancellationToken cancellationToken)
   {
-    var decisionInstruction = PromptConstants.GetToolDecisionPrompt(toolsCatalog);
-
-    var decisionMessages = new List<OpenAI.Chat.ChatMessage>();
-    decisionMessages.AddRange(messages);
-    decisionMessages.Add(new SystemChatMessage(decisionInstruction));
-
-    var decisionOptions = new ChatCompletionOptions
+    int totalTokensUsed = currentTokensUsed;
+    var options = new ChatCompletionOptions
     {
-      MaxOutputTokenCount = 200
+      MaxOutputTokenCount = settings.MaxToken
     };
 
-    logger.LogInformation("Asking LLM to decide if a tool is needed...");
-    var decision = await chatClient.CompleteChatAsync(decisionMessages, decisionOptions, cancellationToken);
-
-    var decisionText = decision.Value.Content[0].Text?.Trim() ?? string.Empty;
-    var tokensUsed = decision.Value.Usage?.TotalTokenCount ?? 0;
-
-    logger.LogInformation($"LLM Decision Response: '{decisionText}'");
-    logger.LogDebug($"Decision phase used {tokensUsed} tokens");
-
-    return (decisionText, tokensUsed);
-  }
-
-  private bool ShouldUseTool(string decisionText)
-  {
-    return !string.IsNullOrWhiteSpace(decisionText) &&
-           !string.Equals(decisionText, "NO_TOOL", StringComparison.OrdinalIgnoreCase);
-  }
-
-  private async Task ExecuteToolAndAddResult(List<OpenAI.Chat.ChatMessage> messages, string decisionText)
-  {
-    logger.LogInformation("LLM wants to use a tool! Parsing decision...");
-
-    var (toolName, arguments) = ParseToolDecision(decisionText);
-
-    if (string.IsNullOrWhiteSpace(toolName))
+    await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, options, cancellationToken))
     {
-      logger.LogWarning("Failed to parse tool decision - no tool name found");
-      return;
-    }
-
-    logger.LogInformation($"Calling MCP tool: '{toolName}'");
-    logger.LogInformation($"Tool arguments: {JsonSerializer.Serialize(arguments)}");
-
-    try
-    {
-      var toolResult = await mcpClient.CallToolAsync(toolName, arguments);
-      logger.LogInformation($"Raw MCP tool result: {JsonSerializer.Serialize(toolResult, new JsonSerializerOptions { WriteIndented = true })}");
-      var resultText = SerializeToolResult(toolResult, toolName);
-
-      messages.Add(new SystemChatMessage(
-          $"Tool result from '{toolName}':\n{resultText}\n" +
-          $"Use this information to craft the best answer."
-      ));
-
-      logger.LogInformation("Tool result added to conversation context");
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, $"Failed to execute tool '{toolName}'");
-      messages.Add(new SystemChatMessage(
-          $"Tool '{toolName}' invocation failed: {ex.Message}. Proceed without tool."
-      ));
-    }
-  }
-
-  private (string toolName, Dictionary<string, object?> arguments) ParseToolDecision(string decisionText)
-  {
-    try
-    {
-      var jsonDoc = JsonDocument.Parse(decisionText);
-
-      if (!jsonDoc.RootElement.TryGetProperty("tool", out var toolNameEl))
+      if (update.ContentUpdate.Count > 0)
       {
-        logger.LogWarning("LLM decision JSON doesn't contain 'tool' property");
-        return (string.Empty, new Dictionary<string, object?>());
-      }
-
-      var toolName = toolNameEl.GetString() ?? string.Empty;
-      var args = new Dictionary<string, object?>();
-
-      if (jsonDoc.RootElement.TryGetProperty("arguments", out var argsEl) &&
-          argsEl.ValueKind == JsonValueKind.Object)
-      {
-        try
+        var chunk = update.ContentUpdate[0].Text;
+        if (!string.IsNullOrEmpty(chunk))
         {
-          args = JsonSerializer.Deserialize<Dictionary<string, object?>>(argsEl.GetRawText())
-                 ?? new Dictionary<string, object?>();
-        }
-        catch (Exception ex)
-        {
-          logger.LogWarning(ex, "Failed to parse tool arguments");
+          responseBuilder.Append(chunk);
+          if (onChunkReceived != null)
+          {
+            await onChunkReceived(chunk);
+          }
         }
       }
 
-      return (toolName, args);
+      if (update.Usage != null)
+      {
+        totalTokensUsed += update.Usage.TotalTokenCount;
+      }
+    }
+
+    return (responseBuilder.ToString(), totalTokensUsed);
+  }
+
+  private ChatTool? ConvertMcpToolToChatTool(McpClientTool mcpTool)
+  {
+    try
+    {
+      var schema = GetToolSchema(mcpTool);
+      var schemaBinaryData = BinaryData.FromString(schema);
+
+      return ChatTool.CreateFunctionTool(
+          functionName: mcpTool.Name,
+          functionDescription: mcpTool.Description ?? "No description available",
+          functionParameters: schemaBinaryData
+      );
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "Failed to parse LLM decision JSON");
-      return (string.Empty, new Dictionary<string, object?>());
+      logger.LogWarning(ex, $"Failed to convert MCP tool '{mcpTool.Name}' to ChatTool");
+      return null;
+    }
+  }
+
+  private async Task ExecuteToolAndAddResultMessage(List<OpenAI.Chat.ChatMessage> messages, ChatToolCall toolCall)
+  {
+    try
+    {
+      logger.LogInformation($"Executing tool: '{toolCall.FunctionName}'");
+
+      var arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(toolCall.FunctionArguments.ToString())
+                      ?? new Dictionary<string, object?>();
+
+      var toolResult = await mcpClient.CallToolAsync(toolCall.FunctionName, arguments);
+      var resultText = SerializeToolResult(toolResult, toolCall.FunctionName);
+
+      messages.Add(new ToolChatMessage(toolCall.Id, resultText));
+
+      logger.LogInformation($"Tool '{toolCall.FunctionName}' executed successfully");
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, $"Failed to execute tool '{toolCall.FunctionName}'");
+      messages.Add(new ToolChatMessage(toolCall.Id, $"Error executing tool: {ex.Message}"));
     }
   }
 
@@ -357,20 +401,6 @@ public class OpenAIService(
 
     messages.Add(new UserChatMessage(userMessage));
     return messages;
-  }
-
-  private string BuildToolsCatalog(IList<McpClientTool> tools)
-  {
-    var catalog = string.Join("\n\n", tools.Select(t =>
-    {
-      var schema = GetToolSchema(t);
-      return $"Tool: {t.Name}\n" +
-             $"Description: {t.Description ?? "No description available"}\n" +
-             $"Parameters Schema:\n{schema}";
-    }));
-
-    logger.LogInformation($"Sending tool catalog to LLM for decision (catalog length: {catalog.Length} chars)");
-    return catalog;
   }
 
   private string GetToolSchema(McpClientTool tool)
