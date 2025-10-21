@@ -10,8 +10,7 @@ using System.Text.Json;
 using backend.MCP.Interfaces;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Client;
-using backend.Repository.Interfaces;
-using Org.BouncyCastle.Crypto.Engines;
+
 
 namespace backend.Services.Classes.LLM;
 
@@ -35,20 +34,15 @@ public class OpenAIService(
     string? relatedNewsSourceContent = null)
   {
     logger.LogWarning($"[GenerateResponse] Received content length: {relatedNewsSourceContent?.Length ?? 0}");
-    var responseBuilder = new StringBuilder();
-    int totalTokensUsed = 0;
 
     try
     {
-      // Build base messages
       var messages = BuildBaseMessages(userMessage, context, isChatRelatedToNewsSource, relatedNewsSourceContent);
 
       // Early return for news-related chats without tool calling
       if (isChatRelatedToNewsSource && isInitialMessage)
       {
-        var result = await StreamChatResponseAsync(messages, responseBuilder, totalTokensUsed, onChunkReceived, cancellationToken);
-        totalTokensUsed = result.tokensUsed;
-        return result;
+        return await StreamSimpleResponseAsync(messages, onChunkReceived, cancellationToken);
       }
 
       // Get available tools
@@ -58,137 +52,16 @@ public class OpenAIService(
       if (availableTools.Count == 0)
       {
         logger.LogInformation("No MCP tools available - proceeding without tools");
-        var result = await StreamChatResponseAsync(messages, responseBuilder, totalTokensUsed, onChunkReceived, cancellationToken);
-        totalTokensUsed = result.tokensUsed;
-        return result;
+        return await StreamSimpleResponseAsync(messages, onChunkReceived, cancellationToken);
       }
 
-      // Create options with tools
-      var chatOptions = new ChatCompletionOptions
-      {
-        MaxOutputTokenCount = settings.MaxToken
-      };
-
-      // Add tools to options
-      foreach (var tool in availableTools)
-      {
-        var chatTool = ConvertMcpToolToChatTool(tool);
-        if (chatTool != null)
-        {
-          chatOptions.Tools.Add(chatTool);
-        }
-      }
-
-      // Start streaming with tools enabled
-      bool requiresToolExecution = false;
-      List<ChatToolCall> toolCalls = new();
-      var toolCallsBuilder = new Dictionary<int, StringBuilder>();
-      var toolCallsInfo = new Dictionary<int, (string id, string functionName)>();
-
-      await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken))
-      {
-        // Handle content updates (regular text response)
-        if (update.ContentUpdate.Count > 0)
-        {
-          var chunk = update.ContentUpdate[0].Text;
-          if (!string.IsNullOrEmpty(chunk))
-          {
-            responseBuilder.Append(chunk);
-            if (onChunkReceived != null)
-            {
-              await onChunkReceived(chunk);
-            }
-          }
-        }
-
-        // Handle tool call updates (streaming tool calls)
-        if (update.ToolCallUpdates.Count > 0)
-        {
-          foreach (var toolCallUpdate in update.ToolCallUpdates)
-          {
-            int index = toolCallUpdate.Index;
-
-            // Initialize builders for this tool call index
-            if (!toolCallsBuilder.ContainsKey(index))
-            {
-              toolCallsBuilder[index] = new StringBuilder();
-            }
-
-            // Accumulate tool call ID
-            if (!string.IsNullOrEmpty(toolCallUpdate.ToolCallId))
-            {
-              if (!toolCallsInfo.ContainsKey(index))
-              {
-                toolCallsInfo[index] = (toolCallUpdate.ToolCallId, string.Empty);
-              }
-            }
-
-            // Accumulate function name
-            if (!string.IsNullOrEmpty(toolCallUpdate.FunctionName))
-            {
-              var current = toolCallsInfo.GetValueOrDefault(index, (string.Empty, string.Empty));
-              toolCallsInfo[index] = (current.Item1, toolCallUpdate.FunctionName);
-            }
-
-            // Accumulate function arguments (comes as BinaryData)
-            if (toolCallUpdate.FunctionArgumentsUpdate != null && toolCallUpdate.FunctionArgumentsUpdate.ToMemory().Length > 0)
-            {
-              toolCallsBuilder[index].Append(toolCallUpdate.FunctionArgumentsUpdate.ToString());
-            }
-
-            requiresToolExecution = true;
-          }
-        }
-
-        // Track token usage
-        if (update.Usage != null)
-        {
-          totalTokensUsed += update.Usage.TotalTokenCount;
-        }
-
-        // Check finish reason
-        if (update.FinishReason == ChatFinishReason.ToolCalls)
-        {
-          requiresToolExecution = true;
-        }
-      }
-
-      // If tools were called, execute them and continue
-      if (requiresToolExecution && toolCallsInfo.Count > 0)
-      {
-        logger.LogInformation($"LLM requested {toolCallsInfo.Count} tool calls during streaming");
-
-        // Build ChatToolCall objects from accumulated data
-        foreach (var kvp in toolCallsInfo)
-        {
-          int index = kvp.Key;
-          var (id, functionName) = kvp.Value;
-          var arguments = toolCallsBuilder[index].ToString();
-
-          toolCalls.Add(ChatToolCall.CreateFunctionToolCall(id, functionName, BinaryData.FromString(arguments)));
-        }
-
-        // Add assistant message with tool calls to conversation
-        messages.Add(new AssistantChatMessage(toolCalls));
-
-        // Execute each tool call and add results
-        foreach (var toolCall in toolCalls)
-        {
-          await ExecuteToolAndAddResultMessage(messages, toolCall);
-        }
-
-        // Make another streaming request with tool results
-        responseBuilder.Clear(); // Clear any partial content before tool execution
-        var finalResult = await StreamChatResponseAsync(messages, responseBuilder, totalTokensUsed, onChunkReceived, cancellationToken);
-        totalTokensUsed = finalResult.tokensUsed;
-        return finalResult;
-      }
-
-      return (responseBuilder.ToString(), totalTokensUsed);
+      // Handle response with tools enabled
+      return await StreamResponseWithToolsAsync(messages, availableTools, onChunkReceived, cancellationToken);
     }
     catch (OperationCanceledException)
     {
-      return (responseBuilder.ToString(), totalTokensUsed);
+      logger.LogWarning("Response generation was cancelled");
+      return (string.Empty, 0);
     }
     catch (Exception ex)
     {
@@ -287,14 +160,14 @@ public class OpenAIService(
 
   #region Private Implementation Methods
 
-  private async Task<(string response, int tokensUsed)> StreamChatResponseAsync(
-      List<OpenAI.Chat.ChatMessage> messages,
-      StringBuilder responseBuilder,
-      int currentTokensUsed,
-      Func<string, Task>? onChunkReceived,
-      CancellationToken cancellationToken)
+  private async Task<(string response, int totalTokenUsed)> StreamSimpleResponseAsync(
+    List<OpenAI.Chat.ChatMessage> messages,
+    Func<string, Task>? onChunkReceived,
+    CancellationToken cancellationToken)
   {
-    int totalTokensUsed = currentTokensUsed;
+    var responseBuilder = new StringBuilder();
+    int totalTokensUsed = 0;
+
     var options = new ChatCompletionOptions
     {
       MaxOutputTokenCount = settings.MaxToken
@@ -322,6 +195,180 @@ public class OpenAIService(
     }
 
     return (responseBuilder.ToString(), totalTokensUsed);
+  }
+
+  private async Task<(string response, int totalTokenUsed)> StreamResponseWithToolsAsync(
+    List<OpenAI.Chat.ChatMessage> messages,
+    IList<McpClientTool> availableTools,
+    Func<string, Task>? onChunkReceived,
+    CancellationToken cancellationToken)
+  {
+    var chatOptions = CreateChatOptionsWithTools(availableTools);
+    var streamState = new StreamingState();
+
+    // Stream first response with tool detection
+    await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken))
+    {
+      await ProcessStreamUpdate(update, streamState, onChunkReceived);
+    }
+
+    // If tools were called, execute them and get final response
+    if (streamState.RequiresToolExecution)
+    {
+      return await ExecuteToolsAndGetFinalResponseAsync(
+          messages,
+          streamState,
+          chatOptions,
+          onChunkReceived,
+          cancellationToken
+      );
+    }
+
+    return (streamState.ResponseBuilder.ToString(), streamState.TotalTokensUsed);
+  }
+
+  private async Task ProcessStreamUpdate(
+    StreamingChatCompletionUpdate update,
+    StreamingState state,
+    Func<string, Task>? onChunkReceived)
+  {
+    // Handle regular content updates
+    await HandleContentUpdates(update, state, onChunkReceived);
+
+    // Handle tool call updates
+    HandleToolCallUpdates(update, state);
+
+    // Track token usage
+    if (update.Usage != null)
+    {
+      state.TotalTokensUsed += update.Usage.TotalTokenCount;
+    }
+
+    // Check finish reason
+    if (update.FinishReason == ChatFinishReason.ToolCalls)
+    {
+      state.RequiresToolExecution = true;
+    }
+  }
+
+  private async Task HandleContentUpdates(
+    StreamingChatCompletionUpdate update,
+    StreamingState state,
+    Func<string, Task>? onChunkReceived)
+  {
+    if (update.ContentUpdate.Count > 0)
+    {
+      var chunk = update.ContentUpdate[0].Text;
+      if (!string.IsNullOrEmpty(chunk))
+      {
+        state.ResponseBuilder.Append(chunk);
+        if (onChunkReceived != null)
+        {
+          await onChunkReceived(chunk);
+        }
+      }
+    }
+  }
+
+  private void HandleToolCallUpdates(
+    StreamingChatCompletionUpdate update,
+    StreamingState state)
+  {
+    if (update.ToolCallUpdates.Count == 0) return;
+
+    foreach (var toolCallUpdate in update.ToolCallUpdates)
+    {
+      int index = toolCallUpdate.Index;
+
+      // Initialize builders for this tool call index if needed
+      InitializeToolCallTracking(state, index);
+
+      // Accumulate tool call data
+      AccumulateToolCallData(state, index, toolCallUpdate);
+
+      state.RequiresToolExecution = true;
+    }
+  }
+
+  private void InitializeToolCallTracking(StreamingState state, int index)
+  {
+    if (!state.ToolCallsBuilder.ContainsKey(index))
+    {
+      state.ToolCallsBuilder[index] = new StringBuilder();
+    }
+  }
+
+  private void AccumulateToolCallData(
+      StreamingState state,
+      int index,
+      StreamingChatToolCallUpdate toolCallUpdate)
+  {
+    // Accumulate tool call ID
+    if (!string.IsNullOrEmpty(toolCallUpdate.ToolCallId))
+    {
+      if (!state.ToolCallsInfo.ContainsKey(index))
+      {
+        state.ToolCallsInfo[index] = (toolCallUpdate.ToolCallId, string.Empty);
+      }
+    }
+
+    // Accumulate function name
+    if (!string.IsNullOrEmpty(toolCallUpdate.FunctionName))
+    {
+      var current = state.ToolCallsInfo.GetValueOrDefault(index, (string.Empty, string.Empty));
+      state.ToolCallsInfo[index] = (current.Item1, toolCallUpdate.FunctionName);
+    }
+
+    // Accumulate function arguments
+    if (toolCallUpdate.FunctionArgumentsUpdate != null &&
+        toolCallUpdate.FunctionArgumentsUpdate.ToMemory().Length > 0)
+    {
+      state.ToolCallsBuilder[index].Append(toolCallUpdate.FunctionArgumentsUpdate.ToString());
+    }
+  }
+
+  private async Task<(string response, int totalTokenUsed)> ExecuteToolsAndGetFinalResponseAsync(
+    List<OpenAI.Chat.ChatMessage> messages,
+    StreamingState state,
+    ChatCompletionOptions chatOptions,
+    Func<string, Task>? onChunkReceived,
+    CancellationToken cancellationToken)
+  {
+    logger.LogInformation($"LLM requested {state.ToolCallsInfo.Count} tool calls during streaming");
+
+    // Build and execute tool calls
+    var toolCalls = BuildToolCallsFromState(state);
+    messages.Add(new AssistantChatMessage(toolCalls));
+
+    foreach (var toolCall in toolCalls)
+    {
+      await ExecuteToolAndAddResultMessage(messages, toolCall);
+    }
+
+    // Stream final response after tool execution
+    state.ResponseBuilder.Clear();
+    await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken))
+    {
+      await ProcessStreamUpdate(update, state, onChunkReceived);
+    }
+
+    return (state.ResponseBuilder.ToString(), state.TotalTokensUsed);
+  }
+
+  private List<ChatToolCall> BuildToolCallsFromState(StreamingState state)
+  {
+    var toolCalls = new List<ChatToolCall>();
+
+    foreach (var kvp in state.ToolCallsInfo)
+    {
+      int index = kvp.Key;
+      var (id, functionName) = kvp.Value;
+      var arguments = state.ToolCallsBuilder[index].ToString();
+
+      toolCalls.Add(ChatToolCall.CreateFunctionToolCall(id, functionName, BinaryData.FromString(arguments)));
+    }
+
+    return toolCalls;
   }
 
   private ChatTool? ConvertMcpToolToChatTool(McpClientTool mcpTool)
@@ -416,11 +463,40 @@ public class OpenAIService(
       }
     }
     catch
+    {}
+    return "{}";
+  }
+
+  private ChatCompletionOptions CreateChatOptionsWithTools(IList<McpClientTool> availableTools)
+  {
+    var chatOptions = new ChatCompletionOptions
     {
-      // Silently fall through to default
+      MaxOutputTokenCount = settings.MaxToken
+    };
+
+    foreach (var tool in availableTools)
+    {
+      var chatTool = ConvertMcpToolToChatTool(tool);
+      if (chatTool != null)
+      {
+        chatOptions.Tools.Add(chatTool);
+      }
     }
 
-    return "{}";
+    return chatOptions;
+  }
+
+  #endregion
+
+  #region Helper Classes
+
+  private class StreamingState
+  {
+    public StringBuilder ResponseBuilder { get; } = new();
+    public int TotalTokensUsed { get; set; } = 0;
+    public bool RequiresToolExecution { get; set; } = false;
+    public Dictionary<int, StringBuilder> ToolCallsBuilder { get; } = new();
+    public Dictionary<int, (string id, string functionName)> ToolCallsInfo { get; } = new();
   }
 
   #endregion
