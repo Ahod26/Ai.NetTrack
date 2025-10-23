@@ -42,10 +42,18 @@ export default function NewsCard({ newsItem, onOpenModal }) {
     }
 
     try {
-      const initialMessage =
-        sourceType === 3
-          ? "Summarize this YouTube video"
-          : "Summarize this article";
+      let initialMessage;
+
+      if (sourceType === 1) {
+        // GitHub repository
+        initialMessage = `Summarize the latest release from this repository: ${url}`;
+      } else if (sourceType === 3) {
+        // YouTube video
+        initialMessage = "Summarize this YouTube video";
+      } else {
+        // RSS/Blog article
+        initialMessage = "Summarize this article";
+      }
 
       const newChat = await createChat(initialMessage, null, url);
 
@@ -80,8 +88,9 @@ export default function NewsCard({ newsItem, onOpenModal }) {
     }
   };
 
-  // Show Ask Chat button only for YouTube (3) and RSS/Blog (2) sources
-  const showAskChatButton = sourceType === 2 || sourceType === 3;
+  // Show Ask Chat button for GitHub (1), RSS/Blog (2), and YouTube (3) sources
+  const showAskChatButton =
+    sourceType === 1 || sourceType === 2 || sourceType === 3;
 
   return (
     <article
