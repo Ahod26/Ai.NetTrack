@@ -9,11 +9,12 @@ public static class DatabaseExtensions
   {
     var connectionString = configuration.GetConnectionString("AINetTrack");
 
-    services.AddDbContext<ApplicationDbContext>(options =>
+    services.AddDbContextPool<ApplicationDbContext>(options =>
         options.UseMySql(
             connectionString,
             ServerVersion.AutoDetect(connectionString)
-        )
+        ),
+        poolSize: 100
     );
 
     return services;
