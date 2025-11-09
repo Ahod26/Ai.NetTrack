@@ -240,14 +240,8 @@ public class ChatService(
 
     var savedMessage = await messagesRepo.AddMessageAsync(message);
 
-    // Update chat's last message time
-    var chat = await chatRepo.GetChatByIdAsync(chatId);
-    if (chat != null)
-    {
-      chat.LastMessageAt = DateTime.UtcNow;
-      chat.MessageCount++;
-      await chatRepo.UpdateChatAsync(chat);
-    }
+    // Update chat's last message time and count
+    await chatRepo.UpdateChatMessageCountAndLastMessageAsync(chatId);
 
     await cacheService.AddMessageToCachedChat(userId, chatId, savedMessage);
 

@@ -2,8 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using backend.Models.Domain;
 using backend.Repository.Interfaces;
 using backend.Data;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+
 
 namespace backend.Repository.Classes;
 
@@ -18,13 +17,13 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
 
   public async Task<Chat?> GetChatByIdAndUserIdAsync(Guid chatId, string userId)
   {
-    return await dbContext.Chats
+    return await dbContext.Chats.AsNoTracking()
         .FirstOrDefaultAsync(c => c.Id == chatId && c.UserId == userId);
   }
 
   public async Task<List<Chat>> GetChatsByUserIdAsync(string userId)
   {
-    return await dbContext.Chats
+    return await dbContext.Chats.AsNoTracking()
         .Where(c => c.UserId == userId)
         .OrderByDescending(c => c.LastMessageAt)
         .ToListAsync();
@@ -36,9 +35,15 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
     await dbContext.SaveChangesAsync();
   }
 
-  public async Task<Chat?> GetChatByIdAsync(Guid chatId)
+  public async Task UpdateChatMessageCountAndLastMessageAsync(Guid chatId)
   {
-    return await dbContext.Chats.FirstOrDefaultAsync((c) => c.Id == chatId);
+    var chat = await dbContext.Chats.FirstOrDefaultAsync((c) => c.Id == chatId);
+    if (chat != null)
+    {
+      chat.LastMessageAt = DateTime.UtcNow;
+      chat.MessageCount++;
+      await dbContext.SaveChangesAsync();
+    }
   }
 
   public async Task DeleteChatAsync(Guid chatId)
@@ -69,7 +74,7 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
 
   public async Task<int> GetUserChatCountAsync(string userId)
   {
-    return await dbContext.Chats.CountAsync(c => c.UserId == userId);
+    return await dbContext.Chats.AsNoTracking().CountAsync(c => c.UserId == userId);
   }
 
   // public async Task<bool> GetChatNewsRelationStatus(Guid chatId)

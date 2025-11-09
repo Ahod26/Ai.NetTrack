@@ -16,7 +16,7 @@ public class MessagesRepo(ApplicationDbContext dbContext) : IMessagesRepo
 
   public async Task<List<ChatMessage>> GetMessagesAsync(Guid chatId)
   {
-    return await dbContext.ChatMessages
+    return await dbContext.ChatMessages.AsNoTracking()
     .Where(m => m.ChatId == chatId)
     .OrderBy(m => m.CreatedAt)  // Chronological order
     .ToListAsync();
@@ -24,7 +24,7 @@ public class MessagesRepo(ApplicationDbContext dbContext) : IMessagesRepo
 
   public async Task<List<ChatMessage>> GetStarredMessagesAsync(string userId)
   {
-    return await dbContext.ChatMessages
+    return await dbContext.ChatMessages.AsNoTracking()
     .Where(m => m.IsStarred && m.Chat.UserId == userId)
     .OrderBy(m => m.CreatedAt)
     .ToListAsync();

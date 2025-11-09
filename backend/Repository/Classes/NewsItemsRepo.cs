@@ -40,12 +40,12 @@ public class NewsItemsRepo(ApplicationDbContext dbContext) : INewsItemRepo
 
     if (newsType != 0)
     {
-      query = dbContext.NewsItems
+      query = dbContext.NewsItems.AsNoTracking()
         .Where(n => n.PublishedDate >= start && n.PublishedDate < end && (int)n.SourceType == newsType);
     }
     else
     {
-      query = dbContext.NewsItems
+      query = dbContext.NewsItems.AsNoTracking()
         .Where(n => n.PublishedDate >= start && n.PublishedDate < end);
     }
     return await query
