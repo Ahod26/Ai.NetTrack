@@ -32,15 +32,18 @@ public class MessagesRepo(ApplicationDbContext dbContext) : IMessagesRepo
 
   public async Task<ChatMessage?> ToggleMessageStarAsync(string userId, Guid messageId)
   {
-    var message = await dbContext.ChatMessages
-        .FirstOrDefaultAsync(m => m.Id == messageId && m.Chat.UserId == userId);
+    var rowsAffected = await dbContext.ChatMessages
+      .Where(m => m.Id == messageId && m.Chat.UserId == userId)
+      .ExecuteUpdateAsync(s => s
+        .SetProperty(m => m.IsStarred, m => !m.IsStarred));
 
-    if (message != null)
-    {
-      message.IsStarred = !message.IsStarred;
-      await dbContext.SaveChangesAsync();
-      return message;
-    }
-    return null;
+    // I cant only execute the update I need the full entity
+
+    if (rowsAffected == 0)
+      return null;
+
+    return await dbContext.ChatMessages
+      .AsNoTracking()
+      .FirstOrDefaultAsync(m => m.Id == messageId);
   }
 }

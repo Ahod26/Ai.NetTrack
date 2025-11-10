@@ -29,21 +29,13 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
         .ToListAsync();
   }
 
-  public async Task UpdateChatAsync(Chat chat)
-  {
-    dbContext.Chats.Update(chat);
-    await dbContext.SaveChangesAsync();
-  }
-
   public async Task UpdateChatMessageCountAndLastMessageAsync(Guid chatId)
   {
-    var chat = await dbContext.Chats.FirstOrDefaultAsync((c) => c.Id == chatId);
-    if (chat != null)
-    {
-      chat.LastMessageAt = DateTime.UtcNow;
-      chat.MessageCount++;
-      await dbContext.SaveChangesAsync();
-    }
+    await dbContext.Chats
+        .Where(c => c.Id == chatId)
+        .ExecuteUpdateAsync(s => s
+          .SetProperty(c => c.LastMessageAt, DateTime.UtcNow)
+          .SetProperty(c => c.MessageCount, c => c.MessageCount + 1));
   }
 
   public async Task DeleteChatAsync(Guid chatId)
@@ -53,23 +45,18 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
 
   public async Task ChangeChatTitleAsync(Guid chatId, string newTitle)
   {
-    var chat = await dbContext.Chats.FindAsync(chatId);
-
-    if (chat != null)
-    {
-      chat.Title = newTitle;
-      await dbContext.SaveChangesAsync();
-    }
+    await dbContext.Chats
+      .Where(c => c.Id == chatId)
+      .ExecuteUpdateAsync(s => s
+        .SetProperty(c => c.Title, newTitle));
   }
 
   public async Task ChangeContextStatus(Guid chatId)
   {
-    var chat = await dbContext.Chats.FindAsync(chatId);
-    if (chat != null)
-    {
-      chat.IsContextFull = true;
-      await dbContext.SaveChangesAsync();
-    }
+    await dbContext.Chats
+      .Where(c => c.Id == chatId)
+      .ExecuteUpdateAsync(s => s
+        .SetProperty(c => c.IsContextFull, true));
   }
 
   public async Task<int> GetUserChatCountAsync(string userId)
@@ -77,19 +64,4 @@ public class ChatRepo(ApplicationDbContext dbContext) : IChatRepo
     return await dbContext.Chats.AsNoTracking().CountAsync(c => c.UserId == userId);
   }
 
-  // public async Task<bool> GetChatNewsRelationStatus(Guid chatId)
-  // {
-  //   var chat = await dbContext.Chats.FirstOrDefaultAsync(c => c.Id == chatId);
-  //   if (chat != null)
-  //     return chat.isChatRelatedToNewsSource;
-  //   return false;
-  // }
-
-  // public async Task<string?> GetNewsSourceContent(Guid chatId)
-  // {
-  //   var chat = await dbContext.Chats.FirstOrDefaultAsync(c => c.Id == chatId);
-  //   if (chat != null)
-  //     return chat.relatedNewsSourceContent;
-  //   return null;
-  // }
 }
