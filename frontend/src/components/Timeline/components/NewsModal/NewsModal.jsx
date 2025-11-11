@@ -8,7 +8,7 @@ import { createChat } from "../../../../api/chat";
 import { chatSliceActions } from "../../../../store/chat";
 import chatHubService from "../../../../api/chatHub";
 
-export default function NewsModal({ newsItem, isOpen, onClose }) {
+export default function NewsModal({ newsItem, isOpen, onClose, onChatError }) {
   const {
     title,
     content,
@@ -112,7 +112,14 @@ export default function NewsModal({ newsItem, isOpen, onClose }) {
       // Send the initial message
       await chatHubService.sendMessage(newChat.id, initialMessage);
     } catch (error) {
-      console.error("Error creating chat:", error);
+      // Close modal first
+      onClose();
+
+      // Display error message using the error handler
+      const errorMsg = error?.message || "Failed to create chat";
+      if (onChatError) {
+        onChatError(errorMsg);
+      }
     }
   };
 

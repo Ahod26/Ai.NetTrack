@@ -9,6 +9,7 @@ import SearchBar from "./components/SearchBar/SearchBar";
 import NewsCard from "./components/NewsCard/NewsCard";
 import NewsModal from "./components/NewsModal/NewsModal";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import ErrorPopup from "../ErrorPopup";
 import styles from "./Timeline.module.css";
 
 export default function Timeline() {
@@ -29,6 +30,27 @@ export default function Timeline() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedNewsItem, setSelectedNewsItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const errorTimeoutRef = useRef(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleChatError = useCallback((errorMsg) => {
+    if (errorTimeoutRef.current) {
+      clearTimeout(errorTimeoutRef.current);
+    }
+    setErrorMessage(errorMsg);
+    errorTimeoutRef.current = setTimeout(() => {
+      setErrorMessage("");
+    }, 5000);
+  }, []);
 
   // Date pagination hook
   const {
@@ -192,6 +214,7 @@ export default function Timeline() {
         !isSidebarOpen ? styles.sidebarClosed : ""
       }`}
     >
+      <ErrorPopup message={errorMessage} />
       <div className={styles.content} ref={contentRef}>
         <div className={styles.controls}>
           <DateSelector
@@ -238,6 +261,7 @@ export default function Timeline() {
                 key={`${newsItem.id}-${newsItem.url}`}
                 newsItem={newsItem}
                 onOpenModal={handleOpenModal}
+                onChatError={handleChatError}
               />
             ))}
           </div>
@@ -263,6 +287,7 @@ export default function Timeline() {
         newsItem={selectedNewsItem}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        onChatError={handleChatError}
       />
     </div>
   );

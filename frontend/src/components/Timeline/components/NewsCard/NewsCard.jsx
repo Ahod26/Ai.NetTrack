@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { chatSliceActions } from "../../../../store/chat";
 import chatHubService from "../../../../api/chatHub";
 
-export default function NewsCard({ newsItem, onOpenModal }) {
+export default function NewsCard({ newsItem, onOpenModal, onChatError }) {
   const { title, summary, url, sourceType, sourceName, publishedDate } =
     newsItem;
 
@@ -84,7 +84,11 @@ export default function NewsCard({ newsItem, onOpenModal }) {
       // Send the initial message
       await chatHubService.sendMessage(newChat.id, initialMessage);
     } catch (error) {
-      console.error("Error creating chat:", error);
+      // Display error message using the error handler
+      const errorMsg = error?.message || "Failed to create chat";
+      if (onChatError) {
+        onChatError(errorMsg);
+      }
     }
   };
 
