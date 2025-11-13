@@ -58,11 +58,6 @@ public class OpenAIService(
       // Handle response with tools enabled
       return await StreamResponseWithToolsAsync(messages, availableTools, onChunkReceived, cancellationToken);
     }
-    catch (OperationCanceledException)
-    {
-      logger.LogWarning("Response generation was cancelled");
-      return (string.Empty, 0);
-    }
     catch (Exception ex)
     {
       logger.LogError(ex, "Error calling OpenAI API");
@@ -172,28 +167,33 @@ public class OpenAIService(
     {
       MaxOutputTokenCount = settings.MaxToken
     };
-
-    await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, options, cancellationToken))
+    try
     {
-      if (update.ContentUpdate.Count > 0)
+      await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, options, cancellationToken))
       {
-        var chunk = update.ContentUpdate[0].Text;
-        if (!string.IsNullOrEmpty(chunk))
+        if (update.ContentUpdate.Count > 0)
         {
-          responseBuilder.Append(chunk);
-          if (onChunkReceived != null)
+          var chunk = update.ContentUpdate[0].Text;
+          if (!string.IsNullOrEmpty(chunk))
           {
-            await onChunkReceived(chunk);
+            responseBuilder.Append(chunk);
+            if (onChunkReceived != null)
+            {
+              await onChunkReceived(chunk);
+            }
           }
         }
-      }
 
-      if (update.Usage != null)
-      {
-        totalTokensUsed += update.Usage.TotalTokenCount;
+        if (update.Usage != null)
+        {
+          totalTokensUsed += update.Usage.TotalTokenCount;
+        }
       }
     }
-
+    catch (OperationCanceledException)
+    {
+      logger.LogWarning($"Streaming cancelled - returning partial content ({responseBuilder.Length} chars)");
+    }
     return (responseBuilder.ToString(), totalTokensUsed);
   }
 
@@ -206,23 +206,31 @@ public class OpenAIService(
     var chatOptions = CreateChatOptionsWithTools(availableTools);
     var streamState = new StreamingState();
 
-    // Stream first response with tool detection
-    await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken))
+    try
     {
-      await ProcessStreamUpdate(update, streamState, onChunkReceived);
+      // Stream first response with tool detection
+      await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken))
+      {
+        await ProcessStreamUpdate(update, streamState, onChunkReceived);
+      }
+
+      // If tools were called, execute them and get final response
+      if (streamState.RequiresToolExecution)
+      {
+        return await ExecuteToolsAndGetFinalResponseAsync(
+            messages,
+            streamState,
+            chatOptions,
+            onChunkReceived,
+            cancellationToken
+        );
+      }
+    }
+    catch (OperationCanceledException)
+    {
+      logger.LogWarning($"Initial streaming cancelled - returning partial content ({streamState.ResponseBuilder.Length} chars)");
     }
 
-    // If tools were called, execute them and get final response
-    if (streamState.RequiresToolExecution)
-    {
-      return await ExecuteToolsAndGetFinalResponseAsync(
-          messages,
-          streamState,
-          chatOptions,
-          onChunkReceived,
-          cancellationToken
-      );
-    }
 
     return (streamState.ResponseBuilder.ToString(), streamState.TotalTokensUsed);
   }
@@ -347,9 +355,16 @@ public class OpenAIService(
 
     // Stream final response after tool execution
     state.ResponseBuilder.Clear();
-    await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken))
+    try
     {
-      await ProcessStreamUpdate(update, state, onChunkReceived);
+      await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken))
+      {
+        await ProcessStreamUpdate(update, state, onChunkReceived);
+      }
+    }
+    catch (OperationCanceledException)
+    {
+      logger.LogWarning($"Final streaming cancelled after tools - returning partial content ({state.ResponseBuilder.Length} chars)");
     }
 
     return (state.ResponseBuilder.ToString(), state.TotalTokensUsed);
@@ -463,7 +478,7 @@ public class OpenAIService(
       }
     }
     catch
-    {}
+    { }
     return "{}";
   }
 

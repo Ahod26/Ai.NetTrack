@@ -19,7 +19,7 @@ public static class RateLimitingExtension
 
       options.AddFixedWindowLimiter("chat", config =>
       {
-        config.PermitLimit = 10;
+        config.PermitLimit = 20;
         config.Window = TimeSpan.FromMinutes(1);
         config.QueueLimit = 5;
       });

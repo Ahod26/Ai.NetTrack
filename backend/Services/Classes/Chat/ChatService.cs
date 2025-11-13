@@ -24,6 +24,8 @@ public class ChatService(
 {
   private readonly StreamingSettings streamingSettings = streamingOptions.Value;
 
+  #region Public Interface Methods
+
   public async Task<ChatMetaDataDto> CreateChatAsync(string userId, string firstMessage, int? timezoneOffset = null, string? relatedNewsSource = null)
   {
     string title = await openAIService.GenerateChatTitle(firstMessage);
@@ -121,7 +123,6 @@ public class ChatService(
   {
     // 1. Get chat context
     var contextFromChat = await GetChatMessagesAsync(chatId, userId);
-    // I should make copy for the context so it will work with the original context without the user message or the ai message. I get REFERENCE for the cached item
     var context = new List<ChatMessage>(contextFromChat);
     var chat = await chatRepo.GetChatByIdAndUserIdAsync(chatId, userId);
 
@@ -161,46 +162,44 @@ public class ChatService(
     // 3. Cache miss - save user message first
     var userMessage = await AddMessageAsync(chatId, content, MessageType.User, userId);
 
-    // Wrap the chunk handler to collect partial content for saving if canceled
-    string partialCollected = string.Empty;
-    async Task OnChunk(string chunk)
-    {
-      partialCollected += chunk;         // 1. Save chunk locally
-      if (onChunkReceived != null)
-        await onChunkReceived(chunk);    // 2. Forward to SignalR clients
-    }
+    // 4. Generate AI response - OpenAIService handles partial content on cancellation
+    var aiResponse = await openAIService.GenerateResponseAsync(
+        content,
+        context,
+        cancellationToken,
+        chat.isChatRelatedToNewsSource,
+        chat.MessageCount == 1,
+        onChunkReceived,
+        chat.relatedNewsSourceContent
+    );
 
-    // 4. Generate AI response using the original context (before user message was added)
-    var aiResponse = await openAIService.GenerateResponseAsync(content, context, cancellationToken, chat!.isChatRelatedToNewsSource, chat!.MessageCount == 1, OnChunk, chat!.relatedNewsSourceContent);
-
-    // 5. Save AI message
     var finalText = aiResponse.response;
+    var totalTokensUsed = aiResponse.totalTokenUsed;
+
+    // 5. Save AI message (partial or complete)
     var aiMessage = await AddMessageAsync(chatId, finalText, MessageType.Assistant, userId);
 
     logger.LogWarning($"[Cache] Response generated ({finalText.Length} chars), checking if should cache...");
-    logger.LogWarning($"[Cache] Canceled: {cancellationToken.IsCancellationRequested}, Error response: {aiResponse.response == "Sorry, I'm having trouble responding right now. Please try again."}");
+    logger.LogWarning($"[Cache] Canceled: {cancellationToken.IsCancellationRequested}, Error response: {finalText == "Sorry, I'm having trouble responding right now. Please try again."}");
 
-    // 6. Cache the response using the original context (conversation history before user message)
-    // Cache only if not canceled and response is valid and no built in message from interaction with the news resources
+    // 6. Cache only if not canceled and response is valid
     if (!cancellationToken.IsCancellationRequested &&
-        aiResponse.response != "Sorry, I'm having trouble responding right now. Please try again.")
+        finalText != "Sorry, I'm having trouble responding right now. Please try again.")
     {
-      // caching response
       if (isInitialMessage && isNewsRelated)
       {
         logger.LogWarning($"[Cache] Storing news resource cache for URL: {chat.relatedNewsSourceURL}");
-        await LLMCacheService.SetCachedResponseForNewsResourceAsync(chat.relatedNewsSourceURL!, aiResponse.response);
+        await LLMCacheService.SetCachedResponseForNewsResourceAsync(chat.relatedNewsSourceURL!, finalText);
         logger.LogWarning($"[Cache] News resource cache stored successfully");
       }
-
       else
       {
         logger.LogWarning($"[Cache] Storing regular LLM cache");
-        await LLMCacheService.SetCachedResponseAsync(content, context, aiResponse.response);
+        await LLMCacheService.SetCachedResponseAsync(content, context, finalText);
         logger.LogWarning($"[Cache] Regular cache stored successfully");
       }
-        
-      if (aiResponse.totalTokenUsed >= 50000)
+
+      if (totalTokensUsed >= 50000)
       {
         await ChangeContextStatus(chatId, userId);
       }
@@ -221,6 +220,9 @@ public class ChatService(
     await chatRepo.ChangeChatTitleAsync(chatId, newTitle);
   }
 
+  #endregion
+
+  #region Private Implementation Methods
   private async Task ChangeContextStatus(Guid chatId, string userId)
   {
     await cacheService.ChangeCachedChatContextCountStatus(userId, chatId);
@@ -309,4 +311,6 @@ public class ChatService(
 
     return fullResponse;
   }
+
+  #endregion
 }
