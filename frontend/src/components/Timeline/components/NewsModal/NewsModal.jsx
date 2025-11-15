@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import styles from "./NewsModal.module.css";
@@ -24,6 +24,7 @@ export default function NewsModal({ newsItem, isOpen, onClose, onChatError }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isUserLoggedIn } = useSelector((state) => state.userAuth);
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -64,9 +65,11 @@ export default function NewsModal({ newsItem, isOpen, onClose, onChatError }) {
   };
 
   const handleAskChat = async () => {
-    if (!isUserLoggedIn || !url) {
+    if (!isUserLoggedIn || !url || isCreatingChat) {
       return;
     }
+
+    setIsCreatingChat(true);
 
     try {
       let initialMessage;
@@ -112,6 +115,7 @@ export default function NewsModal({ newsItem, isOpen, onClose, onChatError }) {
       // Send the initial message
       await chatHubService.sendMessage(newChat.id, initialMessage);
     } catch (error) {
+      setIsCreatingChat(false);
       // Close modal first
       onClose();
 
@@ -214,8 +218,19 @@ export default function NewsModal({ newsItem, isOpen, onClose, onChatError }) {
 
         <footer className={styles.modalFooter}>
           {showAskChatButton && isUserLoggedIn && (
-            <button className={styles.askChatButton} onClick={handleAskChat}>
-              <span>💬 Ask Chat</span>
+            <button
+              className={styles.askChatButton}
+              onClick={handleAskChat}
+              disabled={isCreatingChat}
+            >
+              {isCreatingChat ? (
+                <>
+                  <span className={styles.spinner}></span>
+                  <span>Creating...</span>
+                </>
+              ) : (
+                <span>💬 Ask Chat</span>
+              )}
             </button>
           )}
           {url && (

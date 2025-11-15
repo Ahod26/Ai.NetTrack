@@ -445,10 +445,9 @@ public class OpenAIService(
     logger.LogInformation(relatedNewsSourceContent);
     if (isChatRelatedToNewsSource)
     {
-      messages.Add(new SystemChatMessage(
-            $"Reference Content:\n{relatedNewsSourceContent}\n\n" +
-            $"Use this content to provide accurate answers based on the source material."
-        ));
+      var systemMessage = $"Reference Content:\n{relatedNewsSourceContent}\n\n" +
+                       $"Use this content to provide accurate answers based on the source material.";
+      messages.Add(new SystemChatMessage(systemMessage));
     }
 
     messages.Add(new SystemChatMessage(PromptConstants.SYSTEM_PROMPT));

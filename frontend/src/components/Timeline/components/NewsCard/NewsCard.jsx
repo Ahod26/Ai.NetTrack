@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./NewsCard.module.css";
 import { sourceTypeIcons, sourceTypeNames } from "../../shared";
@@ -15,6 +16,7 @@ export default function NewsCard({ newsItem, onOpenModal, onChatError }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isUserLoggedIn } = useSelector((state) => state.userAuth);
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
 
   const handleCardClick = () => {
     onOpenModal(newsItem);
@@ -37,9 +39,11 @@ export default function NewsCard({ newsItem, onOpenModal, onChatError }) {
   const handleAskChat = async (e) => {
     e.stopPropagation();
 
-    if (!isUserLoggedIn || !url) {
+    if (!isUserLoggedIn || !url || isCreatingChat) {
       return;
     }
+
+    setIsCreatingChat(true);
 
     try {
       let initialMessage;
@@ -84,6 +88,7 @@ export default function NewsCard({ newsItem, onOpenModal, onChatError }) {
       // Send the initial message
       await chatHubService.sendMessage(newChat.id, initialMessage);
     } catch (error) {
+      setIsCreatingChat(false);
       // Display error message using the error handler
       const errorMsg = error?.message || "Failed to create chat";
       if (onChatError) {
@@ -141,8 +146,16 @@ export default function NewsCard({ newsItem, onOpenModal, onChatError }) {
               className={styles.askChatButton}
               onClick={handleAskChat}
               aria-label="Ask chat about this content"
+              disabled={isCreatingChat}
             >
-              💬 Ask Chat
+              {isCreatingChat ? (
+                <>
+                  <span className={styles.spinner}></span>
+                  Creating...
+                </>
+              ) : (
+                "💬 Ask Chat"
+              )}
             </button>
           )}
           {url && (
