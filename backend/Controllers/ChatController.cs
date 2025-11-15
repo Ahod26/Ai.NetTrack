@@ -6,6 +6,7 @@ using backend.Models.Dtos;
 using backend.Filters;
 using backend.Services.Interfaces.Chat;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Http.Timeouts;
 
 namespace backend.Controllers;
 
@@ -13,6 +14,7 @@ namespace backend.Controllers;
 [Route("[controller]")]
 [Authorize]
 [EnableRateLimiting("chat")]
+[RequestTimeout(2000)] 
 public class ChatController
 (IChatService chatService, ILogger<ChatController> logger) : ControllerBase
 {

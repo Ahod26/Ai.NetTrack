@@ -29,10 +29,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseRateLimiter();
+
 app.UseCors("AllowReactApp");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRequestTimeouts();
 
 app.MapHub<ChatHub>("/chathub");
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using backend.Services.Interfaces.Chat;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Http.Timeouts;
 
 namespace backend.Controllers;
 
@@ -10,6 +11,7 @@ namespace backend.Controllers;
 [ApiController]
 [Authorize]
 [EnableRateLimiting("messages")]
+[RequestTimeout(2000)]
 public class MessagesController(IMessagesService messagesService, ILogger<MessagesController> logger)
 : ControllerBase
 {

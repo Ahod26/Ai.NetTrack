@@ -37,6 +37,7 @@ public static class InfrastructureExtensions
 
     services.AddHostedService<NewsAggregationService>();
     services.AddHttpClient();
+    services.AddRequestTimeouts();
 
     return services;
   }
