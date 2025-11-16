@@ -38,10 +38,15 @@ public class OpenAIService(
     try
     {
       var messages = BuildBaseMessages(userMessage, context, isChatRelatedToNewsSource, relatedNewsSourceContent);
+      bool isToolCallNeeded = ToolTriggers.ShouldUseMcpTools(userMessage);
 
-      // Early return for news-related chats without tool calling
-      if (isChatRelatedToNewsSource && isInitialMessage)
+      // Early return for news-related chats without tool calling OR messages that didn't pass keywords check
+      if ((isChatRelatedToNewsSource && isInitialMessage) || !isToolCallNeeded)
       {
+        if (!isToolCallNeeded)
+        {
+          logger.LogInformation("No AI-related keywords detected - skipping MCP tools");
+        }
         return await StreamSimpleResponseAsync(messages, onChunkReceived, cancellationToken);
       }
 

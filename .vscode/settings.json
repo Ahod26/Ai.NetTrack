@@ -21,6 +21,8 @@
     "Hmac",
     "HNSW",
     "hqdefault",
+    "httpclient",
+    "ihttpclientfactory",
     "ILLM",
     "kevinwatt",
     "kimtaeyoon",
