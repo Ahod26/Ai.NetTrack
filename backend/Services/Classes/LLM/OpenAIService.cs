@@ -347,29 +347,50 @@ public class OpenAIService(
     Func<string, Task>? onChunkReceived,
     CancellationToken cancellationToken)
   {
-    logger.LogInformation($"LLM requested {state.ToolCallsInfo.Count} tool calls during streaming");
+    const int MAX_TOOL_ROUNDS = 5; 
+    int toolRound = 0;
 
-    // Build and execute tool calls
-    var toolCalls = BuildToolCallsFromState(state);
-    messages.Add(new AssistantChatMessage(toolCalls));
-
-    foreach (var toolCall in toolCalls)
+    while (state.RequiresToolExecution && toolRound < MAX_TOOL_ROUNDS)
     {
-      await ExecuteToolAndAddResultMessage(messages, toolCall);
-    }
+      toolRound++;
+      logger.LogWarning($"🔧 Tool execution round #{toolRound}");
 
-    // Stream final response after tool execution
-    state.ResponseBuilder.Clear();
-    try
-    {
-      await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken))
+      // Build and execute tool calls
+      var toolCalls = BuildToolCallsFromState(state);
+      messages.Add(new AssistantChatMessage(toolCalls));
+
+      foreach (var toolCall in toolCalls)
       {
-        await ProcessStreamUpdate(update, state, onChunkReceived);
+        await ExecuteToolAndAddResultMessage(messages, toolCall);
+      }
+
+      // Reset state for next round
+      state.ResponseBuilder.Clear();
+      state.ToolCallsBuilder.Clear();
+      state.ToolCallsInfo.Clear();
+      state.RequiresToolExecution = false;
+
+      logger.LogWarning($"🔄 Streaming after tool round #{toolRound}, context has {messages.Count} messages");
+
+      try
+      {
+        await foreach (var update in chatClient.CompleteChatStreamingAsync(messages, chatOptions, cancellationToken))
+        {
+          await ProcessStreamUpdate(update, state, onChunkReceived);
+        }
+
+        logger.LogWarning($"✅ Round #{toolRound} complete. Response: {state.ResponseBuilder.Length} chars, NeedsMoreTools: {state.RequiresToolExecution}");
+      }
+      catch (OperationCanceledException)
+      {
+        logger.LogWarning($"Streaming cancelled during round #{toolRound}");
+        break;
       }
     }
-    catch (OperationCanceledException)
+
+    if (toolRound >= MAX_TOOL_ROUNDS)
     {
-      logger.LogWarning($"Final streaming cancelled after tools - returning partial content ({state.ResponseBuilder.Length} chars)");
+      logger.LogWarning($"⚠️ Reached max tool rounds ({MAX_TOOL_ROUNDS}), stopping");
     }
 
     return (state.ResponseBuilder.ToString(), state.TotalTokensUsed);
@@ -415,13 +436,16 @@ public class OpenAIService(
   {
     try
     {
-      logger.LogInformation($"Executing tool: '{toolCall.FunctionName}'");
+      logger.LogWarning($"🔧 TOOL CALLED: '{toolCall.FunctionName}'");
+      logger.LogWarning($"📋 ARGUMENTS: {toolCall.FunctionArguments.ToString()}");
 
       var arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(toolCall.FunctionArguments.ToString())
                       ?? new Dictionary<string, object?>();
 
       var toolResult = await mcpClient.CallToolAsync(toolCall.FunctionName, arguments);
       var resultText = SerializeToolResult(toolResult, toolCall.FunctionName);
+
+      logger.LogWarning($"📦 RESULT PREVIEW: {resultText.Substring(0, Math.Min(500, resultText.Length))}");
 
       messages.Add(new ToolChatMessage(toolCall.Id, resultText));
 
