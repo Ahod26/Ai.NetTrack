@@ -479,7 +479,7 @@ public class OpenAIService(
       messages.Add(new SystemChatMessage(systemMessage));
     }
 
-    messages.Add(new SystemChatMessage(PromptConstants.SYSTEM_PROMPT));
+    messages.Add(new SystemChatMessage(PromptConstants.BuildSystemPrompt()));
 
     foreach (var msg in context)
     {

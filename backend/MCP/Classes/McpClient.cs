@@ -31,6 +31,7 @@ public class McpClientService(
     {
       await InitializeGitHubClient();
       await InitializeDocsClient();
+      await InitializeTavilyClient();
 
       _initialized = true;
       logger.LogInformation($"Successfully initialized {clients.Count} MCP clients");
@@ -114,6 +115,47 @@ public class McpClientService(
     catch (Exception ex)
     {
       logger.LogError(ex, $"Failed to initialize Microsoft Docs MCP server '{serverName}'");
+    }
+  }
+
+  private async Task InitializeTavilyClient()
+  {
+    const string serverName = "tavily";
+
+    try
+    {
+      var apiKey = settings.Tavily.Token;
+      logger.LogWarning($"Tavily API Key (first 10 chars): {apiKey.Substring(0, Math.Min(10, apiKey.Length))}...");
+      if (string.IsNullOrEmpty(apiKey))
+      {
+        logger.LogWarning("Tavily API key not configured, skipping Tavily MCP server");
+        return;
+      }
+
+      var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
+      {
+        Name = "TavilyServer",
+        Command = "npx",
+        Arguments = [
+          "-y",
+          "tavily-mcp@latest"
+        ],
+        EnvironmentVariables = new Dictionary<string, string>
+        {
+          { "TAVILY_API_KEY", apiKey }  // API key as environment variable
+        }!
+      });
+
+      var client = await McpClient.CreateAsync(clientTransport);
+
+      clients.TryAdd(serverName, client);
+      await RegisterToolsForServer(client, serverName);
+
+      logger.LogInformation($"Tavily MCP server '{serverName}' initialized successfully");
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, $"Failed to initialize Tavily MCP server '{serverName}'");
     }
   }
 
