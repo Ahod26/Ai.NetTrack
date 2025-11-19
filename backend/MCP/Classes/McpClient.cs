@@ -30,7 +30,6 @@ public class McpClientService(
     try
     {
       await InitializeGitHubClient();
-      await InitializeDocsClient();
       await InitializeTavilyClient();
 
       _initialized = true;
@@ -78,43 +77,6 @@ public class McpClientService(
     catch (Exception ex)
     {
       logger.LogError(ex, $"Failed to initialize GitHub MCP server '{serverName}'");
-    }
-  }
-
-  private async Task InitializeDocsClient()
-  {
-    const string serverName = "docs";
-
-    try
-    {
-      // Create HttpClient with SSL bypass
-      var handler = new HttpClientHandler()
-      {
-        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-      };
-
-      var httpClient = new HttpClient(handler);
-
-      var httpTransport = new HttpClientTransport(
-        new HttpClientTransportOptions
-        {
-          Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
-        },
-        httpClient,
-        ownsHttpClient: true
-      );
-
-      var client = await McpClient.CreateAsync(httpTransport);
-
-      clients.TryAdd(serverName, client);
-
-      await RegisterToolsForServer(client, serverName);
-
-      logger.LogInformation($"Microsoft Docs MCP server '{serverName}' initialized successfully");
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, $"Failed to initialize Microsoft Docs MCP server '{serverName}'");
     }
   }
 
@@ -189,6 +151,24 @@ public class McpClientService(
   public IList<McpClientTool> GetAllAvailableToolsAsync()
   {
     return toolToServerMap.Values.Distinct().ToList();
+  }
+
+  public List<McpClientTool> GetEssentialTools()
+  {
+    var essentialToolNames = new[]
+    {
+      "tavily-search",        // Web search - always useful
+      "get_file_contents",    // Read specific files from GitHub
+      "list_files",           // Browse repository structure  
+      "get_readme",           // Quick repo overview
+      "get_recent_commits"    // Check latest changes
+    };
+
+    return toolToServerMap.Values
+      .Where(tool => essentialToolNames.Contains(tool.Name))
+      .Distinct()
+      .ToList();
+
   }
 
   public async Task<CallToolResult> CallToolAsync(string toolName, Dictionary<string, object?> parameters)

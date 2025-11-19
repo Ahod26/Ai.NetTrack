@@ -13,6 +13,7 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [error, setError] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [currentTool, setCurrentTool] = useState(null);
   const errorTimeoutRef = useRef(null);
   const messageIdCounterRef = useRef(0);
   const isCancellingRef = useRef(false);
@@ -37,11 +38,30 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
         },
       ];
     });
+    setCurrentTool(null);
     setIsSendingMessage(false);
   }, []);
 
   // Handle chunk message
   const handleChunkMessageReceived = useCallback((chunkMessage) => {
+    // Check for tool execution markers
+    const toolStartMatch = chunkMessage.content.match(
+      /\[TOOL_START:([^\]]+)\]/
+    );
+
+    if (toolStartMatch) {
+      // Extract tool name and update current tool state
+      const toolName = toolStartMatch[1];
+      setCurrentTool(toolName);
+      // Don't add this marker to messages, just update the tool state
+      return;
+    }
+
+    // If we receive actual content, clear the tool state (tool execution finished)
+    if (chunkMessage.content && !chunkMessage.content.startsWith("[TOOL_")) {
+      setCurrentTool(null);
+    }
+
     setMessages((prev) => {
       const lastIndex = prev.length - 1;
       const lastMessage = prev[lastIndex];
@@ -248,5 +268,6 @@ export function useSignalRChat(chatId, isUserLoggedIn) {
     sendMessage,
     cancelGeneration,
     errorMessage,
+    currentTool,
   };
 }

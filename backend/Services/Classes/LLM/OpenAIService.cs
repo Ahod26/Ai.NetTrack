@@ -38,20 +38,16 @@ public class OpenAIService(
     try
     {
       var messages = BuildBaseMessages(userMessage, context, isChatRelatedToNewsSource, relatedNewsSourceContent);
-      bool isToolCallNeeded = ToolTriggers.ShouldUseMcpTools(userMessage);
+      bool isExtendedToolCallNeeded = ToolTriggers.ShouldUseAllMcpTools(userMessage);
 
-      // Early return for news-related chats without tool calling OR messages that didn't pass keywords check
-      if ((isChatRelatedToNewsSource && isInitialMessage) || !isToolCallNeeded)
+      // Early return for news-related chats without tool calling 
+      if (isChatRelatedToNewsSource && isInitialMessage)
       {
-        if (!isToolCallNeeded)
-        {
-          logger.LogInformation("No AI-related keywords detected - skipping MCP tools");
-        }
         return await StreamSimpleResponseAsync(messages, onChunkReceived, cancellationToken);
       }
 
       // Get available tools
-      var availableTools = mcpClient.GetAllAvailableToolsAsync();
+      var availableTools = isExtendedToolCallNeeded ? mcpClient.GetAllAvailableToolsAsync() : mcpClient.GetEssentialTools();
       logger.LogInformation($"Available MCP tools count: {availableTools.Count}");
 
       if (availableTools.Count == 0)
@@ -361,6 +357,7 @@ public class OpenAIService(
 
       foreach (var toolCall in toolCalls)
       {
+        await onChunkReceived!($"[TOOL_START:{toolCall.FunctionName}]");
         await ExecuteToolAndAddResultMessage(messages, toolCall);
       }
 
@@ -437,7 +434,7 @@ public class OpenAIService(
     try
     {
       logger.LogWarning($"🔧 TOOL CALLED: '{toolCall.FunctionName}'");
-      logger.LogWarning($"📋 ARGUMENTS: {toolCall.FunctionArguments.ToString()}");
+      logger.LogWarning($"📋 ARGUMENTS: {toolCall.FunctionArguments}");
 
       var arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(toolCall.FunctionArguments.ToString())
                       ?? new Dictionary<string, object?>();

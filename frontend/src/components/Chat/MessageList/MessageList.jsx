@@ -9,6 +9,7 @@ import styles from "./MessageList.module.css";
 const MessageList = memo(function MessageList({
   messages,
   isSendingMessage,
+  currentTool,
   messagesContainerRef,
   onScroll,
 }) {
@@ -22,6 +23,21 @@ const MessageList = memo(function MessageList({
   useStarSync();
 
   const hasChunkMessage = messages.some((msg) => msg.isChunkMessage);
+
+  // Tool name to display message mapping
+  const toolMessages = {
+    "tavily-search": "🔍 Searching the internet...",
+    get_file_contents: "📁 Fetching GitHub files...",
+    list_files: "📂 Browsing GitHub repository...",
+    search_code: "💻 Searching GitHub code...",
+  };
+
+  const getToolMessage = () => {
+    if (currentTool && toolMessages[currentTool]) {
+      return toolMessages[currentTool];
+    }
+    return "Thinking";
+  };
 
   // Initialize starred messages from the messages prop on first load
   useEffect(() => {
@@ -163,7 +179,7 @@ const MessageList = memo(function MessageList({
       {isSendingMessage && !hasChunkMessage && (
         <div className={`${styles.message} ${styles.assistant}`}>
           <div className={styles.messageContent}>
-            <TypingIndicator />
+            <TypingIndicator label={getToolMessage()} />
           </div>
         </div>
       )}

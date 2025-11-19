@@ -25,6 +25,7 @@ const MainChat = memo(function MainChat() {
     sendMessage,
     cancelGeneration,
     errorMessage,
+    currentTool,
   } = useSignalRChat(chatId, isUserLoggedIn);
 
   const { messagesContainerRef, handleScroll, scrollToBottom } =
@@ -90,6 +91,7 @@ const MainChat = memo(function MainChat() {
       <MessageList
         messages={messages}
         isSendingMessage={isSendingMessage}
+        currentTool={currentTool}
         messagesContainerRef={messagesContainerRef}
         onScroll={handleScroll}
       />
