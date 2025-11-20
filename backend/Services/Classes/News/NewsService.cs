@@ -15,7 +15,7 @@ public class NewsService(
   ILogger<NewsService> logger
 ) : INewsService
 {
-  public async Task<List<NewsItem>> GetNewsItems(DateTime targetDates, int newsType)
+  public async Task<List<NewsItem>> GetNewsItemsAsync(List<DateTime> targetDates, int newsType)
   {
     try
     {
@@ -37,7 +37,21 @@ public class NewsService(
     }
   }
 
-  public async Task<string?> GetContentForRelatedNews(string relatedNewsURL)
+  public async Task<List<NewsItem>> GetNewsItemsBySearchAsync(string term)
+  {
+    try
+    {
+      var newsList = await newsRepo.GetNewsBySearchAsync(term);
+      return newsList;
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Failed to get news items");
+      throw;
+    }
+  }
+  
+  public async Task<string?> GetContentForRelatedNewsAsync(string relatedNewsURL)
   {
     try
     {

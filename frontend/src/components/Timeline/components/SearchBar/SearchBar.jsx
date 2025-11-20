@@ -18,12 +18,11 @@ export default function SearchBar({ searchQuery, onSearchChange }) {
       <input
         type="text"
         className={styles.searchInput}
-        placeholder="Search news content... (Coming soon)"
+        placeholder="Search news content..."
         value={searchQuery}
         onChange={handleInputChange}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        disabled // Remove this when ready 
       />
       {searchQuery && (
         <button

@@ -31,25 +31,39 @@ public class NewsItemsRepo(ApplicationDbContext dbContext) : INewsItemRepo
     }
   }
 
-  public async Task<List<NewsItem>> GetNewsAsync(DateTime targetDate, int newsType)
+  public async Task<List<NewsItem>> GetNewsAsync(List<DateTime> targetDates, int newsType)
   {
-    var start = targetDate.Date;
-    var end = start.AddDays(1);
+    var dates = targetDates.Select(d => d.Date).ToList();
 
-    IQueryable<NewsItem> query;
+    IQueryable<NewsItem> query = dbContext.NewsItems.AsNoTracking();
+
+    query = query.Where(n => dates.Any(d =>
+      n.PublishedDate >= d && n.PublishedDate < d.AddDays(1)));
 
     if (newsType != 0)
     {
-      query = dbContext.NewsItems.AsNoTracking()
-        .Where(n => n.PublishedDate >= start && n.PublishedDate < end && (int)n.SourceType == newsType);
+      query = query.Where(n => (int)n.SourceType == newsType);
     }
-    else
-    {
-      query = dbContext.NewsItems.AsNoTracking()
-        .Where(n => n.PublishedDate >= start && n.PublishedDate < end);
-    }
+
     return await query
-      .OrderByDescending(n => n.PublishedDate)
-      .ToListAsync();
+        .OrderByDescending(n => n.PublishedDate)
+        .ToListAsync();
+  }
+
+  public async Task<List<NewsItem>> GetNewsBySearchAsync(string term)
+  {
+    var words = term.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+    IQueryable<NewsItem> query = dbContext.NewsItems.AsNoTracking();
+
+    // Each word must exist somewhere in title OR summary
+    foreach (var word in words)
+    {
+      query = query.Where(n =>
+        n.Summary!.ToLower().Contains(word) ||
+        n.Title.ToLower().Contains(word));
+    }
+
+    return await query.ToListAsync();
   }
 }

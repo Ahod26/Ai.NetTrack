@@ -32,7 +32,7 @@ public class ChatService(
     string? content = "";
 
     if (relatedNewsSource != null)
-      content = await newsService.GetContentForRelatedNews(relatedNewsSource);
+      content = await newsService.GetContentForRelatedNewsAsync(relatedNewsSource);
 
     var chat = new Chat
     {

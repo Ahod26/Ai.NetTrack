@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { sidebarActions } from "../../store/sidebarSlice";
-import { getNewsByDate } from "../../api/news";
+import { getNewsByDate, getNewsBySearch } from "../../api/news";
 import { useDatePagination } from "../../hooks/useDatePagination";
 import DateSelector from "./components/DateSelector/DateSelector";
 import NewsTypeFilter from "./components/NewsTypeFilter/NewsTypeFilter";
@@ -31,13 +31,18 @@ export default function Timeline() {
   const [selectedNewsItem, setSelectedNewsItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const errorTimeoutRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
 
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (errorTimeoutRef.current) {
         clearTimeout(errorTimeoutRef.current);
+      }
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
       }
     };
   }, []);
@@ -129,8 +134,52 @@ export default function Timeline() {
     dispatch(sidebarActions.closeSidebar());
   }, [dispatch]);
 
+  // Debounced search effect
+  useEffect(() => {
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // If search query is empty or less than 3 characters, don't search
+    if (!searchQuery || searchQuery.trim().length < 3) {
+      setIsSearching(false);
+      return;
+    }
+
+    // Set searching state immediately
+    setIsSearching(true);
+
+    // Debounce search by 500ms
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getNewsBySearch(searchQuery.trim());
+        setNewsItems(data || []);
+      } catch (err) {
+        setError("Failed to search news. Please try again.");
+        console.error("Error searching news:", err);
+      } finally {
+        setLoading(false);
+        setIsSearching(false);
+      }
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
+
   // Initial load and reload when dates or news type change
   useEffect(() => {
+    // Skip date-based loading if user is actively searching
+    if (searchQuery && searchQuery.trim().length >= 3) {
+      return;
+    }
+
     const loadInitialNews = async () => {
       if (selectedDates.length === 0) {
         setNewsItems([]);
@@ -162,7 +211,13 @@ export default function Timeline() {
     };
 
     loadInitialNews();
-  }, [selectedDates, selectedNewsType, resetPagination, dateBatches]);
+  }, [
+    selectedDates,
+    selectedNewsType,
+    resetPagination,
+    dateBatches,
+    searchQuery,
+  ]);
 
   const loadNews = async () => {
     if (selectedDates.length === 0) {
@@ -249,7 +304,9 @@ export default function Timeline() {
         {!loading && !error && newsItems.length === 0 && (
           <div className={styles.emptyContainer}>
             <p className={styles.emptyText}>
-              No news found for the selected dates.
+              {searchQuery && searchQuery.trim().length >= 3
+                ? `No news found for "${searchQuery}"`
+                : "No news found for the selected dates."}
             </p>
           </div>
         )}

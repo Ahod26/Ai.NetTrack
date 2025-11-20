@@ -39,3 +39,25 @@ export async function getNewsByDate(dates = null, newsType = null) {
     throw error;
   }
 }
+
+export async function getNewsBySearch(searchTerm) {
+  try {
+    const url = `${API_BASE_URL}${
+      API_ENDPOINTS.NEWS.GETNEWSBYSEARCH
+    }?term=${encodeURIComponent(searchTerm)}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to search news: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error searching news:", error);
+    throw error;
+  }
+}

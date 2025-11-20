@@ -51,16 +51,24 @@ public class NewsCacheService(
     }
   }
 
-  public async Task<List<NewsItem>> GetNewsAsync(DateTime date, int newsType)
+  public async Task<List<NewsItem>> GetNewsAsync(List<DateTime> dates, int newsType)
   {
     try
     {
-      var dateKey = GenerateDateKey(date.Date);
-      return await newsCacheRepo.GetNewsAsync(dateKey, newsType) ?? [];
+      var allNews = new List<NewsItem>();
+
+      foreach (var date in dates)
+      {
+        var dateKey = GenerateDateKey(date.Date);
+        var newsForDate = await newsCacheRepo.GetNewsAsync(dateKey, newsType) ?? new List<NewsItem>();
+        allNews.AddRange(newsForDate);
+      }
+
+      return allNews;
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "Error getting news for date {Date}", date.Date);
+      logger.LogError(ex, "Error getting news for dates");
       return [];
     }
   }
