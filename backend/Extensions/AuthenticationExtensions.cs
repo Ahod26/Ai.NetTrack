@@ -62,6 +62,12 @@ public static class AuthenticationExtensions
               return Task.CompletedTask;
             }
       };
+    })
+    .AddGoogle(options =>
+    {
+      options.ClientId = configuration["Authentication:Google:ClientId"] ?? "";
+      options.ClientSecret = configuration["Authentication:Google:ClientSecret"] ?? "";
+      options.SignInScheme = IdentityConstants.ExternalScheme;
     });
 
     return services;

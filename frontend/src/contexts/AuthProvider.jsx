@@ -16,7 +16,7 @@ export default function AuthProvider({ children }) {
         if (authStatus.isAuthenticated && authStatus.user) {
           // Convert UserInfo class instance to plain object before dispatching
           const userPlainObject = {
-            userName: authStatus.user.userName,
+            fullName: authStatus.user.fullName,
             email: authStatus.user.email,
             roles: authStatus.user.roles,
           };

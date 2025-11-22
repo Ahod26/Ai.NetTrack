@@ -12,7 +12,7 @@ export async function registerUser(userData) {
         },
         credentials: "include",
         body: JSON.stringify({
-          username: userData.username,
+          fullName: userData.fullName,
           email: userData.email,
           password: userData.password,
         }),
@@ -23,7 +23,6 @@ export async function registerUser(userData) {
 
     const result = new RegisterResponse(data);
     return result;
-    
   } catch {
     return new RegisterResponse({
       success: false,

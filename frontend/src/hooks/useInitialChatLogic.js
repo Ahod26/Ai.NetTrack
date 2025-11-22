@@ -87,15 +87,15 @@ export function useInitialChatLogic() {
 
   // Memoize personalized greeting to avoid recalculation
   const personalizedGreeting = useMemo(() => {
-    if (!isUserLoggedIn || !user?.userName) {
+    if (!isUserLoggedIn || !user?.fullName) {
       return "How can I help you today?";
     }
 
-    const firstName = user.userName.split(" ")[0];
+    const firstName = user.fullName.split(" ")[0];
     return firstName
       ? `How can I help you today, ${firstName}?`
       : "How can I help you today?";
-  }, [isUserLoggedIn, user?.userName]);
+  }, [isUserLoggedIn, user?.fullName]);
 
   const getPersonalizedGreeting = useCallback(() => {
     return personalizedGreeting;

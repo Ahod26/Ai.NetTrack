@@ -12,6 +12,7 @@ public static class ConfigurationExtensions
     services.Configure<ChatCacheSettings>(configuration.GetSection(ChatCacheSettings.SECTION_NAME));
     services.Configure<StreamingSettings>(configuration.GetSection(StreamingSettings.SECTION_NAME));
     services.Configure<McpSettings>(configuration.GetSection(McpSettings.SECTION_NAME));
+    services.Configure<OAuth2Settings>(configuration.GetSection(OAuth2Settings.SECTION_NAME));
 
     return services;
   }

@@ -5,6 +5,7 @@ using backend.Models.Dtos;
 using backend.Models.Domain;
 
 using backend.Services.Interfaces.Auth;
+using Microsoft.AspNetCore.Authentication;
 
 namespace backend.Services.Classes.Auth;
 
@@ -31,7 +32,7 @@ public class AuthService(ICookieService cookieService, ITokenService tokenServic
             Message = "Login successful",
             User = new UserInfoDTO
             {
-              UserName = user.UserName!,
+              FullName = user.FullName!,
               Email = user.Email!,
               Roles = roles.ToList()
             }
@@ -49,7 +50,7 @@ public class AuthService(ICookieService cookieService, ITokenService tokenServic
 
   public async Task<RegisterResponseDTO> RegisterAsync(RegisterDTO registerDTO)
   {
-    // Check for existing email first
+    // Check for existing email 
     var existingUserByEmail = await authRepo.FindByEmailAsync(registerDTO.Email);
     if (existingUserByEmail != null)
     {
@@ -61,22 +62,11 @@ public class AuthService(ICookieService cookieService, ITokenService tokenServic
       };
     }
 
-    // Check for existing username
-    var existingUserByUsername = await authRepo.FindByUsernameAsync(registerDTO.UserName);
-    if (existingUserByUsername != null)
-    {
-      return new RegisterResponseDTO
-      {
-        Success = false,
-        Message = "Registration failed",
-        Errors = new List<string> { "Username is already taken" }
-      };
-    }
-
     var applicationUser = new ApiUser
     {
-      UserName = registerDTO.UserName,
-      Email = registerDTO.Email
+      UserName = registerDTO.Email,
+      Email = registerDTO.Email,
+      FullName = registerDTO.FullName
     };
 
     var identityResult = await authRepo.CreateAsync(applicationUser, registerDTO.Password);
@@ -143,9 +133,69 @@ public class AuthService(ICookieService cookieService, ITokenService tokenServic
   {
     return new UserInfoDTO
     {
-      UserName = user.FindFirst(ClaimTypes.Name)?.Value ?? "",
+      FullName = user.FindFirst(ClaimTypes.Name)?.Value ?? "",
       Email = user.FindFirst(ClaimTypes.Email)?.Value ?? "",
       Roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList()
     };
   }
+
+  public async Task<LoginResponseDTO> GoogleLoginAsync(AuthenticateResult googleAuthResult)
+  {
+    if (!googleAuthResult.Succeeded)
+    {
+      return new LoginResponseDTO
+      {
+        Success = false,
+        Message = "Google authentication failed"
+      };
+    }
+
+    var claims = googleAuthResult.Principal.Claims;
+    var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+    var googleId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+    var name = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+
+    var user = await authRepo.FindByEmailAsync(email ?? "");
+
+    if (user == null)
+    {
+      user = new ApiUser
+      {
+        UserName = email,  // Use email as username for uniqueness
+        Email = email,
+        FullName = name ?? "",  // Store display name in FullName
+        EmailConfirmed = true // Google verified it
+      };
+
+      var createResult = await authRepo.CreateAsync(user, Guid.NewGuid().ToString()); // Random password since they use Google
+
+      if (!createResult.Succeeded)
+      {
+        return new LoginResponseDTO
+        {
+          Success = false,
+          Message = "Failed to create user account"
+        };
+      }
+
+      await authRepo.AddToRoleAsync(user, "premium");
+    }
+
+    var roles = await authRepo.GetRolesAsync(user);
+    var jwtToken = tokenService.GenerateToken(user, roles.ToList());
+    cookieService.SetAuthCookie(jwtToken);
+
+    return new LoginResponseDTO
+    {
+      Success = true,
+      Message = "Login successful",
+      User = new UserInfoDTO
+      {
+        FullName = user.FullName!,
+        Email = user.Email!,
+        Roles = roles.ToList()
+      }
+    };
+  }
+
 }

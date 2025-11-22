@@ -17,7 +17,7 @@ const userAuthSlice = createSlice({
       // Handle both plain objects and UserInfo class instances
       if (userPayload && typeof userPayload === "object") {
         state.user = {
-          userName: userPayload.userName,
+          fullName: userPayload.fullName,
           email: userPayload.email,
           roles: Array.isArray(userPayload.roles) ? [...userPayload.roles] : [],
         };

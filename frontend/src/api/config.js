@@ -6,20 +6,21 @@ export const API_ENDPOINTS = {
     LOGIN: "/auth/login",
     LOGOUT: "/auth/logout",
     STATUS: "/auth/status",
+    GOOGLE_LOGIN: "/auth/google-login",
   },
   CHAT: {
-    CHATHUB: "/chathub",
-    CREATECHAT: "/chat",
-    GETCHATS: "/chat",
-    DELETECHATBYID: "/chat", // Base route, append /{chatId} when calling
-    CHANGECHATTITLE: "/chat" // Base route, append /{chatId}/title when calling
+    CHAT_HUB: "/chathub",
+    CREATE_CHAT: "/chat",
+    GET_CHATS: "/chat",
+    DELETE_CHAT_BY_ID: "/chat", // Base route, append /{chatId} when calling
+    CHANGE_CHAT_TITLE: "/chat", // Base route, append /{chatId}/title when calling
   },
   MESSAGES: {
-    STARREDMESSAGES: "messages/starred",
-    TOGGLESTAR: "messages" // Base route, append /{messageId}/starred
+    STARRED_MESSAGES: "messages/starred",
+    TOGGLE_STAR: "messages", // Base route, append /{messageId}/starred
   },
-  NEWS:{
-    GETNEWSBYDATE: "/news",
-    GETNEWSBYSEARCH: "/news/search"
-  }
+  NEWS: {
+    GET_NEWS_BY_DATE: "/news",
+    GET_NEWS_BY_SEARCH: "/news/search",
+  },
 };

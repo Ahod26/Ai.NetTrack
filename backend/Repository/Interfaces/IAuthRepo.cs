@@ -10,6 +10,4 @@ public interface IAuthRepo
   Task<List<string>> GetRolesAsync(ApiUser user);
   Task<IdentityResult> CreateAsync(ApiUser user, string password);
   Task<IdentityResult> AddToRoleAsync(ApiUser user, string role);
-  Task<ApiUser?> FindByUsernameAsync(string username);
-
 }

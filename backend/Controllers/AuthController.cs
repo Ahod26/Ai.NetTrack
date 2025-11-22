@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using backend.Models.Dtos;
 using backend.Services.Interfaces.Auth;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Identity;
 
 namespace backend.Controllers;
 
@@ -98,4 +101,24 @@ public class AuthController
     return Ok(new { message = "Logout successful" });
   }
 
+  [HttpGet("google-login")]
+  public IActionResult GoogleLogin()
+  {
+    var redirectUrl = Url.Action("GoogleResponse", "Auth"); 
+    var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+    return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+  }
+
+  [HttpGet("google-response")]
+  public async Task<IActionResult> GoogleResponse()
+  {
+    var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+
+    var loginResult = await authService.GoogleLoginAsync(result);
+
+    if (!loginResult.Success)
+      return BadRequest(loginResult.Message);
+
+    return Redirect($"http://localhost:5173/auth/callback?success=true");
+  }
 }

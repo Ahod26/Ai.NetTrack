@@ -32,8 +32,4 @@ public class AuthRepo(UserManager<ApiUser> userManager) : IAuthRepo
     return await userManager.AddToRoleAsync(user, role);
   }
 
-  public async Task<ApiUser?> FindByUsernameAsync(string username)
-  {
-    return await userManager.FindByNameAsync(username);
-  }
 }

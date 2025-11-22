@@ -45,8 +45,8 @@ public static class RateLimitingExtension
         partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         factory: _ => new FixedWindowRateLimiterOptions
         {
-          PermitLimit = 5,
-          Window = TimeSpan.FromMinutes(15),
+          PermitLimit = 20,
+          Window = TimeSpan.FromMinutes(5),
           QueueLimit = 0
         }));
 
