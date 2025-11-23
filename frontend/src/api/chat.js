@@ -13,7 +13,7 @@ export async function createChat(
 ) {
   try {
     const actualTimezoneOffset = timezoneOffset ?? getTimezoneOffset();
-    let url = `${API_BASE_URL}${API_ENDPOINTS.CHAT.CREATECHAT}?timezoneOffset=${actualTimezoneOffset}`;
+    let url = `${API_BASE_URL}${API_ENDPOINTS.CHAT.CREATE_CHAT}?timezoneOffset=${actualTimezoneOffset}`;
 
     if (relatedNewsSource) {
       url += `&relatedNewsSource=${encodeURIComponent(relatedNewsSource)}`;
@@ -49,7 +49,7 @@ export async function getUserChatsMetaData() {
   try {
     const timezoneOffset = getTimezoneOffset();
     const response = await fetch(
-      `${API_BASE_URL}${API_ENDPOINTS.CHAT.GETCHATS}?timezoneOffset=${timezoneOffset}`,
+      `${API_BASE_URL}${API_ENDPOINTS.CHAT.GET_CHATS}?timezoneOffset=${timezoneOffset}`,
       {
         method: "GET",
         credentials: "include",
@@ -72,7 +72,7 @@ export async function getUserChatsMetaData() {
 export async function deleteChatById(chatId) {
   try {
     const response = await fetch(
-      `${API_BASE_URL}${API_ENDPOINTS.CHAT.DELETECHATBYID}/${chatId}`,
+      `${API_BASE_URL}${API_ENDPOINTS.CHAT.DELETE_CHAT_BY_ID}/${chatId}`,
       {
         method: "DELETE",
         credentials: "include",
@@ -96,7 +96,7 @@ export async function deleteChatById(chatId) {
 export async function changeChatTitle(chatId, newTitle) {
   try {
     const response = await fetch(
-      `${API_BASE_URL}${API_ENDPOINTS.CHAT.CHANGECHATTITLE}/${chatId}/title`,
+      `${API_BASE_URL}${API_ENDPOINTS.CHAT.CHANGE_CHAT_TITLE}/${chatId}/title`,
       {
         method: "PATCH",
         headers: {

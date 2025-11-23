@@ -134,7 +134,7 @@ public class ChatService(
     // 2. Check cache (skip if cancellation already requested)
     if (!cancellationToken.IsCancellationRequested)
     {
-      string? cachedResponse = null;
+      string? cachedResponse;
 
       if (isInitialMessage && isNewsRelated)
       {
@@ -167,8 +167,8 @@ public class ChatService(
         content,
         context,
         cancellationToken,
-        chat.isChatRelatedToNewsSource,
-        chat.MessageCount == 1,
+        isNewsRelated,
+        isInitialMessage,
         onChunkReceived,
         chat.relatedNewsSourceContent
     );

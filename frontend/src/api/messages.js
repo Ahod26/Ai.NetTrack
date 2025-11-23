@@ -3,7 +3,7 @@ import { API_BASE_URL, API_ENDPOINTS } from "./config";
 export async function getAllStarredMessages() {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/${API_ENDPOINTS.MESSAGES.STARREDMESSAGES}`,
+      `${API_BASE_URL}/${API_ENDPOINTS.MESSAGES.STARRED_MESSAGES}`,
       {
         method: "GET",
         credentials: "include",
@@ -25,7 +25,7 @@ export async function getAllStarredMessages() {
 export async function toggleMessageStar(messageId) {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/${API_ENDPOINTS.MESSAGES.TOGGLESTAR}/${messageId}/starred`,
+      `${API_BASE_URL}/${API_ENDPOINTS.MESSAGES.TOGGLE_STAR}/${messageId}/starred`,
       {
         method: "PATCH",
         credentials: "include",

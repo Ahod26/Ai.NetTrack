@@ -2,11 +2,11 @@ import { API_BASE_URL, API_ENDPOINTS } from "./config";
 
 export async function getNewsByDate(dates = null, newsType = null) {
   try {
-    let url = `${API_BASE_URL}${API_ENDPOINTS.NEWS.GETNEWSBYDATE}`;
+    let url = `${API_BASE_URL}${API_ENDPOINTS.NEWS.GET_NEWS_BY_DATE}`;
 
     // Add news type to route if provided
     if (newsType && newsType > 0) {
-      url = `${API_BASE_URL}${API_ENDPOINTS.NEWS.GETNEWSBYDATE}/${newsType}`;
+      url = `${API_BASE_URL}${API_ENDPOINTS.NEWS.GET_NEWS_BY_DATE}/${newsType}`;
     }
 
     // Add dates as query parameters if provided
@@ -43,7 +43,7 @@ export async function getNewsByDate(dates = null, newsType = null) {
 export async function getNewsBySearch(searchTerm) {
   try {
     const url = `${API_BASE_URL}${
-      API_ENDPOINTS.NEWS.GETNEWSBYSEARCH
+      API_ENDPOINTS.NEWS.GET_NEWS_BY_SEARCH
     }?term=${encodeURIComponent(searchTerm)}`;
 
     const response = await fetch(url, {

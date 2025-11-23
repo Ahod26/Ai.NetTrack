@@ -17,7 +17,7 @@ class ChatHubService {
     }
 
     this.connection = new SignalR.HubConnectionBuilder()
-      .withUrl(`${API_BASE_URL}${API_ENDPOINTS.CHAT.CHATHUB}`, {
+      .withUrl(`${API_BASE_URL}${API_ENDPOINTS.CHAT.CHAT_HUB}`, {
         withCredentials: true,
       })
       .withAutomaticReconnect()
