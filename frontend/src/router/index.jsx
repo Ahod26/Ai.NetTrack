@@ -4,6 +4,7 @@ import ChatPage from "../pages/ChatPage/ChatPage";
 import InitialChatPage from "../pages/InitialChatPage/InitialChatPage";
 import TimelinePage from "../pages/TimelinePage/TimelinePage";
 import StarredMessagesPage from "../pages/StarredMessagesPage/StarredMessagesPage";
+import AccountSettingsPage from "../pages/AccountSettingsPage/AccountSettingsPage";
 import NotFound from "../pages/NotFound/NotFound";
 import AuthCallback from "../pages/AuthCallback/AuthCallback";
 import { Login, Signup } from "../components/Auth";
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
       {
         path: "timeline",
         element: <TimelinePage />,
+      },
+      {
+        path: "account",
+        element: <AccountSettingsPage />,
       },
       {
         path: "*",

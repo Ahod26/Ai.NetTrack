@@ -6,6 +6,11 @@ export default function Header() {
   const location = useLocation();
   const isSidebarOpen = useSelector((state) => state.sidebar.isOpen);
 
+  // Hide header on account settings page
+  if (location.pathname === "/account") {
+    return null;
+  }
+
   return (
     <header
       className={`${styles.header} ${

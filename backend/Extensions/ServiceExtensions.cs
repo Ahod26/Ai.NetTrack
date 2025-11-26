@@ -13,6 +13,8 @@ using backend.Services.Interfaces.News;
 using backend.Services.Classes.News;
 using backend.Background.Interfaces;
 using backend.Background.Classes;
+using backend.Services.Interfaces;
+using backend.Services.Classes;
 
 namespace backend.Extensions;
 
@@ -28,8 +30,8 @@ public static class ServiceExtensions
     services.AddScoped<IGitHubService, GitHubService>();
     services.AddScoped<IRssService, RssService>();
     services.AddScoped<IYouTubeService, YouTubeService>();
-    services.AddSingleton<IMcpClientService, McpClientService>();
     services.AddScoped<INewsService, NewsService>();
+    services.AddScoped<IProfileService, ProfileService>();
 
     services.AddSingleton<IOpenAIService, OpenAIService>();
     services.AddSingleton<IMcpClientService, McpClientService>();

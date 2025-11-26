@@ -50,6 +50,18 @@ public static class RateLimitingExtension
           QueueLimit = 0
         }));
 
+      options.AddPolicy("profile", httpContext =>
+      RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+          PermitLimit = 10,
+          Window = TimeSpan.FromMinutes(10),
+          QueueLimit = 3
+        }
+        )
+      );
+
       options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
           RateLimitPartition.GetFixedWindowLimiter(
               partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",

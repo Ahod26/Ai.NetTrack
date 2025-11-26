@@ -153,7 +153,6 @@ public class OpenAIService(
 
   #endregion
 
-
   #region Private Implementation Methods
 
   private async Task<(string response, int totalTokenUsed)> StreamSimpleResponseAsync(

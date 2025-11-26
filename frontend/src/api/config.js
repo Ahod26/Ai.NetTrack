@@ -23,4 +23,10 @@ export const API_ENDPOINTS = {
     GET_NEWS_BY_DATE: "/news",
     GET_NEWS_BY_SEARCH: "/news/search",
   },
+  PROFILE: {
+    UPDATE_EMAIL: "/profile/email",
+    UPDATE_FULLNAME: "/profile/username",
+    UPDATE_PASSWORD: "/profile/password",
+    DELETE_ACCOUNT: "/profile",
+  },
 };
