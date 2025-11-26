@@ -12,7 +12,6 @@ import { logoutUser } from "../api/auth";
 import chatHubService from "../api/chatHub";
 
 export const useAccountSettings = () => {
-  
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userAuth);
