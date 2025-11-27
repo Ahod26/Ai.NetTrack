@@ -12,6 +12,12 @@ export const useStarSync = () => {
   );
   const prevLocationRef = useRef(location.pathname);
   const syncInProgressRef = useRef(false);
+  const pendingChangesRef = useRef(pendingChanges);
+
+  // Keep ref updated with latest pendingChanges
+  useEffect(() => {
+    pendingChangesRef.current = pendingChanges;
+  }, [pendingChanges]);
 
   const syncPendingStarChanges = useCallback(async () => {
     const pendingIds = Object.keys(pendingChanges);
@@ -33,7 +39,7 @@ export const useStarSync = () => {
         pendingIds.map(async (messageId) => {
           const desiredStarredState = changesToSync[messageId];
 
-          // Call the API with the desired state 
+          // Call the API with the desired state
           const response = await toggleMessageStar(messageId);
 
           // Check if we got the desired state, if not, call again
@@ -69,17 +75,58 @@ export const useStarSync = () => {
       syncPendingStarChanges();
       prevLocationRef.current = location.pathname;
     }
-  }, [location.pathname, syncPendingStarChanges]);
+  }, [location.pathname, pendingChanges, syncPendingStarChanges]);
 
-  // Also sync on component unmount 
+  // Sync on component unmount (using ref to avoid re-running cleanup on every render)
   useEffect(() => {
     return () => {
-      const pendingIds = Object.keys(pendingChanges);
+      // This cleanup only runs when component actually unmounts
+      const currentPendingChanges = pendingChangesRef.current;
+      const pendingIds = Object.keys(currentPendingChanges);
       if (pendingIds.length > 0) {
-        syncPendingStarChanges();
+        // Call sync directly instead of using the callback
+        // to avoid stale closure issues
+        const syncChanges = async () => {
+          if (syncInProgressRef.current) return;
+
+          syncInProgressRef.current = true;
+          try {
+            const results = await Promise.all(
+              pendingIds.map(async (messageId) => {
+                const desiredStarredState = currentPendingChanges[messageId];
+                const response = await toggleMessageStar(messageId);
+
+                if (response.isStarred !== desiredStarredState) {
+                  const secondResponse = await toggleMessageStar(messageId);
+                  return { messageId, isStarred: secondResponse.isStarred };
+                }
+
+                return { messageId, isStarred: response.isStarred };
+              })
+            );
+
+            results.forEach(({ messageId, isStarred }) => {
+              dispatch(
+                messagesSliceActions.updateStarredMessage({
+                  messageId,
+                  isStarred,
+                })
+              );
+            });
+
+            dispatch(messagesSliceActions.clearPendingStarChanges());
+          } catch (error) {
+            console.error("[useStarSync] Error in unmount sync:", error);
+          } finally {
+            syncInProgressRef.current = false;
+          }
+        };
+
+        syncChanges();
       }
     };
-  }, [pendingChanges, syncPendingStarChanges]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps means cleanup only runs on actual unmount
 
   return { syncPendingStarChanges };
 };
