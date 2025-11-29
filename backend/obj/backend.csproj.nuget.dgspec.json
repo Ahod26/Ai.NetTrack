@@ -52,6 +52,10 @@
               "target": "Package",
               "version": "[12.0.1, )"
             },
+            "FluentAssertions": {
+              "target": "Package",
+              "version": "[8.8.0, )"
+            },
             "Microsoft.AspNetCore.Authentication.Google": {
               "target": "Package",
               "version": "[9.0.0, )"
@@ -95,6 +99,10 @@
             "ModelContextProtocol.AspNetCore": {
               "target": "Package",
               "version": "[0.4.0-preview.1, )"
+            },
+            "Moq": {
+              "target": "Package",
+              "version": "[4.20.72, )"
             },
             "NRedisStack": {
               "target": "Package",

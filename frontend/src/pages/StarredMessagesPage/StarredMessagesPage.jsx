@@ -5,8 +5,7 @@ import MarkdownRenderer from "../../components/MarkdownRenderer/MarkdownRenderer
 import { MessageListSkeleton } from "../../components/Skeleton";
 import { messagesSliceActions } from "../../store/messagesSlice";
 import { sidebarActions } from "../../store/sidebarSlice";
-import { getAllStarredMessages } from "../../api/messages";
-import { useStarSync } from "../../hooks/useStarSync";
+import { getAllStarredMessages, toggleMessageStar } from "../../api/messages";
 import styles from "./StarredMessagesPage.module.css";
 
 const StarredMessagesPage = memo(function StarredMessagesPage() {
@@ -18,11 +17,8 @@ const StarredMessagesPage = memo(function StarredMessagesPage() {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
+  const [loadingStars, setLoadingStars] = useState(new Set());
 
-  // Initialize star sync hook
-  useStarSync();
-
-  // Open sidebar when component mounts (same as MainChat)
   useEffect(() => {
     dispatch(sidebarActions.openSidebar());
   }, [dispatch]);
@@ -33,10 +29,8 @@ const StarredMessagesPage = memo(function StarredMessagesPage() {
         setIsLoading(true);
         const response = await getAllStarredMessages();
         setMessages(response);
-
-        // Initialize Redux store with starred message IDs
         const starredIds = response.map((msg) => msg.id);
-        dispatch(messagesSliceActions.initializeStarredMessages(starredIds));
+        dispatch(messagesSliceActions.setStarredMessages(starredIds));
       } catch (error) {
         console.error("Failed to fetch starred messages:", error);
         setMessages([]);
@@ -48,9 +42,33 @@ const StarredMessagesPage = memo(function StarredMessagesPage() {
     fetchStarredMessages();
   }, [dispatch]);
 
-  const handleStarToggle = (messageId) => {
-    // Optimistic update
-    dispatch(messagesSliceActions.toggleMessageStarOptimistic(messageId));
+  const handleStarToggle = async (messageId) => {
+    // Ignore if already processing this message
+    if (loadingStars.has(messageId)) {
+      return;
+    }
+
+    // Add to loading set
+    setLoadingStars((prev) => new Set(prev).add(messageId));
+
+    // Optimistic update - toggle immediately
+    dispatch(messagesSliceActions.toggleMessageStar(messageId));
+
+    try {
+      await toggleMessageStar(messageId);
+      // Success - keep the toggled state
+    } catch (error) {
+      console.error("Failed to toggle star:", error);
+      // Revert the toggle on error
+      dispatch(messagesSliceActions.toggleMessageStar(messageId));
+    } finally {
+      // Remove from loading set
+      setLoadingStars((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(messageId);
+        return newSet;
+      });
+    }
   };
 
   const handleCopyMessage = async (content, messageId) => {

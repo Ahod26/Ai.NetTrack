@@ -12,5 +12,6 @@ public interface IChatCacheService
   Task DeleteCachedChat(string userId, Guid chatId);
   Task ChangeCachedChatContextCountStatus(string userId, Guid chatId);
   Task<List<ChatMessage>> GetStarredMessagesFromCache(string userId);
-  Task ToggleStarredMessageInCache(string userId, ChatMessage message);
+  Task ToggleStarredMessageInCache(string userId, Guid chatId, Guid messageId);
+  Task SetReportedMessage(string userId, ChatMessage message);
 }

@@ -187,6 +187,16 @@
   color: #3b82f6; /* Blue for feedback */
 }
 
+.feedbackButton.reported {
+  color: #10b981; /* Green for reported */
+  cursor: default;
+}
+
+.feedbackButton.reported:hover {
+  color: #10b981;
+  background: transparent;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .messagesContainer {

@@ -7,4 +7,5 @@ public interface IMessagesService
 {
   Task<List<FullMessageDto>> GetStarredMessagesAsync(string userId);
   Task<(bool IsStarred, ChatMessage? Message)> ToggleStarAsync(Guid messageId, string userId);
+  Task<bool> ReportMessageAsync(Guid messageId, string userId, string reportReason);
 }

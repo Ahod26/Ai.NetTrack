@@ -2,8 +2,9 @@ import { memo, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import MarkdownRenderer from "../../MarkdownRenderer/MarkdownRenderer";
 import TypingIndicator from "../TypingIndicator/TypingIndicator";
+import ReportModal from "../../ReportModal/ReportModal";
 import { messagesSliceActions } from "../../../store/messagesSlice";
-import { useStarSync } from "../../../hooks/useStarSync";
+import { toggleMessageStar, reportMessage } from "../../../api/messages";
 import styles from "./MessageList.module.css";
 
 const MessageList = memo(function MessageList({
@@ -17,10 +18,12 @@ const MessageList = memo(function MessageList({
   const starredMessages = useSelector(
     (state) => state.messages.starredMessages
   );
+  const reportedMessages = useSelector(
+    (state) => state.messages.reportedMessages
+  );
   const [copiedMessageId, setCopiedMessageId] = useState(null);
-
-  // Initialize star sync hook
-  useStarSync();
+  const [loadingStars, setLoadingStars] = useState(new Set());
+  const [reportModalMessageId, setReportModalMessageId] = useState(null);
 
   const hasChunkMessage = messages.some((msg) => msg.isChunkMessage);
 
@@ -39,22 +42,47 @@ const MessageList = memo(function MessageList({
     return "Thinking";
   };
 
-  // Initialize starred messages from the messages prop on first load
   useEffect(() => {
     if (messages.length > 0) {
       const starredIds = messages
         .filter((msg) => msg.isStarred)
         .map((msg) => msg.id);
+      dispatch(messagesSliceActions.setStarredMessages(starredIds));
 
-      if (starredIds.length > 0) {
-        dispatch(messagesSliceActions.initializeStarredMessages(starredIds));
-      }
+      const reportedIds = messages
+        .filter((msg) => msg.isReported)
+        .map((msg) => msg.id);
+      dispatch(messagesSliceActions.setReportedMessages(reportedIds));
     }
   }, [messages, dispatch]);
 
-  const handleStarToggle = (messageId) => {
-    // Optimistic update
-    dispatch(messagesSliceActions.toggleMessageStarOptimistic(messageId));
+  const handleStarToggle = async (messageId) => {
+    // Ignore if already processing this message
+    if (loadingStars.has(messageId)) {
+      return;
+    }
+
+    // Add to loading set
+    setLoadingStars((prev) => new Set(prev).add(messageId));
+
+    // Optimistic update - toggle immediately
+    dispatch(messagesSliceActions.toggleMessageStar(messageId));
+
+    try {
+      await toggleMessageStar(messageId);
+      // Success - keep the toggled state
+    } catch (error) {
+      console.error("Failed to toggle star:", error);
+      // Revert the toggle on error
+      dispatch(messagesSliceActions.toggleMessageStar(messageId));
+    } finally {
+      // Remove from loading set
+      setLoadingStars((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(messageId);
+        return newSet;
+      });
+    }
   };
 
   const handleCopyMessage = async (content, messageId) => {
@@ -72,8 +100,25 @@ const MessageList = memo(function MessageList({
   };
 
   const handleFeedback = (messageId) => {
-    // Placeholder for future feedback functionality
-    console.log("Feedback for message:", messageId);
+    // Don't allow reporting already reported messages
+    if (reportedMessages.includes(messageId)) {
+      return;
+    }
+    setReportModalMessageId(messageId);
+  };
+
+  const handleReportSubmit = async (messageId, reportText) => {
+    await reportMessage(messageId, reportText);
+    // Mark message as reported in state
+    dispatch(messagesSliceActions.markMessageReported(messageId));
+  };
+
+  const isMessageReported = (messageId) => {
+    return reportedMessages.includes(messageId);
+  };
+
+  const handleCloseReportModal = () => {
+    setReportModalMessageId(null);
   };
 
   const isMessageStarred = (messageId) => {
@@ -120,20 +165,40 @@ const MessageList = memo(function MessageList({
                 </svg>
               </button>
               <button
-                className={`${styles.actionButton} ${styles.feedbackButton}`}
+                className={`${styles.actionButton} ${styles.feedbackButton} ${
+                  isMessageReported(msg.id) ? styles.reported : ""
+                }`}
                 onClick={() => handleFeedback(msg.id)}
-                title="Provide feedback on this response"
+                title={
+                  isMessageReported(msg.id)
+                    ? "Feedback sent for this message"
+                    : "Provide feedback on this response"
+                }
+                disabled={isMessageReported(msg.id)}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
+                {isMessageReported(msg.id) ? (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                )}
               </button>
               <button
                 className={`${styles.actionButton} ${styles.copyButton} ${
@@ -182,6 +247,13 @@ const MessageList = memo(function MessageList({
             <TypingIndicator label={getToolMessage()} />
           </div>
         </div>
+      )}
+      {reportModalMessageId && (
+        <ReportModal
+          messageId={reportModalMessageId}
+          onClose={handleCloseReportModal}
+          onSubmit={handleReportSubmit}
+        />
       )}
     </div>
   );

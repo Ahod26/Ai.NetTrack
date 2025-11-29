@@ -5,6 +5,7 @@ using backend.Services.Interfaces.Chat;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Http.Timeouts;
 
+
 namespace backend.Controllers;
 
 [Route("[controller]")]
@@ -44,6 +45,26 @@ public class MessagesController(IMessagesService messagesService, ILogger<Messag
     {
       logger.LogError(ex, "Error toggling star for {MessageId}", messageId);
       return StatusCode(500, "Error toggling star");
+    }
+  }
+
+  [HttpPatch("{messageId:guid}/report")]
+  public async Task<IActionResult> ReportMessage(Guid messageId, [FromBody] string reportReason)
+  {
+    try
+    {
+      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+      var result = await messagesService.ReportMessageAsync(messageId, userId, reportReason);
+
+      if (result)
+        return Ok(new { message = "Message reported successfully" });
+
+      return BadRequest();
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Error setting reported message for {messageId}", messageId);
+      return StatusCode(500, "Error setting reported message");
     }
   }
 }

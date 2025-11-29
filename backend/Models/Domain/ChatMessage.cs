@@ -11,6 +11,9 @@ public class ChatMessage
   public DateTime CreatedAt { get; set; }
   public int TokenCount { get; set; } = 0;
   public bool IsStarred { get; set; } = false;
+  public bool IsReported { get; set; } = false;
+  public string? ReportReason { get; set; }
+  public DateTime? ReportedAt { get; set; }
 
   //navigation properties
   [JsonIgnore]

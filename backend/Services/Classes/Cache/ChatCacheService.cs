@@ -74,10 +74,35 @@ IOptions<ChatCacheSettings> cacheOptions) : IChatCacheService
     return await chatCacheRepo.GetAllStarredMessagesAsync(chatKeyPattern);
   }
 
-  public async Task ToggleStarredMessageInCache(string userId, ChatMessage message)
+  public async Task ToggleStarredMessageInCache(string userId, Guid chatId, Guid messageId)
   {
-    var chatKeyPattern = $"chat:{userId}:*";
-    await chatCacheRepo.UpdateMessageStarStatusAsync(chatKeyPattern, message.Id, message.IsStarred);
+    var cacheKey = GenerateCacheKey(userId, chatId);
+    var existingChat = await chatCacheRepo.GetCachedChatAsync(cacheKey);
+
+    if (existingChat != null && existingChat.Messages != null)
+    {
+      var messageToUpdate = existingChat.Messages.FirstOrDefault(m => m.Id == messageId);
+      if (messageToUpdate != null)
+        messageToUpdate.IsStarred = !messageToUpdate.IsStarred;
+
+      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, cacheSettings.CacheDuration);
+    }
+  }
+
+  public async Task SetReportedMessage(string userId, ChatMessage message)
+  {
+    var cacheKey = GenerateCacheKey(userId, message.ChatId);
+    var existingChat = await chatCacheRepo.GetCachedChatAsync(cacheKey);
+
+    if (existingChat != null)
+    {
+      var messageToUpdate = existingChat.Messages?.FirstOrDefault(m => m.Id == message.Id);
+      if (messageToUpdate != null)
+      {
+        messageToUpdate.IsReported = true;
+        await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, cacheSettings.CacheDuration);
+      }
+    }
   }
 
   private string GenerateCacheKey(string userId, Guid chatId)

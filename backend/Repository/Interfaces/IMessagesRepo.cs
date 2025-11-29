@@ -8,4 +8,5 @@ public interface IMessagesRepo
   Task<List<ChatMessage>> GetMessagesAsync(Guid chatId);
   Task<List<ChatMessage>> GetStarredMessagesAsync(string userId);
   Task<ChatMessage?> ToggleMessageStarAsync(string userId, Guid messageId);
+  Task<ChatMessage?> ReportMessageAsync(string userId, Guid messageId, string reportReason);
 }

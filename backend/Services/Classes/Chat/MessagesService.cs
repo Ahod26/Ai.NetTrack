@@ -26,6 +26,7 @@ public class MessagesServices(
 
     return mapper.Map<List<FullMessageDto>>(messages);
   }
+
   public async Task<(bool IsStarred, ChatMessage? Message)> ToggleStarAsync(Guid messageId, string userId)
   {
     // Update database first
@@ -33,10 +34,22 @@ public class MessagesServices(
 
     if (message != null)
     {
-      await cacheService.ToggleStarredMessageInCache(userId, message);
+      await cacheService.ToggleStarredMessageInCache(userId, message.ChatId, messageId);
       return (message.IsStarred, message);
     }
 
     return (false, null);
+  }
+
+  public async Task<bool> ReportMessageAsync(Guid messageId, string userId, string reportReason)
+  {
+    var message = await messagesRepo.ReportMessageAsync(userId, messageId, reportReason);
+
+    if (message != null)
+    {
+      await cacheService.SetReportedMessage(userId, message);
+      return true;
+    }
+    return false;
   }
 }

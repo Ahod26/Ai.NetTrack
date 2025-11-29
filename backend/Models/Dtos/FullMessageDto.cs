@@ -10,5 +10,7 @@ public class FullMessageDto
   public required DateTime CreatedAt { get; set; }
   public int TokenCount { get; set; } = 0;
   public bool IsStarred { get; set; }
+  public bool IsReported { get; set; } = false;
   public bool IsChunkMessage { get; set; } = false;
+   
 }

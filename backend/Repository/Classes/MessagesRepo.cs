@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using backend.Models.Domain;
 using backend.Repository.Interfaces;
 using backend.Data;
+using System.Reflection.Metadata.Ecma335;
 
 namespace backend.Repository.Classes;
 
@@ -37,7 +38,22 @@ public class MessagesRepo(ApplicationDbContext dbContext) : IMessagesRepo
       .ExecuteUpdateAsync(s => s
         .SetProperty(m => m.IsStarred, m => !m.IsStarred));
 
-    // I cant only execute the update I need the full entity
+    if (rowsAffected == 0)
+      return null;
+
+    return await dbContext.ChatMessages
+      .AsNoTracking()
+      .FirstOrDefaultAsync(m => m.Id == messageId);
+  }
+
+  public async Task<ChatMessage?> ReportMessageAsync(string userId, Guid messageId, string reportReason)
+  {
+    var rowsAffected = await dbContext.ChatMessages.
+    Where(m => m.Id == messageId && m.Chat.UserId == userId && !m.IsReported)
+    .ExecuteUpdateAsync(s => s
+      .SetProperty(m => m.IsReported, true)
+      .SetProperty(m => m.ReportedAt, DateTime.UtcNow)
+      .SetProperty(m => m.ReportReason, reportReason));
 
     if (rowsAffected == 0)
       return null;
