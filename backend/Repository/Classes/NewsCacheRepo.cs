@@ -5,7 +5,9 @@ using StackExchange.Redis;
 
 namespace backend.Repository.Classes;
 
-public class NewsCacheRepo(IConnectionMultiplexer redis, ILogger<NewsCacheRepo> logger) : INewsCacheRepo
+public class RedisCacheRepo(
+  IConnectionMultiplexer redis,
+  ILogger<RedisCacheRepo> logger) : IRedisCacheRepo
 {
   private readonly IDatabase _database = redis.GetDatabase();
 
@@ -67,5 +69,6 @@ public class NewsCacheRepo(IConnectionMultiplexer redis, ILogger<NewsCacheRepo> 
       throw;
     }
   }
+
 
 }

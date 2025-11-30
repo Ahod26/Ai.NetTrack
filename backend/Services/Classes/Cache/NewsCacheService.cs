@@ -5,7 +5,7 @@ using backend.Services.Interfaces.Cache;
 namespace backend.Services.Classes.Cache;
 
 public class NewsCacheService(
-    INewsCacheRepo newsCacheRepo,
+    IRedisCacheRepo newsCacheRepo,
     ILogger<NewsCacheService> logger
 ) : INewsCacheService
 {

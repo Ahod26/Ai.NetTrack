@@ -13,6 +13,7 @@ public static class ConfigurationExtensions
     services.Configure<StreamingSettings>(configuration.GetSection(StreamingSettings.SECTION_NAME));
     services.Configure<McpSettings>(configuration.GetSection(McpSettings.SECTION_NAME));
     services.Configure<OAuth2Settings>(configuration.GetSection(OAuth2Settings.SECTION_NAME));
+    services.Configure<N8NSettings>(configuration.GetSection(N8NSettings.SECTION_NAME));
 
     return services;
   }

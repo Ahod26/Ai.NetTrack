@@ -32,6 +32,7 @@ public static class ServiceExtensions
     services.AddScoped<IYouTubeService, YouTubeService>();
     services.AddScoped<INewsService, NewsService>();
     services.AddScoped<IProfileService, ProfileService>();
+    services.AddScoped<IN8NIntegration, N8NIntegration>();
 
     services.AddSingleton<IOpenAIService, OpenAIService>();
     services.AddSingleton<IMcpClientService, McpClientService>();
@@ -39,6 +40,7 @@ public static class ServiceExtensions
     services.AddSingleton<ILLMCacheService, LLMCacheService>();
     services.AddSingleton<IChatCacheService, ChatCacheService>();
     services.AddSingleton<INewsCacheService, NewsCacheService>();
+    services.AddSingleton<IEmailListCacheService, EmailListCacheService>();
     return services;
   }
 }

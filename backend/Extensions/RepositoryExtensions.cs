@@ -16,7 +16,7 @@ public static class RepositoryExtensions
 
     services.AddSingleton<ILLMCacheRepo, LLMCacheRepo>();
     services.AddSingleton<IChatCacheRepo, ChatCacheRepo>();
-    services.AddSingleton<INewsCacheRepo, NewsCacheRepo>();
+    services.AddSingleton<IRedisCacheRepo, RedisCacheRepo>();
     return services;
   }
 }

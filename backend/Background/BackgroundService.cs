@@ -18,13 +18,17 @@ public class NewsAggregationService(
 
         await using var scope = scopeFactory.CreateAsyncScope();
         var newsCollector = scope.ServiceProvider.GetRequiredService<INewsCollectorService>();
+        var N8NIntegration = scope.ServiceProvider.GetRequiredService<IN8NIntegration>();
         var mcpClientService = scope.ServiceProvider.GetRequiredService<IMcpClientService>();
 
         await mcpClientService.InitializeAsync();
 
-        await newsCollector.CollectAllNews();
-
+        int newsCount = await newsCollector.CollectAllNews();
         logger.LogInformation("News aggregation completed successfully");
+
+        if (newsCount > 0)
+          await N8NIntegration.SendUsersTodayNewsAsync();
+        
         await Task.Delay(TimeSpan.FromDays(1), cancellationToken);
       }
       catch (Exception ex)

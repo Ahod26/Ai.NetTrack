@@ -7,10 +7,13 @@ public class NewsCollectorService(
   IYouTubeService youTubeService,
   IRssService rssService) : INewsCollectorService
 {
-  public async Task CollectAllNews()
+  public async Task<int> CollectAllNews()
   {
-    //await gitHubService.GetGitHubAIUpdatesAsync();
-    //await youTubeService.GetYouTubeAIUpdatesAsync();
-    //await rssService.GetRSSUpdatesAsync();
+    var gitHubCollectedNews = await gitHubService.GetGitHubAIUpdatesAsync();
+    var youtubeCollectedNews = await youTubeService.GetYouTubeAIUpdatesAsync();
+    var rssCollectedNews = await rssService.GetRSSUpdatesAsync();
+
+    return
+      rssCollectedNews.Count() + youtubeCollectedNews.Count() + gitHubCollectedNews.Count();
   }
 }
