@@ -10,4 +10,5 @@ public interface IProfileRepo
   Task<IdentityResult> ChangeProfilePasswordAsync(string userId, string newPassword, string currentPassword);
   Task<IdentityResult> DeleteProfileAsync(string userId);
   Task<ApiUser?> GetUserById(string userId);
+  Task<(string userEmail, string userFullName, IdentityResult identityResult)> UpdateUserNewsletterPreferenceAsync(string userId);
 }

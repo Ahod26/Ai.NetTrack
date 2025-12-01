@@ -3,6 +3,7 @@ import ErrorPopup from "../../components/ErrorPopup";
 import FullNameSection from "../../components/AccountSettings/FullNameSection";
 import EmailSection from "../../components/AccountSettings/EmailSection";
 import PasswordSection from "../../components/AccountSettings/PasswordSection";
+import NewsletterSection from "../../components/AccountSettings/NewsletterSection";
 import DangerZoneSection from "../../components/AccountSettings/DangerZoneSection";
 import { useAccountSettings } from "../../hooks/useAccountSettings";
 import styles from "./AccountSettingsPage.module.css";
@@ -25,14 +26,17 @@ export default function AccountSettingsPage() {
     isUpdatingFullName,
     isUpdatingEmail,
     isUpdatingPassword,
+    isUpdatingNewsletter,
     fullNameMessage,
     emailMessage,
     passwordMessage,
+    newsletterMessage,
     showDeleteModal,
     setShowDeleteModal,
     handleUpdateFullName,
     handleUpdateEmail,
     handleUpdatePassword,
+    handleToggleNewsletter,
     handleDeleteAccount,
     handleBack,
     rateLimitError,
@@ -98,6 +102,13 @@ export default function AccountSettingsPage() {
           onSubmit={handleUpdatePassword}
           isUpdating={isUpdatingPassword}
           message={passwordMessage}
+        />
+
+        <NewsletterSection
+          isSubscribed={user?.isSubscribedToNewsletter ?? false}
+          onToggle={handleToggleNewsletter}
+          isUpdating={isUpdatingNewsletter}
+          message={newsletterMessage}
         />
 
         <DangerZoneSection onDeleteClick={() => setShowDeleteModal(true)} />

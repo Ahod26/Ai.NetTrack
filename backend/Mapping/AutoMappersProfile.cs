@@ -10,5 +10,7 @@ public class AutoMappersProfiles : Profile
   {
     CreateMap<Chat, ChatMetaDataDto>().ReverseMap();
     CreateMap<ChatMessage, FullMessageDto>().ReverseMap();
+    CreateMap<ApiUser, EmailNewsletterDTO>().ReverseMap();
+    CreateMap<ApiUser, ApiUserDto>().ReverseMap();
   }
 }

@@ -15,6 +15,7 @@ export async function registerUser(userData) {
           fullName: userData.fullName,
           email: userData.email,
           password: userData.password,
+          isSubscribedToNewsletter: userData.isSubscribedToNewsletter ?? true,
         }),
       }
     );
@@ -77,6 +78,20 @@ export async function checkAuthStatus() {
   }
 
   const data = await response.json();
+
+  // Backend returns UserInfoDTO with nested apiUserDto
+  if (data.user && data.user.apiUserDto) {
+    return {
+      isAuthenticated: data.isAuthenticated,
+      user: new UserInfo({
+        fullName: data.user.apiUserDto.fullName,
+        email: data.user.apiUserDto.email,
+        roles: data.user.roles,
+        isSubscribedToNewsletter: data.user.apiUserDto.isSubscribedToNewsletter,
+      }),
+    };
+  }
+
   return {
     isAuthenticated: data.isAuthenticated,
     user: data.user ? new UserInfo(data.user) : null,

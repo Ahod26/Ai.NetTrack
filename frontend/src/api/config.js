@@ -28,6 +28,7 @@ export const API_ENDPOINTS = {
     UPDATE_EMAIL: "/profile/email",
     UPDATE_FULLNAME: "/profile/username",
     UPDATE_PASSWORD: "/profile/password",
+    UPDATE_NEWSLETTER: "/profile/newsletter",
     DELETE_ACCOUNT: "/profile",
   },
 };

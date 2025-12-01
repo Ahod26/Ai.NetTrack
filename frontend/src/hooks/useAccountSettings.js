@@ -5,6 +5,7 @@ import {
   updateEmail,
   updateFullName,
   updatePassword,
+  toggleNewsletterSubscription,
   deleteAccount,
 } from "../api/user";
 import { userAuthSliceAction } from "../store/userAuth";
@@ -34,6 +35,7 @@ export const useAccountSettings = () => {
   const [isUpdatingFullName, setIsUpdatingFullName] = useState(false);
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isUpdatingNewsletter, setIsUpdatingNewsletter] = useState(false);
 
   // Success/Error messages
   const [fullNameMessage, setFullNameMessage] = useState({
@@ -45,6 +47,7 @@ export const useAccountSettings = () => {
     type: "",
     text: "",
   });
+  const [newsletterMessage, setNewsletterMessage] = useState("");
 
   // Delete account modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -82,9 +85,11 @@ export const useAccountSettings = () => {
       // Update Redux store with new user data
       dispatch(
         userAuthSliceAction.setUserLoggedIn({
-          fullName: updatedUser.fullName,
-          email: updatedUser.email,
+          fullName: updatedUser.apiUserDto.fullName,
+          email: updatedUser.apiUserDto.email,
           roles: updatedUser.roles,
+          isSubscribedToNewsletter:
+            updatedUser.apiUserDto.isSubscribedToNewsletter,
         })
       );
 
@@ -123,9 +128,11 @@ export const useAccountSettings = () => {
       // Update Redux store with new user data
       dispatch(
         userAuthSliceAction.setUserLoggedIn({
-          fullName: updatedUser.fullName,
-          email: updatedUser.email,
+          fullName: updatedUser.apiUserDto.fullName,
+          email: updatedUser.apiUserDto.email,
           roles: updatedUser.roles,
+          isSubscribedToNewsletter:
+            updatedUser.apiUserDto.isSubscribedToNewsletter,
         })
       );
 
@@ -194,6 +201,45 @@ export const useAccountSettings = () => {
     }
   };
 
+  const handleToggleNewsletter = async () => {
+    setIsUpdatingNewsletter(true);
+    setNewsletterMessage("");
+
+    try {
+      const updatedUser = await toggleNewsletterSubscription();
+
+      // Update Redux store with new user data from backend
+      dispatch(
+        userAuthSliceAction.setUserLoggedIn({
+          fullName: updatedUser.apiUserDto.fullName,
+          email: updatedUser.apiUserDto.email,
+          roles: updatedUser.roles,
+          isSubscribedToNewsletter:
+            updatedUser.apiUserDto.isSubscribedToNewsletter,
+        })
+      );
+
+      setNewsletterMessage(
+        updatedUser.apiUserDto.isSubscribedToNewsletter
+          ? "Successfully subscribed to newsletter"
+          : "Successfully unsubscribed from newsletter"
+      );
+
+      setTimeout(() => setNewsletterMessage(""), 3000);
+    } catch (error) {
+      if (error.isRateLimitError) {
+        showRateLimitError();
+      } else {
+        setNewsletterMessage(
+          error.message || "Failed to update newsletter preference"
+        );
+        setTimeout(() => setNewsletterMessage(""), 3000);
+      }
+    } finally {
+      setIsUpdatingNewsletter(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     try {
       await deleteAccount();
@@ -231,14 +277,17 @@ export const useAccountSettings = () => {
     isUpdatingFullName,
     isUpdatingEmail,
     isUpdatingPassword,
+    isUpdatingNewsletter,
     fullNameMessage,
     emailMessage,
     passwordMessage,
+    newsletterMessage,
     showDeleteModal,
     setShowDeleteModal,
     handleUpdateFullName,
     handleUpdateEmail,
     handleUpdatePassword,
+    handleToggleNewsletter,
     handleDeleteAccount,
     handleBack,
     rateLimitError,

@@ -18,7 +18,8 @@ public class TokenService(IOptions<JwtSettings> options) : ITokenService
     {
       new Claim(ClaimTypes.NameIdentifier, user.Id),
       new Claim(ClaimTypes.Email, user.Email!),
-      new Claim(ClaimTypes.Name, user.FullName!)
+      new Claim(ClaimTypes.Name, user.FullName!),
+      new Claim("IsNewsletterSubscribed", user.IsSubscribedToNewsletter.ToString())
     };
 
     foreach (var role in roles)

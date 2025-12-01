@@ -4,11 +4,12 @@ using backend.Data;
 using backend.Models.Domain;
 using backend.Models.Dtos;
 using backend.Repository.Interfaces;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Identity;
 
 namespace backend.Repository.Classes;
 
-public class ProfileRepo (UserManager<ApiUser> userManager) : IProfileRepo
+public class ProfileRepo(UserManager<ApiUser> userManager) : IProfileRepo
 {
   public async Task<IdentityResult> ChangeProfileEmailAsync(string userId, string newEmail)
   {
@@ -46,9 +47,19 @@ public class ProfileRepo (UserManager<ApiUser> userManager) : IProfileRepo
 
     return await userManager.DeleteAsync(user);
   }
-  
+
   public async Task<ApiUser?> GetUserById(string userId)
   {
     return await userManager.FindByIdAsync(userId);
+  }
+
+  public async Task<(string userEmail, string userFullName, IdentityResult identityResult)> UpdateUserNewsletterPreferenceAsync(string userId)
+  {
+    var user = await userManager.FindByIdAsync(userId);
+    if (user == null)
+      return ("", "", IdentityResult.Failed(new IdentityError { Description = "User not found" }));
+
+    user.IsSubscribedToNewsletter = !user.IsSubscribedToNewsletter;
+    return (user.Email!, user.FullName, await userManager.UpdateAsync(user));
   }
 }

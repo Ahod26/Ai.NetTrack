@@ -14,6 +14,7 @@ public static class ConfigurationExtensions
     services.Configure<McpSettings>(configuration.GetSection(McpSettings.SECTION_NAME));
     services.Configure<OAuth2Settings>(configuration.GetSection(OAuth2Settings.SECTION_NAME));
     services.Configure<N8NSettings>(configuration.GetSection(N8NSettings.SECTION_NAME));
+    services.Configure<NewsCacheSettings>(configuration.GetSection(NewsCacheSettings.SECTION_NAME));
 
     return services;
   }

@@ -10,6 +10,7 @@ export default function Signup() {
     fullName: "",
     email: "",
     password: "",
+    isSubscribedToNewsletter: true,
   });
 
   const [errors, setErrors] = useState({
@@ -29,10 +30,10 @@ export default function Signup() {
   const [apiErrors, setApiErrors] = useState([]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
 
     // Real-time validation only if field has been touched
@@ -79,6 +80,7 @@ export default function Signup() {
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
+        isSubscribedToNewsletter: formData.isSubscribedToNewsletter,
       };
 
       const response = await registerUser(signupData);
@@ -92,7 +94,12 @@ export default function Signup() {
         setSuccessMessage("Account created successfully! You can now log in.");
 
         // Clear form
-        setFormData({ fullName: "", email: "", password: "" });
+        setFormData({
+          fullName: "",
+          email: "",
+          password: "",
+          isSubscribedToNewsletter: true,
+        });
         setTouched({ fullName: false, email: false, password: false });
         setErrors({ fullName: [], email: [], password: [] });
 
@@ -216,6 +223,20 @@ export default function Signup() {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className={styles.checkboxGroup}>
+            <input
+              type="checkbox"
+              id="newsletter"
+              name="isSubscribedToNewsletter"
+              checked={formData.isSubscribedToNewsletter}
+              onChange={handleInputChange}
+              className={styles.checkbox}
+            />
+            <label htmlFor="newsletter" className={styles.checkboxLabel}>
+              Subscribe to our newsletter for updates and tips
+            </label>
           </div>
 
           <button

@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using AutoMapper;
 using backend.Models.Dtos;
 using backend.Repository.Interfaces;
 using backend.Services.Interfaces;
@@ -12,7 +13,9 @@ public class ProfileService(
   IProfileRepo profileRepo,
   ITokenService tokenService,
   IAuthRepo authRepo,
-  ICookieService cookieService) : IProfileService
+  ICookieService cookieService,
+  IEmailListCacheService emailListCacheService,
+  IMapper mapper) : IProfileService
 {
   public async Task<IdentityResult> ChangeEmailAsync(string newEmail, string userId)
   {
@@ -34,7 +37,7 @@ public class ProfileService(
   public async Task<UserInfoDTO?> UpdateJWT(string userId)
   {
     var user = await profileRepo.GetUserById(userId);
-    
+
     if (user == null)
       return null;
 
@@ -45,11 +48,26 @@ public class ProfileService(
       cookieService.SetAuthCookie(jwtToken);
       return new UserInfoDTO
       {
-        FullName = user.FullName,
-        Email = user.Email ?? "",
-        Roles = roles.ToList()
+        Roles = roles.ToList(),
+        ApiUserDto = mapper.Map<ApiUserDto>(user)
       };
     }
     return null;
+  }
+
+  public async Task<IdentityResult> UpdateUserNewsletterPreferenceAsync(string userId)
+  {
+    var res = await profileRepo.UpdateUserNewsletterPreferenceAsync(userId);
+    if (res.identityResult.Succeeded)
+    {
+      var emailDTO = new EmailNewsletterDTO
+      {
+        Email = res.userEmail,
+        FullName = res.userFullName
+      };
+
+      await emailListCacheService.ToggleUserFromNewsletterAsync(emailDTO);
+    }
+    return res.identityResult;
   }
 }

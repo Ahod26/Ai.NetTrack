@@ -89,6 +89,32 @@ export async function updatePassword(currentPassword, newPassword) {
   return response.ok ? {} : response.json();
 }
 
+export async function toggleNewsletterSubscription() {
+  const response = await fetch(
+    `${API_BASE_URL}${API_ENDPOINTS.PROFILE.UPDATE_NEWSLETTER}`,
+    {
+      method: "PUT",
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    if (response.status === 429) {
+      const error = new Error("Too many requests. Please try again later.");
+      error.isRateLimitError = true;
+      throw error;
+    }
+    const error = await response.json();
+    const errorMsg = Array.isArray(error)
+      ? error[0]?.description || "Failed to update newsletter preference"
+      : error.message || "Failed to update newsletter preference";
+    throw new Error(errorMsg);
+  }
+
+  // Backend returns updated UserInfoDTO
+  return response.json();
+}
+
 export async function deleteAccount() {
   const response = await fetch(
     `${API_BASE_URL}${API_ENDPOINTS.PROFILE.DELETE_ACCOUNT}`,

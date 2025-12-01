@@ -74,10 +74,32 @@ public class ProfileController(
 
       return Ok();
     }
-    catch(Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Error Update password");
       return StatusCode(500, new { message = "An error occurred changing password" });
+    }
+  }
+
+  [HttpPut("newsletter")]
+  public async Task<IActionResult> UpdateNewsletterPreference()
+  {
+    try
+    {
+      string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+      var res = await profileService.UpdateUserNewsletterPreferenceAsync(userId);
+
+      if (!res.Succeeded)
+        return BadRequest(res.Errors);
+
+      var userInfo = await profileService.UpdateJWT(userId);
+      
+      return Ok(userInfo);
+    }
+    catch(Exception ex)
+    {
+      logger.LogError(ex, "Error updating newsletter preference");
+      return StatusCode(500, new { message = "An error occurred" });
     }
   }
 

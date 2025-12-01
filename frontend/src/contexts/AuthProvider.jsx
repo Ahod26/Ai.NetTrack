@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { checkAuthStatus } from "../api/auth";
 import { userAuthSliceAction } from "../store/userAuth";
@@ -6,9 +6,16 @@ import chatHubService from "../api/chatHub";
 
 export default function AuthProvider({ children }) {
   const dispatch = useDispatch();
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
     const initializeAuth = async () => {
+      // Prevent duplicate initialization (React StrictMode in dev)
+      if (hasInitialized.current) {
+        return;
+      }
+      hasInitialized.current = true;
+
       try {
         // Check if user is authenticated via cookie
         const authStatus = await checkAuthStatus();
@@ -19,6 +26,7 @@ export default function AuthProvider({ children }) {
             fullName: authStatus.user.fullName,
             email: authStatus.user.email,
             roles: authStatus.user.roles,
+            isSubscribedToNewsletter: authStatus.user.isSubscribedToNewsletter,
           };
 
           // Update Redux store

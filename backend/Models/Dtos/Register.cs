@@ -12,4 +12,7 @@ public class RegisterDTO
 
   [Required]
   public required string Password { get; set; }
+
+  [Required]
+  public required bool IsSubscribedToNewsletter{ get; set; }
 }

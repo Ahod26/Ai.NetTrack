@@ -10,4 +10,5 @@ public interface IProfileService
   Task<IdentityResult> ChangePasswordAsync(string newPassword, string currentPassword, string userId);
   Task<IdentityResult> DeleteUserAsync(string userId);
   Task<UserInfoDTO?> UpdateJWT(string userId);
+  Task<IdentityResult> UpdateUserNewsletterPreferenceAsync(string userId);
 }

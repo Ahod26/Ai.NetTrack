@@ -20,6 +20,8 @@ const userAuthSlice = createSlice({
           fullName: userPayload.fullName,
           email: userPayload.email,
           roles: Array.isArray(userPayload.roles) ? [...userPayload.roles] : [],
+          isSubscribedToNewsletter:
+            userPayload.isSubscribedToNewsletter ?? false,
         };
       } else {
         state.user = null;

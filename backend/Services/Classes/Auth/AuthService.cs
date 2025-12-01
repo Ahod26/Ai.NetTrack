@@ -6,11 +6,16 @@ using backend.Models.Domain;
 
 using backend.Services.Interfaces.Auth;
 using Microsoft.AspNetCore.Authentication;
+using AutoMapper;
 
 namespace backend.Services.Classes.Auth;
 
-public class AuthService(ICookieService cookieService, ITokenService tokenService,
-  IAuthRepo authRepo) : IAuthService
+public class AuthService(
+  ICookieService cookieService,
+  ITokenService tokenService,
+  IAuthRepo authRepo,
+  IMapper mapper,
+  ILogger<AuthService> logger) : IAuthService
 {
   public async Task<LoginResponseDTO> LoginAsync(LoginDTO loginDTO)
   {
@@ -30,10 +35,9 @@ public class AuthService(ICookieService cookieService, ITokenService tokenServic
           {
             Success = true,
             Message = "Login successful",
-            User = new UserInfoDTO
+            UserInfo = new UserInfoDTO
             {
-              FullName = user.FullName!,
-              Email = user.Email!,
+              ApiUserDto = mapper.Map<ApiUserDto>(user),
               Roles = roles.ToList()
             }
           };
@@ -66,7 +70,8 @@ public class AuthService(ICookieService cookieService, ITokenService tokenServic
     {
       UserName = registerDTO.Email,
       Email = registerDTO.Email,
-      FullName = registerDTO.FullName
+      FullName = registerDTO.FullName,
+      IsSubscribedToNewsletter = registerDTO.IsSubscribedToNewsletter
     };
 
     var identityResult = await authRepo.CreateAsync(applicationUser, registerDTO.Password);
@@ -131,11 +136,16 @@ public class AuthService(ICookieService cookieService, ITokenService tokenServic
 
   public UserInfoDTO GetCurrentUserFromClaims(ClaimsPrincipal user)
   {
+    logger.LogError(user.FindFirst("IsNewsletterSubscribed")?.Value);
     return new UserInfoDTO
     {
-      FullName = user.FindFirst(ClaimTypes.Name)?.Value ?? "",
-      Email = user.FindFirst(ClaimTypes.Email)?.Value ?? "",
-      Roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList()
+      Roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList(),
+      ApiUserDto = new ApiUserDto
+      {
+        FullName = user.FindFirst(ClaimTypes.Name)?.Value ?? "",
+        Email = user.FindFirst(ClaimTypes.Email)?.Value ?? "",
+        IsSubscribedToNewsletter = user.FindFirst("IsNewsletterSubscribed")?.Value == "True"
+      }
     };
   }
 
@@ -164,7 +174,8 @@ public class AuthService(ICookieService cookieService, ITokenService tokenServic
         UserName = email,  // Use email as username for uniqueness
         Email = email,
         FullName = name ?? "",  // Store display name in FullName
-        EmailConfirmed = true // Google verified it
+        EmailConfirmed = true, // Google verified it
+        IsSubscribedToNewsletter = true
       };
 
       var createResult = await authRepo.CreateAsync(user, Guid.NewGuid().ToString()); // Random password since they use Google
@@ -189,11 +200,10 @@ public class AuthService(ICookieService cookieService, ITokenService tokenServic
     {
       Success = true,
       Message = "Login successful",
-      User = new UserInfoDTO
+      UserInfo = new UserInfoDTO
       {
-        FullName = user.FullName!,
-        Email = user.Email!,
-        Roles = roles.ToList()
+        Roles = roles.ToList(),
+        ApiUserDto = mapper.Map<ApiUserDto>(user)
       }
     };
   }
