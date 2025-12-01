@@ -49,7 +49,7 @@ public class EmailListCacheService(
     }
   }
 
-  public async Task<List<EmailNewsletterDTO>?> GetNewsletterRecipients()
+  public async Task<List<EmailNewsletterDTO>> GetNewsletterRecipients()
   {
     try
     {

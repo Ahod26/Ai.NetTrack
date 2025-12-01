@@ -5,6 +5,6 @@ namespace backend.Services.Interfaces;
 public interface IEmailListCacheService
 {
   Task ToggleUserFromNewsletterAsync(EmailNewsletterDTO newUser);
-  Task<List<EmailNewsletterDTO>?> GetNewsletterRecipients();
+  Task<List<EmailNewsletterDTO>> GetNewsletterRecipients();
   Task RemoveUserFromNewsletterAsync(string email);
 }
