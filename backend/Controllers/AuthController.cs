@@ -104,7 +104,7 @@ public class AuthController
   [HttpGet("google-login")]
   public IActionResult GoogleLogin()
   {
-    var redirectUrl = Url.Action("GoogleResponse", "Auth"); 
+    var redirectUrl = Url.Action("GoogleResponse", "Auth");
     var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
     return Challenge(properties, GoogleDefaults.AuthenticationScheme);
   }
@@ -117,7 +117,7 @@ public class AuthController
     var loginResult = await authService.GoogleLoginAsync(result);
 
     if (!loginResult.Success)
-      return BadRequest(loginResult.Message);
+      return Redirect($"http://localhost:5173/auth/callback?success=false&error={Uri.EscapeDataString(loginResult.Message)}");
 
     return Redirect($"http://localhost:5173/auth/callback?success=true");
   }

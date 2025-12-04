@@ -5,117 +5,78 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "newsletter",
-        "responseMode": "onReceived",
         "options": {}
       },
-      "id": "webhook-trigger",
+      "id": "c8077fd2-aed6-48a0-8b2a-5a43a008df74",
       "name": "Webhook - Receive Newsletter Data",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [240, 300]
+      "position": [0, 0],
+      "webhookId": "f7ae4306-ce02-48cc-890a-77e1b448065b"
     },
     {
       "parameters": {
-        "jsCode": "// Get data from webhook\nconst newsItems = $input.item.json.body.news || [];\nconst recipients = $input.item.json.body.recipients || [];\nconst timestamp = $input.item.json.body.timestamp;\n\n// Build HTML email content\nlet emailHtml = `\n<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <h1 style=\"color: #2196F3; border-bottom: 3px solid #2196F3; padding-bottom: 10px;\">\n    🚀 Your Daily AI Development News\n  </h1>\n  <p style=\"color: #666; font-size: 14px;\">\n    ${new Date(timestamp).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n  </p>\n  <hr style=\"border: none; border-top: 1px solid #eee; margin: 20px 0;\">\n`;\n\n// Add each news item\nnewsItems.forEach((item, index) => {\n  // Determine source icon\n  let sourceIcon = '📰';\n  if (item.sourceType === 1) sourceIcon = '💻'; // GitHub\n  else if (item.sourceType === 2) sourceIcon = '📰'; // RSS\n  else if (item.sourceType === 3) sourceIcon = '🎥'; // YouTube\n  \n  emailHtml += `\n  <div style=\"margin: 25px 0; padding: 20px; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #4CAF50;\">\n    <h2 style=\"margin: 0 0 10px 0; color: #333; font-size: 18px;\">\n      ${index + 1}. ${item.title}\n    </h2>\n    ${item.summary ? `<p style=\"color: #555; line-height: 1.6; margin: 10px 0;\">${item.summary}</p>` : ''}\n    <div style=\"margin-top: 15px;\">\n      ${item.url ? `<a href=\"${item.url}\" style=\"color: #2196F3; text-decoration: none; font-weight: bold;\">Read More →</a>` : ''}\n    </div>\n    <p style=\"font-size: 12px; color: #999; margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;\">\n      ${sourceIcon} ${item.sourceName || 'Unknown'} | ${item.publishedDate ? new Date(item.publishedDate).toLocaleDateString() : 'Date unknown'}\n    </p>\n  </div>\n  `;\n});\n\n// Footer\nemailHtml += `\n  <hr style=\"border: none; border-top: 1px solid #eee; margin: 30px 0;\">\n  <div style=\"text-align: center; color: #999; font-size: 12px; padding: 20px 0;\">\n    <p>You're receiving this because you subscribed to AI Development News.</p>\n    <p style=\"margin-top: 10px;\">© ${new Date().getFullYear()} AINetTrack</p>\n  </div>\n</div>\n`;\n\n// Return formatted data\nreturn {\n  emailHtml: emailHtml,\n  recipients: recipients,\n  newsCount: newsItems.length,\n  timestamp: timestamp\n};"
+        "jsCode": "const newsItems = $input.item.json.body.news || [];\nconst recipients = $input.item.json.body.recipients || [];\nconst timestamp = $input.item.json.body.timestamp;\n\nlet emailHtml = `\n<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <h1 style=\"color: #2196F3; border-bottom: 3px solid #2196F3; padding-bottom: 10px;\">🚀 Your Daily AI Development News</h1>\n  <p style=\"color: #666; font-size: 14px;\">${new Date(timestamp).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>\n  <hr style=\"border: none; border-top: 1px solid #eee; margin: 20px 0;\">\n`;\n\nnewsItems.forEach((item, index) => {\n  let sourceIcon = '📰';\n  if (item.sourceType === 1) sourceIcon = '💻';\n  else if (item.sourceType === 2) sourceIcon = '📰';\n  else if (item.sourceType === 3) sourceIcon = '🎥';\n  \n  emailHtml += `\n  <div style=\"margin: 25px 0; padding: 20px; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #4CAF50;\">\n    <h2 style=\"margin: 0 0 10px 0; color: #333; font-size: 18px;\">${index + 1}. ${item.title}</h2>\n    ${item.summary ? `<p style=\"color: #555; line-height: 1.6; margin: 10px 0;\">${item.summary}</p>` : ''}\n    <div style=\"margin-top: 15px;\">\n      ${item.url ? `<a href=\"${item.url}\" style=\"color: #2196F3; text-decoration: none; font-weight: bold;\">Read More →</a>` : ''}\n    </div>\n    <p style=\"font-size: 12px; color: #999; margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;\">${sourceIcon} ${item.sourceName || 'Unknown'} | ${item.publishedDate ? new Date(item.publishedDate).toLocaleDateString() : 'Date unknown'}</p>\n  </div>`;\n});\n\nemailHtml += `\n  <hr style=\"border: none; border-top: 1px solid #eee; margin: 30px 0;\">\n  <div style=\"text-align: center; color: #999; font-size: 12px; padding: 20px 0;\">\n    <p>You're receiving this because you subscribed to AI Development News.</p>\n    <p style=\"margin-top: 10px;\">© ${new Date().getFullYear()} AINetTrack</p>\n  </div>\n</div>`;\n\nreturn recipients.map(recipient => ({\n  email: recipient.email,\n  emailHtml: emailHtml,\n  newsCount: newsItems.length,\n  timestamp: timestamp\n}));"
       },
-      "id": "format-email",
+      "id": "a357e5ea-c521-443b-a740-19acb9b964c6",
       "name": "Format Email Content",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [460, 300]
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "recipients",
-        "options": {}
-      },
-      "id": "split-recipients",
-      "name": "Split Recipients",
-      "type": "n8n-nodes-base.itemLists",
-      "typeVersion": 3,
-      "position": [680, 300]
+      "position": [224, 0]
     },
     {
       "parameters": {
         "sendTo": "={{ $json.email }}",
         "subject": "🚀 Your Daily AI Development News - {{ new Date().toLocaleDateString() }}",
-        "emailType": "html",
-        "message": "={{ $node['Format Email Content'].json.emailHtml }}",
+        "message": "={{ $json.emailHtml }}",
         "options": {
           "appendAttribution": false
         }
       },
-      "id": "send-email",
+      "id": "635077c9-c509-4b17-86d1-d746df9fc1fb",
       "name": "Send Email via Gmail",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
-      "position": [900, 300]
+      "position": [448, 0],
+      "webhookId": "0ed3d7a9-d627-4baf-98d6-3b7e0ad21875",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "csd9RAw4jx4uY2NO",
+          "name": "Gmail account"
+        }
+      }
     },
     {
       "parameters": {
-        "amount": 1,
-        "unit": "seconds"
+        "amount": 1
       },
-      "id": "wait-between-emails",
+      "id": "6749f012-8e56-4f31-a018-4924abd824db",
       "name": "Wait 1 Second",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [1120, 300]
+      "position": [672, 0],
+      "webhookId": "897448db-d614-41f8-b9cf-3835e7e356e1"
     }
   ],
+  "pinData": {},
   "connections": {
     "Webhook - Receive Newsletter Data": {
-      "main": [
-        [
-          {
-            "node": "Format Email Content",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Format Email Content", "type": "main", "index": 0}]]
     },
     "Format Email Content": {
-      "main": [
-        [
-          {
-            "node": "Split Recipients",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Recipients": {
-      "main": [
-        [
-          {
-            "node": "Send Email via Gmail",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Send Email via Gmail", "type": "main", "index": 0}]]
     },
     "Send Email via Gmail": {
-      "main": [
-        [
-          {
-            "node": "Wait 1 Second",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Wait 1 Second", "type": "main", "index": 0}]]
     }
   },
-  "pinData": {},
-  "settings": {
-    "executionOrder": "v1"
+  "active": true,
+  "settings": {"executionOrder": "v1"},
+  "versionId": "f4eb9860-0710-4747-a80f-6ecd68ae5966",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8bc822112c81dad0d1b87268f3b811191183c10e4a2a4e16e3f23ca82dc3d378"
   },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2025-11-30T00:00:00.000Z",
-  "versionId": "1"
+  "id": "yUGKXZAWeB4rBHal",
+  "tags": []
 }

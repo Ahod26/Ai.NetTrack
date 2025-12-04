@@ -3,6 +3,7 @@ using backend.Repository.Interfaces;
 using backend.Services.Interfaces;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 
 namespace backend.Services.Classes;
 
@@ -60,5 +61,11 @@ public class EmailListCacheService(
       logger.LogError(ex, "Error getting newsletter list");
       return [];
     }
+  }
+
+  public async Task UpdateUserInfo(string email, string fullName)
+  {
+    await RemoveUserFromNewsletterAsync(email);
+    await ToggleUserFromNewsletterAsync(new EmailNewsletterDTO { Email = email, FullName = fullName });
   }
 }

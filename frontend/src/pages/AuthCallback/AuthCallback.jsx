@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { checkAuthStatus } from "../../api/auth";
 import { userAuthSliceAction } from "../../store/userAuth";
 import chatHubService from "../../api/chatHub";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import ErrorPopup from "../../components/ErrorPopup";
 import styles from "./AuthCallback.module.css";
 
 export default function AuthCallback() {
@@ -12,6 +13,8 @@ export default function AuthCallback() {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const success = searchParams.get("success");
+  const errorMessage = searchParams.get("error");
+  const [showError, setShowError] = useState(false);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -26,6 +29,8 @@ export default function AuthCallback() {
               fullName: authStatus.user.fullName,
               email: authStatus.user.email,
               roles: authStatus.user.roles,
+              isSubscribedToNewsletter:
+                authStatus.user.isSubscribedToNewsletter,
             };
 
             dispatch(userAuthSliceAction.setUserLoggedIn(userPlainObject));
@@ -45,20 +50,31 @@ export default function AuthCallback() {
             navigate("/chat/new");
           } else {
             // Auth failed
-            navigate("/login");
+            navigate("/chat/new", {
+              state: {
+                error: "Failed to log in with Google. Please try again.",
+              },
+            });
           }
         } catch (error) {
           console.error("Error handling auth callback:", error);
-          navigate("/login");
+          navigate("/chat/new", {
+            state: { error: "Failed to log in with Google. Please try again." },
+          });
         }
       } else {
-        // Login failed
-        navigate("/login");
+        // Login failed - redirect immediately with error state
+        navigate("/chat/new", {
+          state: {
+            error:
+              errorMessage || "Failed to log in with Google. Please try again.",
+          },
+        });
       }
     };
 
     handleAuthCallback();
-  }, [success, navigate, dispatch]);
+  }, [success, navigate, dispatch, errorMessage]);
 
   return (
     <div className={styles.container}>

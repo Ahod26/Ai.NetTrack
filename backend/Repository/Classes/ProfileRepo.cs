@@ -11,23 +11,28 @@ namespace backend.Repository.Classes;
 
 public class ProfileRepo(UserManager<ApiUser> userManager) : IProfileRepo
 {
-  public async Task<IdentityResult> ChangeProfileEmailAsync(string userId, string newEmail)
+  public async Task<(string userFullName, IdentityResult identityResult)> ChangeProfileEmailAsync(string userId, string newEmail)
   {
     var user = await userManager.FindByIdAsync(userId);
     if (user == null)
-      return IdentityResult.Failed(new IdentityError { Description = "User not found" }); ;
+      return  ("", IdentityResult.Failed(new IdentityError { Description = "User not found" }));
 
     user.Email = newEmail;
-    return await userManager.UpdateAsync(user);
+    user.UserName = newEmail;
+    user.EmailConfirmed = false;
+
+    var identityRes = await userManager.UpdateAsync(user);
+    return (user.FullName, identityRes);
   }
 
-  public async Task<IdentityResult> ChangeProfileFullNameAsync(string userId, string newName)
+  public async Task<(string userEmail, IdentityResult identityResult)> ChangeProfileFullNameAsync(string userId, string newName)
   {
     var user = await userManager.FindByIdAsync(userId);
     if (user == null)
-      return IdentityResult.Failed(new IdentityError { Description = "User not found" });
+      return ("", IdentityResult.Failed(new IdentityError { Description = "User not found" }));
     user.FullName = newName;
-    return await userManager.UpdateAsync(user);
+    var identityRes = await userManager.UpdateAsync(user);
+    return (user.Email!, identityRes);
   }
 
   public async Task<IdentityResult> ChangeProfilePasswordAsync(string userId, string newPassword, string currentPassword)
@@ -39,13 +44,14 @@ public class ProfileRepo(UserManager<ApiUser> userManager) : IProfileRepo
     return await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
   }
 
-  public async Task<IdentityResult> DeleteProfileAsync(string userId)
+  public async Task<(string userEmail, IdentityResult identityResult)> DeleteProfileAsync(string userId)
   {
     var user = await userManager.FindByIdAsync(userId);
     if (user == null)
-      return IdentityResult.Failed(new IdentityError { Description = "User not fount" });
+      return ("", IdentityResult.Failed(new IdentityError { Description = "User not fount" }));
 
-    return await userManager.DeleteAsync(user);
+    var identityRes = await userManager.DeleteAsync(user);
+    return (user.Email!, identityRes);
   }
 
   public async Task<ApiUser?> GetUserById(string userId)

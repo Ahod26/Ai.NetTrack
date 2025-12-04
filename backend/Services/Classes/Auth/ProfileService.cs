@@ -19,11 +19,17 @@ public class ProfileService(
 {
   public async Task<IdentityResult> ChangeEmailAsync(string newEmail, string userId)
   {
-    return await profileRepo.ChangeProfileEmailAsync(userId, newEmail);
+    var res = await profileRepo.ChangeProfileEmailAsync(userId, newEmail);
+    if (res.identityResult.Succeeded)
+      await emailListCacheService.UpdateUserInfo(newEmail, res.userFullName);
+    return res.identityResult;
   }
   public async Task<IdentityResult> ChangeFullNameAsync(string newName, string userId)
   {
-    return await profileRepo.ChangeProfileFullNameAsync(userId, newName);
+    var res = await profileRepo.ChangeProfileFullNameAsync(userId, newName);
+    if (res.identityResult.Succeeded)
+      await emailListCacheService.UpdateUserInfo(res.userEmail, newName);
+    return res.identityResult;
   }
   public async Task<IdentityResult> ChangePasswordAsync(string newPassword, string currentPassword, string userId)
   {
@@ -31,7 +37,10 @@ public class ProfileService(
   }
   public async Task<IdentityResult> DeleteUserAsync(string userId)
   {
-    return await profileRepo.DeleteProfileAsync(userId);
+    var res = await profileRepo.DeleteProfileAsync(userId);
+    if (res.identityResult.Succeeded)
+      await emailListCacheService.RemoveUserFromNewsletterAsync(res.userEmail);
+    return res.identityResult;
   }
 
   public async Task<UserInfoDTO?> UpdateJWT(string userId)

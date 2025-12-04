@@ -7,6 +7,8 @@ using backend.Models.Domain;
 using backend.Services.Interfaces.Auth;
 using Microsoft.AspNetCore.Authentication;
 using AutoMapper;
+using backend.Services.Interfaces;
+using Org.BouncyCastle.Crypto.Engines;
 
 namespace backend.Services.Classes.Auth;
 
@@ -15,6 +17,7 @@ public class AuthService(
   ITokenService tokenService,
   IAuthRepo authRepo,
   IMapper mapper,
+  IEmailListCacheService emailListCacheService,
   ILogger<AuthService> logger) : IAuthService
 {
   public async Task<LoginResponseDTO> LoginAsync(LoginDTO loginDTO)
@@ -75,6 +78,13 @@ public class AuthService(
     };
 
     var identityResult = await authRepo.CreateAsync(applicationUser, registerDTO.Password);
+
+    if (registerDTO.IsSubscribedToNewsletter)
+      await emailListCacheService.ToggleUserFromNewsletterAsync(new EmailNewsletterDTO
+      {
+        Email = registerDTO.Email,
+        FullName = registerDTO.FullName
+      });
 
     if (!identityResult.Succeeded)
     {
@@ -165,7 +175,11 @@ public class AuthService(
     var googleId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
     var name = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
+    logger.LogInformation("Looking up user by email: {Email}", email);
     var user = await authRepo.FindByEmailAsync(email ?? "");
+
+    logger.LogInformation("FindByEmailAsync result: {Result}, Email searched: '{Email}'",
+    user == null ? "NULL" : $"Found user ID: {user.Id}", email);
 
     if (user == null)
     {
@@ -195,6 +209,12 @@ public class AuthService(
     var roles = await authRepo.GetRolesAsync(user);
     var jwtToken = tokenService.GenerateToken(user, roles.ToList());
     cookieService.SetAuthCookie(jwtToken);
+
+    await emailListCacheService.ToggleUserFromNewsletterAsync(new EmailNewsletterDTO
+    {
+      Email = user.Email!,
+      FullName = user.FullName
+    });
 
     return new LoginResponseDTO
     {

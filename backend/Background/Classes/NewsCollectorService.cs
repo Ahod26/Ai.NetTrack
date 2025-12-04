@@ -13,7 +13,7 @@ public class NewsCollectorService(
     var youtubeCollectedNews = await youTubeService.GetYouTubeAIUpdatesAsync();
     var rssCollectedNews = await rssService.GetRSSUpdatesAsync();
 
-    return
+    return //0;
       rssCollectedNews.Count() + youtubeCollectedNews.Count() + gitHubCollectedNews.Count();
   }
 }
