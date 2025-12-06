@@ -44,3 +44,6 @@ app.MapHub<ChatHub>("/chathub");
 app.MapControllers();
 
 app.Run();
+
+// Make the implicit Program class accessible for integration tests
+public partial class Program { }
