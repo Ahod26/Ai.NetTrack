@@ -13,11 +13,12 @@ export async function getNewsByDate(dates = null, newsType = null) {
     if (dates && dates.length > 0) {
       const dateParams = dates
         .map((date) => {
-          // Convert to YYYY-MM-DD format for better backend parsing
-          const dateStr =
-            date instanceof Date
-              ? date.toISOString().split("T")[0] // Gets just the date part (YYYY-MM-DD)
-              : new Date(date).toISOString().split("T")[0];
+          // Convert to YYYY-MM-DD format using local timezone (not UTC)
+          const d = date instanceof Date ? date : new Date(date);
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          const dateStr = `${year}-${month}-${day}`;
           return `dates=${encodeURIComponent(dateStr)}`;
         })
         .join("&");

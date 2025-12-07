@@ -62,13 +62,20 @@ public static class AuthenticationExtensions
               return Task.CompletedTask;
             }
       };
-    })
-    .AddGoogle(options =>
-    {
-      options.ClientId = configuration["Authentication:Google:ClientId"] ?? "";
-      options.ClientSecret = configuration["Authentication:Google:ClientSecret"] ?? "";
-      options.SignInScheme = IdentityConstants.ExternalScheme;
     });
+
+    // Only add Google OAuth if valid credentials are configured (skip in test environment)
+    var googleClientId = configuration["Authentication:Google:ClientId"];
+    if (!string.IsNullOrEmpty(googleClientId) && googleClientId != "test-client-id")
+    {
+      services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+          options.ClientId = googleClientId;
+          options.ClientSecret = configuration["Authentication:Google:ClientSecret"] ?? "";
+          options.SignInScheme = IdentityConstants.ExternalScheme;
+        });
+    }
 
     return services;
   }

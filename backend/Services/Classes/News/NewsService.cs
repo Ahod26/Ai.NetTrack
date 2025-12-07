@@ -19,6 +19,7 @@ public class NewsService(
   {
     try
     {
+      logger.LogError("date:{Dates}", targetDates);
       var newsList = await newsCacheService.GetNewsAsync(targetDates, newsType);
       if (newsList.Count != 0)
       {

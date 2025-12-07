@@ -8,7 +8,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddConfigurationOptions(builder.Configuration);
 
-builder.Services.AddDatabase(builder.Configuration);
+builder.Services.AddDatabase(builder.Configuration, builder.Environment);
 builder.Services.AddAuthentication(builder.Configuration);
 builder.Services.AddInfrastructure();
 builder.Services.AddExternalServices(builder.Configuration);
