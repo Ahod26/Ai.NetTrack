@@ -6,7 +6,7 @@ using backend.Repository.Interfaces;
 using backend.Models.Domain;
 using FluentAssertions;
 
-namespace backend.Tests;
+namespace backend.UnitTests.Services.Cache;
 
 public class NewsCacheServiceTests
 {
@@ -21,6 +21,9 @@ public class NewsCacheServiceTests
         _service = new NewsCacheService(_mockNewsCacheRepo.Object, _mockLogger.Object);
     }
 
+    /// <summary>
+    /// Verifies that GetNewsAsync retrieves news items from cache for multiple dates.
+    /// </summary>
     [Fact]
     public async Task GetNewsAsync_WithValidDates_ReturnsNewsItems()
     {
@@ -73,6 +76,9 @@ public class NewsCacheServiceTests
         _mockNewsCacheRepo.Verify(x => x.GetNewsAsync(It.IsAny<string>(), 0), Times.Exactly(2));
     }
 
+    /// <summary>
+    /// Verifies that when cache is empty for a date, GetNewsAsync returns an empty list.
+    /// </summary>
     [Fact]
     public async Task GetNewsAsync_WithNoNewsInCache_ReturnsEmptyList()
     {
@@ -94,6 +100,9 @@ public class NewsCacheServiceTests
         _mockNewsCacheRepo.Verify(x => x.GetNewsAsync("news:date:2025-11-27", 0), Times.Once);
     }
 
+    /// <summary>
+    /// Verifies that when cache access throws an exception, an empty list is returned and the error is logged.
+    /// </summary>
     [Fact]
     public async Task GetNewsAsync_WhenExceptionThrown_ReturnsEmptyListAndLogsError()
     {
@@ -124,6 +133,9 @@ public class NewsCacheServiceTests
             Times.Once);
     }
 
+    /// <summary>
+    /// Verifies that GetNewsAsync combines news items from multiple date caches into a single list.
+    /// </summary>
     [Fact]
     public async Task GetNewsAsync_WithMultipleDates_CombinesAllResults()
     {
