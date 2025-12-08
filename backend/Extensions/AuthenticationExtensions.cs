@@ -58,7 +58,13 @@ public static class AuthenticationExtensions
       {
         OnMessageReceived = context =>
             {
-              context.Token = context.Request.Cookies["authToken"];
+              // Check cookie first, then fall back to Authorization header (default behavior)
+              var cookieToken = context.Request.Cookies["authToken"];
+              if (!string.IsNullOrEmpty(cookieToken))
+              {
+                context.Token = cookieToken;
+              }
+              // If no cookie, JWT Bearer middleware will automatically check Authorization header
               return Task.CompletedTask;
             }
       };

@@ -39,6 +39,10 @@ public class MessagesController(IMessagesService messagesService, ILogger<Messag
     {
       var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
       var result = await messagesService.ToggleStarAsync(messageId, userId);
+
+      if (result.Message == null)
+        return NotFound(new { message = "Message not found or does not belong to user" });
+
       return Ok(new { messageId, isStarred = result.IsStarred, message = "Star toggled successfully" });
     }
     catch (Exception ex)
