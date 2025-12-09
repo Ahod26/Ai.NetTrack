@@ -21,6 +21,8 @@ public class GitHubService(
     var repos = new[]
     {
         ("microsoft", "semantic-kernel"),
+        ("microsoft", "kernel-memory"),
+        ("microsoft", "autogen"),
         ("openai", "openai-dotnet"),
         ("dotnet", "extensions"),
         ("modelcontextprotocol", "csharp-sdk")

@@ -28,14 +28,18 @@ public class RssService(
     };
     return new HttpClient(handler);
   }
+  
   public async Task<List<NewsItem>> GetRSSUpdatesAsync()
   {
     var allData = new List<object>();
 
     try
     {
-      // Get Microsoft .NET DevBlog updates (last 24 hours)
-      var dotnetUpdates = await GetMicrosoftDotNetBlogUpdatesAsync();
+      // Get Microsoft .NET DevBlog updates
+      var dotnetUpdates = await GetRssFeedUpdatesAsync(
+        "https://devblogs.microsoft.com/dotnet/feed/",
+        "Microsoft .NET DevBlog"
+      );
       if (dotnetUpdates.Count != 0)
       {
         allData.Add(new
@@ -43,6 +47,51 @@ public class RssService(
           Source = "Microsoft .NET DevBlog",
           Type = "Blog Posts",
           Updates = dotnetUpdates
+        });
+      }
+
+      // Get Semantic Kernel Blog updates
+      var semanticKernelUpdates = await GetRssFeedUpdatesAsync(
+        "https://devblogs.microsoft.com/semantic-kernel/feed/",
+        "Semantic Kernel Blog"
+      );
+      if (semanticKernelUpdates.Count != 0)
+      {
+        allData.Add(new
+        {
+          Source = "Semantic Kernel Blog",
+          Type = "Blog Posts",
+          Updates = semanticKernelUpdates
+        });
+      }
+
+      // Get Azure AI/ML Blog updates
+      var azureAIUpdates = await GetRssFeedUpdatesAsync(
+        "https://azure.microsoft.com/en-us/blog/category/ai-machine-learning/feed/",
+        "Azure AI/ML Blog"
+      );
+      if (azureAIUpdates.Count != 0)
+      {
+        allData.Add(new
+        {
+          Source = "Azure AI/ML Blog",
+          Type = "Blog Posts",
+          Updates = azureAIUpdates
+        });
+      }
+
+      // Get GitHub AI/ML Blog updates
+      var githubAIUpdates = await GetRssFeedUpdatesAsync(
+        "https://github.blog/ai-and-ml/feed/",
+        "GitHub AI/ML Blog"
+      );
+      if (githubAIUpdates.Count != 0)
+      {
+        allData.Add(new
+        {
+          Source = "GitHub AI/ML Blog",
+          Type = "Blog Posts",
+          Updates = githubAIUpdates
         });
       }
 
@@ -87,19 +136,14 @@ public class RssService(
     }
   }
 
-  private async Task<List<object>> GetMicrosoftDotNetBlogUpdatesAsync()
+  private async Task<List<object>> GetRssFeedUpdatesAsync(string rssUrl, string sourceName)
   {
     try
     {
       var blogUpdates = new List<object>();
       var yesterday = DateTime.UtcNow.AddDays(-1);
 
-      // Microsoft .NET DevBlog RSS feed
-      var rssUrl = "https://devblogs.microsoft.com/dotnet/feed/";
-
       var response = await _httpClient.GetStringAsync(rssUrl);
-
-      // Parse RSS feed using XDocument
       var doc = XDocument.Parse(response);
       var items = doc.Descendants("item");
 
@@ -109,7 +153,6 @@ public class RssService(
         if (!DateTime.TryParse(pubDateStr, out var pubDate))
           continue;
 
-        // Check if the item was published in the last 24 hours
         if (pubDate >= yesterday)
         {
           var title = item.Element("title")?.Value ?? "";
@@ -118,11 +161,8 @@ public class RssService(
           var guid = item.Element("guid")?.Value ?? "";
           var author = item.Element("author")?.Value ?? "";
           var categories = item.Elements("category").Select(c => c.Value).ToArray();
-
-          // Clean HTML from description
           var content = CleanHtmlContent(description);
 
-          // Include all items within last 24 hours; LLM will filter relevance
           blogUpdates.Add(new
           {
             Title = title,
@@ -136,12 +176,12 @@ public class RssService(
         }
       }
 
-      logger.LogInformation($"Found {blogUpdates.Count} Microsoft .NET DevBlog updates");
+      logger.LogInformation($"Found {blogUpdates.Count} {sourceName} updates");
       return blogUpdates;
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "Failed to get Microsoft .NET DevBlog updates");
+      logger.LogError(ex, $"Failed to get {sourceName} updates");
       return [];
     }
   }
@@ -153,14 +193,12 @@ public class RssService(
 
     try
     {
-      // Simple HTML cleaning - remove tags but keep content
       var doc = new XmlDocument();
       doc.LoadXml($"<root>{htmlContent}</root>");
       return doc.InnerText;
     }
     catch
     {
-      // If XML parsing fails, do basic HTML tag removal
       return System.Text.RegularExpressions.Regex.Replace(htmlContent, "<.*?>", "");
     }
   }
