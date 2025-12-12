@@ -1,8 +1,6 @@
 namespace backend.Models.Dtos;
 
-public class RegisterResponseDTO
-{
-    public bool Success { get; set; }
-    public string Message { get; set; } = "";
-    public List<string> Errors { get; set; } = new();
-}
+public sealed record RegisterResponseDTO(
+    bool Success,
+    List<string> Errors,
+    string Message = "");

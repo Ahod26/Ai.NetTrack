@@ -45,8 +45,9 @@ IOptions<ChatCacheSettings> cacheOptions) : IChatCacheService
 
     if (existingChat != null)
     {
-      existingChat.Metadata!.Title = newTitle;
-      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, cacheSettings.CacheDuration);
+      var newMetadata = existingChat.Metadata! with { Title = newTitle };
+      var updatedChat = existingChat with { Metadata = newMetadata };
+      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, updatedChat, cacheSettings.CacheDuration);
     }
   }
 
@@ -57,8 +58,9 @@ IOptions<ChatCacheSettings> cacheOptions) : IChatCacheService
 
     if (existingChat != null)
     {
-      existingChat.Metadata!.IsContextFull = true;
-      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, existingChat, cacheSettings.CacheDuration);
+      var newMetadata = existingChat.Metadata! with { IsContextFull = true };
+      var updatedChat = existingChat with { Metadata = newMetadata };
+      await chatCacheRepo.UpdateCachedChatAsync(cacheKey, updatedChat, cacheSettings.CacheDuration);
     }
   }
 

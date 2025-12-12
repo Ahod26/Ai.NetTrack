@@ -1,11 +1,9 @@
 namespace backend.Models.Dtos;
 
-public class ChatMetaDataDto
-{
-  public Guid Id { get; set; }
-  public string Title { get; set; } = "New Chat";
-  public DateTime CreatedAt { get; set; }
-  public DateTime LastMessageAt { get; set; }
-  public int MessageCount { get; set; } = 0;
-  public bool IsContextFull { get; set; }
-}
+public sealed record ChatMetaDataDto(
+  Guid Id,
+  DateTime CreatedAt,
+  DateTime LastMessageAt,
+  bool IsContextFull,
+  string Title = "New Chat",
+  int MessageCount = 0);

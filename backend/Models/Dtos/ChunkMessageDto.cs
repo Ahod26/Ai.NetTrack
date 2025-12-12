@@ -1,7 +1,3 @@
 namespace backend.Models.Dtos;
 
-public class ChunkMessageDto
-{
-  public required string Content { get; set; } = "";
-  public bool IsChunkMessage { get; set; } = true;
-}
+public sealed record ChunkMessageDto(string Content = "", bool IsChunkMessage = true);

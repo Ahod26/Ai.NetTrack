@@ -51,10 +51,10 @@ public class ChatService(
     var chatDto = mapper.Map<ChatMetaDataDto>(chatCreated);
 
     // Apply timezone conversion if offset is provided
-    ApplyTimezoneOffset(chatDto, timezoneOffset);
+    ApplyTimezoneOffset(ref chatDto, timezoneOffset);
 
     var initialMessage = await GetChatMessagesAsync(chatDto.Id, userId);
-    await cacheService.SetCachedChat(userId, chatDto.Id, new CachedChatData { Metadata = chatDto, Messages = initialMessage });
+    await cacheService.SetCachedChat(userId, chatDto.Id, new CachedChatData(Metadata: chatDto, Messages: initialMessage));
 
     return chatDto;
   }
@@ -77,10 +77,10 @@ public class ChatService(
     var chatDto = mapper.Map<ChatMetaDataDto>(chat);
 
     // Apply timezone conversion if offset is provided
-    ApplyTimezoneOffset(chatDto, timezoneOffset);
+    ApplyTimezoneOffset(ref chatDto, timezoneOffset);
 
     var initialMessages = await GetChatMessagesAsync(chatDto.Id, userId);
-    await cacheService.SetCachedChat(userId, chatDto.Id, new CachedChatData { Metadata = chatDto, Messages = initialMessages });
+    await cacheService.SetCachedChat(userId, chatDto.Id, new CachedChatData(Metadata: chatDto, Messages: initialMessages));
     return chatDto;
   }
 
@@ -89,13 +89,16 @@ public class ChatService(
     var chats = await chatRepo.GetChatsByUserIdAsync(userId);
     var chatDtos = mapper.Map<List<ChatMetaDataDto>>(chats);
 
-    // Apply timezone conversion if offset is provided
     if (timezoneOffset.HasValue)
     {
-      foreach (var chatDto in chatDtos)
+      var offset = -timezoneOffset.Value;
+
+      // Use Select to project the old list into a new list of updated records
+      chatDtos = chatDtos.Select(chatDto => chatDto with
       {
-        ApplyTimezoneOffset(chatDto, timezoneOffset);
-      }
+        CreatedAt = chatDto.CreatedAt.AddMinutes(offset),
+        LastMessageAt = chatDto.LastMessageAt.AddMinutes(offset)
+      }).ToList();
     }
 
     return chatDtos;
@@ -114,7 +117,7 @@ public class ChatService(
     if (chatEntity != null)
     {
       var metaDto = mapper.Map<ChatMetaDataDto>(chatEntity);
-      await cacheService.SetCachedChat(userId, chatId, new CachedChatData { Metadata = metaDto, Messages = messages });
+      await cacheService.SetCachedChat(userId, chatId, new CachedChatData(Metadata: metaDto, Messages: messages));
     }
     return mapper.Map<List<FullMessageDto>>(messages);
   }
@@ -261,12 +264,17 @@ public class ChatService(
     return await messagesRepo.GetMessagesAsync(chatId);
   }
 
-  private void ApplyTimezoneOffset(ChatMetaDataDto chatDto, int? timezoneOffset)
+  private void ApplyTimezoneOffset(ref ChatMetaDataDto chatDto, int? timezoneOffset)
   {
     if (timezoneOffset.HasValue)
     {
-      chatDto.CreatedAt = chatDto.CreatedAt.AddMinutes(-timezoneOffset.Value);
-      chatDto.LastMessageAt = chatDto.LastMessageAt.AddMinutes(-timezoneOffset.Value);
+      var offset = -timezoneOffset.Value;
+
+      chatDto = chatDto with
+      {
+        CreatedAt = chatDto.CreatedAt.AddMinutes(offset),
+        LastMessageAt = chatDto.LastMessageAt.AddMinutes(offset)
+      };
     }
   }
 

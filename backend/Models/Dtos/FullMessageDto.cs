@@ -2,15 +2,11 @@ using backend.Models.Domain;
 
 namespace backend.Models.Dtos;
 
-public class FullMessageDto
-{
-  public Guid Id { get; set; }
-  public required string Content { get; set; } = "";
-  public required MessageType Type { get; set; }
-  public required DateTime CreatedAt { get; set; }
-  public int TokenCount { get; set; } = 0;
-  public bool IsStarred { get; set; }
-  public bool IsReported { get; set; } = false;
-  public bool IsChunkMessage { get; set; } = false;
-   
-}
+public sealed record FullMessageDto(
+  Guid Id,
+  string Content,
+  MessageType Type,
+  int TokenCount,
+  bool IsStarred,
+  bool IsReported = false,
+  bool IsChunkMessage = false);

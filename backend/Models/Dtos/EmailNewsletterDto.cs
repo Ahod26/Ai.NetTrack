@@ -1,7 +1,3 @@
 namespace backend.Models.Dtos;
 
-public class EmailNewsletterDTO
-{
-  public required string Email { get; set; }
-  public string FullName { get; set; } = "";
-}
+public sealed record EmailNewsletterDTO(string Email, string FullName);

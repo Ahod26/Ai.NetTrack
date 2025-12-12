@@ -1,6 +1,3 @@
 namespace backend.Models.Dtos;
 
-public class CreateChatDTO
-{
-  public string FirstMessage { get; set; } = "new chat";
-}
+public sealed record CreateChatDTO(string FirstMessage = "new chat");

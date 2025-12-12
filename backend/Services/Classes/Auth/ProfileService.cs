@@ -56,10 +56,10 @@ public class ProfileService(
       var jwtToken = tokenService.GenerateToken(user, roles.ToList());
       cookieService.SetAuthCookie(jwtToken);
       return new UserInfoDTO
-      {
-        Roles = roles.ToList(),
-        ApiUserDto = mapper.Map<ApiUserDto>(user)
-      };
+      (
+        Roles: roles.ToList(),
+        ApiUserDto: mapper.Map<ApiUserDto>(user)
+      );
     }
     return null;
   }
@@ -70,10 +70,10 @@ public class ProfileService(
     if (res.identityResult.Succeeded)
     {
       var emailDTO = new EmailNewsletterDTO
-      {
-        Email = res.userEmail,
-        FullName = res.userFullName
-      };
+      (
+        Email: res.userEmail,
+        FullName: res.userFullName
+      );
 
       await emailListCacheService.ToggleUserFromNewsletterAsync(emailDTO);
     }

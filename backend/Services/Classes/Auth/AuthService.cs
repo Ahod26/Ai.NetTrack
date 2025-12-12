@@ -35,24 +35,25 @@ public class AuthService(
           cookieService.SetAuthCookie(jwtToken);
 
           return new LoginResponseDTO
-          {
-            Success = true,
-            Message = "Login successful",
-            UserInfo = new UserInfoDTO
-            {
-              ApiUserDto = mapper.Map<ApiUserDto>(user),
-              Roles = roles.ToList()
-            }
-          };
+          (
+            Success: true,
+            Message: "Login successful",
+            UserInfo: new UserInfoDTO
+            (
+              ApiUserDto: mapper.Map<ApiUserDto>(user),
+              Roles: roles.ToList()
+            )
+          );
         }
       }
     }
 
     return new LoginResponseDTO
-    {
-      Success = false,
-      Message = "Invalid email or password"
-    };
+    (
+      Success: false,
+      UserInfo: null,
+      Message: "Invalid email or password"
+    );
   }
 
   public async Task<RegisterResponseDTO> RegisterAsync(RegisterDTO registerDTO)
@@ -62,11 +63,11 @@ public class AuthService(
     if (existingUserByEmail != null)
     {
       return new RegisterResponseDTO
-      {
-        Success = false,
-        Message = "Registration failed",
-        Errors = new List<string> { "Email address is already registered" }
-      };
+      (
+        Success: false,
+        Message: "Registration failed",
+        Errors: new List<string> { "Email address is already registered" }
+      );
     }
 
     var applicationUser = new ApiUser
@@ -81,10 +82,10 @@ public class AuthService(
 
     if (registerDTO.IsSubscribedToNewsletter)
       await emailListCacheService.ToggleUserFromNewsletterAsync(new EmailNewsletterDTO
-      {
-        Email = registerDTO.Email,
-        FullName = registerDTO.FullName
-      });
+      (
+        Email: registerDTO.Email,
+        FullName: registerDTO.FullName
+      ));
 
     if (!identityResult.Succeeded)
     {
@@ -117,11 +118,11 @@ public class AuthService(
       }
 
       return new RegisterResponseDTO
-      {
-        Success = false,
-        Message = "Registration failed",
-        Errors = errors
-      };
+      (
+        Success: false,
+        Message: "Registration failed",
+        Errors: errors
+      );
     }
 
     // Try to add role
@@ -129,34 +130,34 @@ public class AuthService(
     if (!roleResult.Succeeded)
     {
       return new RegisterResponseDTO
-      {
-        Success = false,
-        Message = "User created but role assignment failed",
-        Errors = roleResult.Errors.Select(e => e.Description).ToList()
-      };
+      (
+        Success: false,
+        Message: "User created but role assignment failed",
+        Errors: roleResult.Errors.Select(e => e.Description).ToList()
+      );
     }
 
     return new RegisterResponseDTO
-    {
-      Success = true,
-      Message = "Registration successful",
-      Errors = new List<string>()
-    };
+    (
+      Success: true,
+      Message: "Registration successful",
+      Errors: new List<string>()
+    );
   }
 
   public UserInfoDTO GetCurrentUserFromClaims(ClaimsPrincipal user)
   {
     logger.LogError(user.FindFirst("IsNewsletterSubscribed")?.Value);
     return new UserInfoDTO
-    {
-      Roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList(),
-      ApiUserDto = new ApiUserDto
-      {
-        FullName = user.FindFirst(ClaimTypes.Name)?.Value ?? "",
-        Email = user.FindFirst(ClaimTypes.Email)?.Value ?? "",
-        IsSubscribedToNewsletter = user.FindFirst("IsNewsletterSubscribed")?.Value == "True"
-      }
-    };
+    (
+      Roles: user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList(),
+      ApiUserDto: new ApiUserDto
+      (
+        FullName: user.FindFirst(ClaimTypes.Name)?.Value ?? "",
+        Email: user.FindFirst(ClaimTypes.Email)?.Value ?? "",
+        IsSubscribedToNewsletter: user.FindFirst("IsNewsletterSubscribed")?.Value == "True"
+      )
+    );
   }
 
   public async Task<LoginResponseDTO> GoogleLoginAsync(AuthenticateResult googleAuthResult)
@@ -164,10 +165,11 @@ public class AuthService(
     if (!googleAuthResult.Succeeded)
     {
       return new LoginResponseDTO
-      {
-        Success = false,
-        Message = "Google authentication failed"
-      };
+      (
+        Success: false,
+        UserInfo: null,
+        Message: "Google authentication failed"
+      );
     }
 
     var claims = googleAuthResult.Principal.Claims;
@@ -197,10 +199,11 @@ public class AuthService(
       if (!createResult.Succeeded)
       {
         return new LoginResponseDTO
-        {
-          Success = false,
-          Message = "Failed to create user account"
-        };
+        (
+          Success: false,
+          UserInfo: null,
+          Message: "Failed to create user account"
+        );
       }
 
       await authRepo.AddToRoleAsync(user, "premium");
@@ -211,21 +214,21 @@ public class AuthService(
     cookieService.SetAuthCookie(jwtToken);
 
     await emailListCacheService.ToggleUserFromNewsletterAsync(new EmailNewsletterDTO
-    {
-      Email = user.Email!,
-      FullName = user.FullName
-    });
+    (
+      Email: user.Email!,
+      FullName: user.FullName
+    ));
 
     return new LoginResponseDTO
-    {
-      Success = true,
-      Message = "Login successful",
-      UserInfo = new UserInfoDTO
-      {
-        Roles = roles.ToList(),
-        ApiUserDto = mapper.Map<ApiUserDto>(user)
-      }
-    };
+    (
+      Success: true,
+      Message: "Login successful",
+      UserInfo: new UserInfoDTO
+      (
+        Roles: roles.ToList(),
+        ApiUserDto: mapper.Map<ApiUserDto>(user)
+      )
+    );
   }
 
 }

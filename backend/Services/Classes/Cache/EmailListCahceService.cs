@@ -66,6 +66,6 @@ public class EmailListCacheService(
   public async Task UpdateUserInfo(string email, string fullName)
   {
     await RemoveUserFromNewsletterAsync(email);
-    await ToggleUserFromNewsletterAsync(new EmailNewsletterDTO { Email = email, FullName = fullName });
+    await ToggleUserFromNewsletterAsync(new EmailNewsletterDTO ( Email: email, FullName: fullName ));
   }
 }
