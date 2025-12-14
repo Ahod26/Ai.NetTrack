@@ -10,26 +10,37 @@ public class NewsAggregationService(
   {
     await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
 
-    while (!cancellationToken.IsCancellationRequested)
+    logger.LogInformation("Starting news aggregation...");
+
+    await using var scope = scopeFactory.CreateAsyncScope();
+    var newsCollector = scope.ServiceProvider.GetRequiredService<INewsCollectorService>();
+    var N8NIntegration = scope.ServiceProvider.GetRequiredService<IN8NIntegration>();
+    var mcpClientService = scope.ServiceProvider.GetRequiredService<IMcpClientService>();
+
+    await mcpClientService.InitializeAsync();
+
+    int newsCount = await newsCollector.CollectAllNews();
+    
+    logger.LogInformation("News aggregation completed successfully");
+
+    if (newsCount > 0)
+      await N8NIntegration.SendUsersTodayNewsAsync();
+
+    using var timer = new PeriodicTimer(TimeSpan.FromDays(1));
+
+    while (!cancellationToken.IsCancellationRequested &&
+           await timer.WaitForNextTickAsync(cancellationToken))
     {
       try
       {
         logger.LogInformation("Starting news aggregation...");
 
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var newsCollector = scope.ServiceProvider.GetRequiredService<INewsCollectorService>();
-        var N8NIntegration = scope.ServiceProvider.GetRequiredService<IN8NIntegration>();
-        var mcpClientService = scope.ServiceProvider.GetRequiredService<IMcpClientService>();
-
         await mcpClientService.InitializeAsync();
 
-        int newsCount = await newsCollector.CollectAllNews();
         logger.LogInformation("News aggregation completed successfully");
 
         if (newsCount > 0)
           await N8NIntegration.SendUsersTodayNewsAsync();
-        
-        await Task.Delay(TimeSpan.FromDays(1), cancellationToken);
       }
       catch (Exception ex)
       {
