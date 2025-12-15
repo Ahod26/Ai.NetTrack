@@ -54,6 +54,7 @@ public class N8NIntegration(
 
     try
     {
+      httpClient.DefaultRequestHeaders.Add("x-api-key", settings.ApiKey);
       var response = await httpClient.PostAsJsonAsync(settings.NewsletterWebhookUrl, new
       {
         news = newsList,
