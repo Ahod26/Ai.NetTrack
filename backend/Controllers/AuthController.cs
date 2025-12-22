@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
+using backend.Extensions;
 
 namespace backend.Controllers;
 
@@ -20,8 +21,6 @@ public class AuthController
   {
     logger.LogInformation("Register attempt for email: {Email}", registerDTO.Email);
 
-    try
-    {
       var result = await authService.RegisterAsync(registerDTO);
 
       if (result.Success)
@@ -34,12 +33,6 @@ public class AuthController
           registerDTO.Email, string.Join(", ", result.Errors));
 
       return BadRequest(result);
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Registration error for email: {Email}", registerDTO.Email);
-      return StatusCode(500, new { message = "An error occurred during registration" });
-    }
   }
 
   [HttpPost("login")]
@@ -47,8 +40,6 @@ public class AuthController
   {
     logger.LogInformation("Login attempt for email: {Email}", loginDTO.Email);
 
-    try
-    {
       var result = await authService.LoginAsync(loginDTO);
       if (result.Success)
       {
@@ -58,20 +49,12 @@ public class AuthController
 
       logger.LogWarning("Login failed for email: {Email}", loginDTO.Email);
       return Unauthorized(new { message = result.Message });
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Login error for email: {Email}", loginDTO.Email);
-      return StatusCode(500, new { message = "An error occurred during login" });
-    }
   }
 
   [HttpGet("status")]
   [Authorize]
   public IActionResult UserStatusCheck()
   {
-    try
-    {
       var userInfo = authService.GetCurrentUserFromClaims(User);
 
       return Ok(new
@@ -79,12 +62,6 @@ public class AuthController
         isAuthenticated = true,
         user = userInfo
       });
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Error getting user status");
-      return BadRequest(new { message = "Error retrieving user information" });
-    }
   }
 
   [HttpPost("logout")]

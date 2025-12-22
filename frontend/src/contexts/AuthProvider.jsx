@@ -10,18 +10,15 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      // Prevent duplicate initialization (React StrictMode in dev)
       if (hasInitialized.current) {
         return;
       }
       hasInitialized.current = true;
 
       try {
-        // Check if user is authenticated via cookie
         const authStatus = await checkAuthStatus();
 
         if (authStatus.isAuthenticated && authStatus.user) {
-          // Convert UserInfo class instance to plain object before dispatching
           const userPlainObject = {
             fullName: authStatus.user.fullName,
             email: authStatus.user.email,
@@ -29,10 +26,8 @@ export default function AuthProvider({ children }) {
             isSubscribedToNewsletter: authStatus.user.isSubscribedToNewsletter,
           };
 
-          // Update Redux store
           dispatch(userAuthSliceAction.setUserLoggedIn(userPlainObject));
 
-          // Initialize SignalR connection for existing session
           try {
             await chatHubService.startConnection();
             console.log("SignalR connected for existing session");
@@ -40,7 +35,6 @@ export default function AuthProvider({ children }) {
             console.error("Failed to initialize SignalR connection:", error);
           }
         } else {
-          // User is not authenticated, ensure they're logged out
           dispatch(userAuthSliceAction.setUserLoggedOut());
         }
       } catch (error) {

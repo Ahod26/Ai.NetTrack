@@ -348,7 +348,7 @@ public class OpenAIService(
     while (state.RequiresToolExecution && toolRound < MAX_TOOL_ROUNDS)
     {
       toolRound++;
-      logger.LogWarning($"🔧 Tool execution round #{toolRound}");
+      logger.LogWarning($"[TOOL] Tool execution round #{toolRound}");
 
       // Build and execute tool calls
       var toolCalls = BuildToolCallsFromState(state);
@@ -366,7 +366,7 @@ public class OpenAIService(
       state.ToolCallsInfo.Clear();
       state.RequiresToolExecution = false;
 
-      logger.LogWarning($"🔄 Streaming after tool round #{toolRound}, context has {messages.Count} messages");
+      logger.LogWarning($"[STREAM] Streaming after tool round #{toolRound}, context has {messages.Count} messages");
 
       try
       {
@@ -375,7 +375,7 @@ public class OpenAIService(
           await ProcessStreamUpdate(update, state, onChunkReceived);
         }
 
-        logger.LogWarning($"✅ Round #{toolRound} complete. Response: {state.ResponseBuilder.Length} chars, NeedsMoreTools: {state.RequiresToolExecution}");
+        logger.LogWarning($"[COMPLETE] Round #{toolRound} complete. Response: {state.ResponseBuilder.Length} chars, NeedsMoreTools: {state.RequiresToolExecution}");
       }
       catch (OperationCanceledException)
       {
@@ -386,7 +386,7 @@ public class OpenAIService(
 
     if (toolRound >= MAX_TOOL_ROUNDS)
     {
-      logger.LogWarning($"⚠️ Reached max tool rounds ({MAX_TOOL_ROUNDS}), stopping");
+      logger.LogWarning($"[WARNING] Reached max tool rounds ({MAX_TOOL_ROUNDS}), stopping");
     }
 
     return (state.ResponseBuilder.ToString(), state.TotalTokensUsed);
@@ -432,8 +432,8 @@ public class OpenAIService(
   {
     try
     {
-      logger.LogWarning($"🔧 TOOL CALLED: '{toolCall.FunctionName}'");
-      logger.LogWarning($"📋 ARGUMENTS: {toolCall.FunctionArguments}");
+      logger.LogWarning($"[TOOL] TOOL CALLED: '{toolCall.FunctionName}'");
+      logger.LogWarning($"[ARGS] ARGUMENTS: {toolCall.FunctionArguments}");
 
       var arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(toolCall.FunctionArguments.ToString())
                       ?? new Dictionary<string, object?>();
@@ -441,7 +441,7 @@ public class OpenAIService(
       var toolResult = await mcpClient.CallToolAsync(toolCall.FunctionName, arguments);
       var resultText = SerializeToolResult(toolResult, toolCall.FunctionName);
 
-      logger.LogWarning($"📦 RESULT PREVIEW: {resultText.Substring(0, Math.Min(500, resultText.Length))}");
+      logger.LogWarning($"[RESULT] RESULT PREVIEW: {resultText.Substring(0, Math.Min(500, resultText.Length))}");
 
       messages.Add(new ToolChatMessage(toolCall.Id, resultText));
 

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using backend.Data;
 
-namespace backend.Extensions;
+namespace backend.Extensions.Services;
 
 public static class DatabaseExtensions
 {

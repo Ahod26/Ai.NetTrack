@@ -18,26 +18,21 @@ export const useAccountSettings = () => {
   const { user } = useSelector((state) => state.userAuth);
   const errorTimeoutRef = useRef(null);
 
-  // Rate limit error popup
   const [rateLimitError, setRateLimitError] = useState("");
 
-  // Form states
   const [fullName, setFullName] = useState(user?.fullName || "");
   const [email, setEmail] = useState(user?.email || "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  // Password visibility states
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  // Loading states
   const [isUpdatingFullName, setIsUpdatingFullName] = useState(false);
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [isUpdatingNewsletter, setIsUpdatingNewsletter] = useState(false);
 
-  // Success/Error messages
   const [fullNameMessage, setFullNameMessage] = useState({
     type: "",
     text: "",
@@ -49,7 +44,6 @@ export const useAccountSettings = () => {
   });
   const [newsletterMessage, setNewsletterMessage] = useState("");
 
-  // Delete account modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const clearMessage = (setter) => {
@@ -57,12 +51,10 @@ export const useAccountSettings = () => {
   };
 
   const showRateLimitError = () => {
-    // Clear any existing timeout
     if (errorTimeoutRef.current) {
       clearTimeout(errorTimeoutRef.current);
     }
 
-    // Show rate limit error popup for 5 seconds
     setRateLimitError("Too many requests. Please try again later.");
     errorTimeoutRef.current = setTimeout(() => {
       setRateLimitError("");
@@ -82,7 +74,6 @@ export const useAccountSettings = () => {
     try {
       const updatedUser = await updateFullName(fullName);
 
-      // Update Redux store with new user data
       dispatch(
         userAuthSliceAction.setUserLoggedIn({
           fullName: updatedUser.apiUserDto.fullName,
@@ -125,7 +116,6 @@ export const useAccountSettings = () => {
     try {
       const updatedUser = await updateEmail(email);
 
-      // Update Redux store with new user data
       dispatch(
         userAuthSliceAction.setUserLoggedIn({
           fullName: updatedUser.apiUserDto.fullName,
@@ -208,7 +198,6 @@ export const useAccountSettings = () => {
     try {
       const updatedUser = await toggleNewsletterSubscription();
 
-      // Update Redux store with new user data from backend
       dispatch(
         userAuthSliceAction.setUserLoggedIn({
           fullName: updatedUser.apiUserDto.fullName,
@@ -244,7 +233,6 @@ export const useAccountSettings = () => {
     try {
       await deleteAccount();
 
-      // Logout and cleanup
       await logoutUser();
       await chatHubService.stopConnection();
       dispatch(userAuthSliceAction.setUserLoggedOut());

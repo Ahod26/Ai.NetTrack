@@ -2,7 +2,7 @@ using backend.Repository.Interfaces;
 using backend.Repository.Classes;
 using AutoMapper;
 
-namespace backend.Extensions;
+namespace backend.Extensions.Services;
 
 public static class RepositoryExtensions
 {

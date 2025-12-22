@@ -229,7 +229,7 @@ export default function NewsModal({ newsItem, isOpen, onClose, onChatError }) {
                   <span>Creating...</span>
                 </>
               ) : (
-                <span>💬 Ask Chat</span>
+                <span>Ask Chat</span>
               )}
             </button>
           )}
@@ -239,7 +239,7 @@ export default function NewsModal({ newsItem, isOpen, onClose, onChatError }) {
               onClick={handleExternalLink}
             >
               <span>{getButtonText()}</span>
-              <span className={styles.externalIcon}>↗</span>
+              <span className={styles.externalIcon}></span>
             </button>
           )}
           <button className={styles.closeButtonSecondary} onClick={onClose}>

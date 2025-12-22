@@ -1,0 +1,20 @@
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Vim swap files
+*.swp
+*.swo
+*~
+
+# Integrations - Sensitive Workflow Files
+Integrations/n8n-newsletter-workflow.json
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp

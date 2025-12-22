@@ -7,6 +7,7 @@ using backend.Filters;
 using backend.Services.Interfaces.Chat;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Http.Timeouts;
+using backend.Extensions;
 
 namespace backend.Controllers;
 
@@ -14,51 +15,33 @@ namespace backend.Controllers;
 [Route("[controller]")]
 [Authorize]
 [EnableRateLimiting("chat")]
-[RequestTimeout(2000)] 
+[RequestTimeout(5000)] 
 public class ChatController
-(IChatService chatService, ILogger<ChatController> logger) : ControllerBase
+(IChatService chatService) : ControllerBase
 {
   [HttpPost]
   [TypeFilter(typeof(MaxChatsAttribute))]
   public async Task<IActionResult> CreateChat([FromBody] CreateChatDTO createChatDTO, [FromQuery] int? timezoneOffset = null, [FromQuery] string? relatedNewsSource = null)
   {
-    try
-    {
-      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+      var userId = User.GetUserId();
       var chat = await chatService.CreateChatAsync(userId, createChatDTO.FirstMessage, timezoneOffset, relatedNewsSource);
 
       return Ok(chat);
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Error creating chat");
-      return StatusCode(500, "Error creating chat");
-    }
   }
 
   [HttpGet]
   public async Task<IActionResult> GetUserChatsMetaData([FromQuery] int? timezoneOffset = null)
   {
-    try
-    {
-      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+      var userId = User.GetUserId();
       var chats = await chatService.GetUserChatsMetadataAsync(userId, timezoneOffset);
 
       return Ok(chats);
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Error getting user chats");
-      return StatusCode(500, "Error retrieving chats");
-    }
   }
 
   [HttpDelete("{chatId:guid:required}")]
   public async Task<IActionResult> DeleteChat(Guid chatId)
   {
-    try
-    {
-      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+      var userId = User.GetUserId();
       var chat = await chatService.GetUserChatAsync(chatId, userId);
       if (chat == null)
       {
@@ -68,12 +51,6 @@ public class ChatController
       await chatService.DeleteChatByIdAsync(chatId, userId);
 
       return Ok(new { message = "Chat deleted successfully" });
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Error deleting chat {ChatId}", chatId);
-      return StatusCode(500, "Error deleting chat");
-    }
   }
 
   [HttpPatch("{chatId:guid:required}/title")]
@@ -83,9 +60,7 @@ public class ChatController
   [StringLength(20, MinimumLength = 1, ErrorMessage = "Title must be between 1 and 20 characters")]
   string title)
   {
-    try
-    {
-      var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+      var userId = User.GetUserId();
       var chat = await chatService.GetUserChatAsync(chatId, userId);
       if (chat == null)
       {
@@ -95,12 +70,6 @@ public class ChatController
       await chatService.ChangeChatTitle(chatId, title, userId);
 
       return Ok(new { message = "Title changed successfully" });
-    }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Error changing title for chat {ChatId}", chatId);
-      return StatusCode(500, "Error changing title");
-    }
   }
 
 }

@@ -139,7 +139,7 @@ export default function NewsCard({ newsItem, onOpenModal, onChatError }) {
       </div>
 
       <div className={styles.cardFooter}>
-        <span className={styles.readMore}>Click to read more →</span>
+        <span className={styles.readMore}>Click to read more</span>
         <div className={styles.actionButtons}>
           {showAskChatButton && isUserLoggedIn && (
             <button
@@ -154,7 +154,7 @@ export default function NewsCard({ newsItem, onOpenModal, onChatError }) {
                   Creating...
                 </>
               ) : (
-                "💬 Ask Chat"
+                "Ask Chat"
               )}
             </button>
           )}
@@ -164,7 +164,7 @@ export default function NewsCard({ newsItem, onOpenModal, onChatError }) {
               onClick={handleExternalLink}
               aria-label="Open original article"
             >
-              🔗 Source
+              Source
             </button>
           )}
         </div>

@@ -4,7 +4,6 @@ import { useDateUtils } from "../../../../hooks/useDateUtils";
 import styles from "./DateSelector.module.css";
 
 export default function DateSelector({ selectedDates, onDateChange }) {
-  // Month navigation state
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -33,7 +32,6 @@ export default function DateSelector({ selectedDates, onDateChange }) {
     monthNames,
   } = useDateUtils(selectedDates, tempSelectedDates, minDate, maxDate);
 
-  // Month navigation functions
   const canGoPrevious = () => {
     const firstOfPreviousMonth = new Date(currentYear, currentMonth - 1, 1);
     return (
@@ -74,7 +72,6 @@ export default function DateSelector({ selectedDates, onDateChange }) {
     }
   };
 
-  // Generate calendar days for current displayed month
   const generateCurrentMonthCalendarDays = () => {
     const firstDay = new Date(currentYear, currentMonth, 1);
     const startDate = new Date(firstDay);
@@ -100,7 +97,6 @@ export default function DateSelector({ selectedDates, onDateChange }) {
         className={styles.selectorButton}
         onClick={handleToggleDropdown}
       >
-        <span className={styles.icon}>📅</span>
         <span className={styles.label}>
           {selectedDates.length === 0
             ? "Select dates"
@@ -176,17 +172,12 @@ export default function DateSelector({ selectedDates, onDateChange }) {
                 const isTempSelected = isTempDateSelected(date);
                 const isDisabled = isDateDisabled(date);
 
-                // Determine final display state
                 let isHighlighted = false;
                 if (isCurrentlySelected && !isTempSelected) {
-                  // Currently selected, not in temp (will remain selected)
                   isHighlighted = true;
                 } else if (!isCurrentlySelected && isTempSelected) {
-                  // Not currently selected, but in temp (will be added)
                   isHighlighted = true;
                 }
-                // If currently selected AND in temp, it will be removed (not highlighted)
-                // If not currently selected AND not in temp, it's not selected (not highlighted)
 
                 return (
                   <button

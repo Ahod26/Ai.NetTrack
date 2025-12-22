@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using backend.Background;
 using backend.Mapping;
 
-namespace backend.Extensions;
+namespace backend.Extensions.Services;
 
 public static class InfrastructureExtensions
 {

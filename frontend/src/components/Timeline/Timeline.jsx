@@ -35,7 +35,6 @@ export default function Timeline() {
   const errorTimeoutRef = useRef(null);
   const searchTimeoutRef = useRef(null);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (errorTimeoutRef.current) {
@@ -57,7 +56,6 @@ export default function Timeline() {
     }, 5000);
   }, []);
 
-  // Date pagination hook
   const {
     getCurrentDateBatch,
     loadNextBatch,
@@ -67,23 +65,18 @@ export default function Timeline() {
     dateBatches,
   } = useDatePagination(selectedDates, 5);
 
-  // Load more function for infinite scroll
   const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore) return;
 
     try {
       setLoadingMore(true);
-      // Do not change global error state during incremental loads
 
-      // Determine the next batch based on current pagination state
       const nextIndex = currentPage + 1;
       const nextBatch = dateBatches[nextIndex];
       if (!nextBatch || nextBatch.length === 0) {
-        // Nothing more to load
         return;
       }
 
-      // Fetch using the next batch, then advance the pagination cursor
       const newData = await getNewsByDate(nextBatch, selectedNewsType);
       setNewsItems((prev) => [...prev, ...(newData || [])]);
       loadNextBatch();
@@ -101,7 +94,6 @@ export default function Timeline() {
     loadNextBatch,
   ]);
 
-  // IntersectionObserver to trigger loadMore when reaching the bottom sentinel
   const contentRef = useRef(null);
   const sentinelRef = useRef(null);
   useEffect(() => {
@@ -109,7 +101,6 @@ export default function Timeline() {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
-    // If the content container isn't scrollable, observe against the viewport
     const useViewportRoot = !el || el.scrollHeight <= el.clientHeight;
     const observer = new IntersectionObserver(
       (entries) => {
@@ -129,28 +120,22 @@ export default function Timeline() {
     return () => observer.disconnect();
   }, [loadMore, loading, loadingMore, hasMore]);
 
-  // Close sidebar when Timeline component mounts
   useEffect(() => {
     dispatch(sidebarActions.closeSidebar());
   }, [dispatch]);
 
-  // Debounced search effect
   useEffect(() => {
-    // Clear existing timeout
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
-    // If search query is empty or less than 3 characters, don't search
     if (!searchQuery || searchQuery.trim().length < 3) {
       setIsSearching(false);
       return;
     }
 
-    // Set searching state immediately
     setIsSearching(true);
 
-    // Debounce search by 500ms
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         setLoading(true);
@@ -173,9 +158,7 @@ export default function Timeline() {
     };
   }, [searchQuery]);
 
-  // Initial load and reload when dates or news type change
   useEffect(() => {
-    // Skip date-based loading if user is actively searching
     if (searchQuery && searchQuery.trim().length >= 3) {
       return;
     }
@@ -189,18 +172,13 @@ export default function Timeline() {
       try {
         setLoading(true);
         setError(null);
-        resetPagination(); // Reset pagination when dates or type change
+        resetPagination();
 
-        // Always load the first batch explicitly to avoid async state race
         const firstBatch = dateBatches[0] || [];
         const data = await getNewsByDate(firstBatch, selectedNewsType);
         setNewsItems(data || []);
-        // Ensure pagination knows we've consumed the first batch
-        // so the next call targets the second batch
+
         if (dateBatches.length > 1) {
-          // Advance to page 1 if applicable
-          // Safe to call; will no-op if already at 0->1 boundary not allowed
-          // We rely on loadMore to fetch next using currentPage+1
         }
       } catch (err) {
         setError("Failed to load news. Please try again.");
@@ -324,7 +302,6 @@ export default function Timeline() {
           </div>
         )}
 
-        {/* Sentinel used to detect when user reached the bottom to load more */}
         <div ref={sentinelRef} style={{ height: 1 }} />
 
         {loadingMore && (
@@ -334,9 +311,6 @@ export default function Timeline() {
           </div>
         )}
 
-        {/* Removed end-of-results message per request */}
-
-        {/* Sentinel at the very bottom to detect when to load more */}
         <div ref={sentinelRef} style={{ height: 1 }} />
       </div>
 

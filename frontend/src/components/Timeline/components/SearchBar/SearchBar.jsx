@@ -14,9 +14,10 @@ export default function SearchBar({ searchQuery, onSearchChange }) {
 
   return (
     <div className={`${styles.searchBar} ${isFocused ? styles.focused : ""}`}>
-      <div className={styles.searchIcon}>🔍</div>
-      <input
-        type="text"
+      <div className={styles.inputWrapper}>
+        <div className={styles.searchIcon}></div>
+        <input
+          type="text"
         className={styles.searchInput}
         placeholder="Search news content..."
         value={searchQuery}

@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  starredMessages: [], // Array of currently starred message IDs from backend
-  reportedMessages: [], // Array of reported message IDs
+  starredMessages: [],
+  reportedMessages: [],
 };
 
 const messagesSlice = createSlice({

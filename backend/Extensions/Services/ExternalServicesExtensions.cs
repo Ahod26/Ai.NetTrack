@@ -3,7 +3,7 @@ using OpenAI.Embeddings;
 using StackExchange.Redis;
 using backend.Models.Configuration;
 
-namespace backend.Extensions;
+namespace backend.Extensions.Services;
 
 public static class ExternalServicesExtensions
 {

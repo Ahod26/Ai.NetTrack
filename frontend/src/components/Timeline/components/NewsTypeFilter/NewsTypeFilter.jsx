@@ -1,29 +1,26 @@
 import { useState, useRef, useEffect } from "react";
 import styles from "./NewsTypeFilter.module.css";
 
-const newsTypes = [
-  {
-    id: 1,
-    name: "GitHub Repos",
-    value: "Github",
-    icon: "🐙",
-    description: "Repository updates and releases",
-  },
-  {
-    id: 2,
-    name: "RSS .NET Blogs",
-    value: "Rss",
-    icon: "📰",
-    description: "Microsoft .NET DevBlog posts",
-  },
-  {
-    id: 3,
-    name: "YouTube Channels",
-    value: "Youtube",
-    icon: "📺",
-    description: "Video content and tutorials",
-  },
-];
+  const newsTypes = [
+    {
+      id: "all",
+      label: "All Updates",
+      color: "#6366f1",
+      icon: "",
+    },
+    {
+      id: "news",
+      label: "News",
+      color: "#10b981",
+      icon: "",
+    },
+    {
+      id: "youtube",
+      label: "Videos",
+      color: "#ef4444",
+      icon: "",
+    },
+  ];
 
 export default function NewsTypeFilter({ selectedType, onTypeChange }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,7 +51,7 @@ export default function NewsTypeFilter({ selectedType, onTypeChange }) {
   const getDisplayText = () => {
     if (!selectedType) return "All news types";
     const selectedTypeObj = newsTypes.find((type) => type.id === selectedType);
-    return selectedTypeObj ? selectedTypeObj.name : "All news types";
+    return selectedTypeObj ? selectedTypeObj.label : "All news types";
   };
 
   return (
@@ -63,7 +60,6 @@ export default function NewsTypeFilter({ selectedType, onTypeChange }) {
         className={styles.filterButton}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className={styles.icon}>🏷️</span>
         <span className={styles.label}>{getDisplayText()}</span>
         <span className={`${styles.arrow} ${isOpen ? styles.open : ""}`}>
           ▼
@@ -98,11 +94,8 @@ export default function NewsTypeFilter({ selectedType, onTypeChange }) {
                 <div className={styles.typeContent}>
                   <div className={styles.typeHeader}>
                     <span className={styles.typeIcon}>{type.icon}</span>
-                    <span className={styles.typeName}>{type.name}</span>
+                    <span className={styles.typeName}>{type.label}</span>
                   </div>
-                  <span className={styles.typeDescription}>
-                    {type.description}
-                  </span>
                 </div>
               </label>
             ))}

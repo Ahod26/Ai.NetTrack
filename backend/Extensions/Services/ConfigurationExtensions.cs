@@ -1,6 +1,6 @@
 using backend.Models.Configuration;
 
-namespace backend.Extensions;
+namespace backend.Extensions.Services;
 
 public static class ConfigurationExtensions
 {

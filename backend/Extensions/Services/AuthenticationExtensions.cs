@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using backend.Models.Domain;
 using backend.Data;
 
-namespace backend.Extensions;
+namespace backend.Extensions.Services;
 
 public static class AuthenticationExtensions
 {

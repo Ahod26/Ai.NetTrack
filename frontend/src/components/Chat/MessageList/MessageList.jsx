@@ -28,16 +28,16 @@ const MessageList = memo(function MessageList({
   const hasChunkMessage = messages.some((msg) => msg.isChunkMessage);
 
   // Tool name to display message mapping
-  const toolMessages = {
-    "tavily-search": "🔍 Searching the internet...",
-    get_file_contents: "📁 Fetching GitHub files...",
-    list_files: "📂 Browsing GitHub repository...",
-    search_code: "💻 Searching GitHub code...",
+  const toolDisplayNames = {
+    "tavily-search": "Searching the internet...",
+    get_file_contents: "Fetching GitHub files...",
+    list_files: "Browsing GitHub repository...",
+    search_code: "Searching GitHub code...",
   };
 
   const getToolMessage = () => {
-    if (currentTool && toolMessages[currentTool]) {
-      return toolMessages[currentTool];
+    if (currentTool && toolDisplayNames[currentTool]) {
+      return toolDisplayNames[currentTool];
     }
     return "Thinking";
   };

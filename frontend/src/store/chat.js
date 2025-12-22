@@ -1,8 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Store actual chat metadata for optimistic updates and communication between hooks
 const initialState = {
-  chats: [], // Array of chat metadata objects
+  chats: [],
   isLoading: false,
   hasInitialized: false, // Track if I fetched initial data
   lastUpdated: null,
@@ -25,7 +24,6 @@ const chatSlice = createSlice({
       state.hasInitialized = false;
     },
     addChat(state, action) {
-      // Optimistically add new chat to the beginning of the list
       state.chats.unshift(action.payload);
       state.lastUpdated = Date.now();
     },
@@ -44,11 +42,9 @@ const chatSlice = createSlice({
     },
     updateChatOrder(state, action) {
       const chatId = action.payload;
-      // Move chat to the top when a new message is sent
       const chatIndex = state.chats.findIndex((chat) => chat.id === chatId);
       if (chatIndex !== -1) {
         const chat = state.chats[chatIndex];
-        // Update the time and move to top
         const updatedChat = {
           ...chat,
           time: "Just now",

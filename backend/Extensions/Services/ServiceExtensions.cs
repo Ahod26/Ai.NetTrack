@@ -16,7 +16,7 @@ using backend.Background.Classes;
 using backend.Services.Interfaces;
 using backend.Services.Classes;
 
-namespace backend.Extensions;
+namespace backend.Extensions.Services;
 
 public static class ServiceExtensions
 {
