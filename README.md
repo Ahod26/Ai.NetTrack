@@ -6,25 +6,29 @@ A chat application for .NET and AI developers with automated news aggregation an
 
 This project provides two main features:
 
-1. **AI Chat Without Hallucinations** - Uses Model Context Protocol (MCP) servers and properly structured system prompts to provide accurate, verifiable responses. The AI can access GitHub repositories and perform web searches in real-time instead of relying on outdated training data.
+1. **AI Chat Without Hallucinations** - Uses a custom .NET AI MCP server (https://github.com/Ahod26/dotnet-ai-mcp-server) that provides access to real-time .NET AI repository code and Microsoft documentation. The AI can fetch actual code examples from repositories like Semantic Kernel, OpenAI .NET SDK, and MCP C# SDK instead of relying on outdated training data. This dramatically reduces hallucinations about .NET AI frameworks.
 
-2. **News Integration** - Automatically collects and aggregates news from specific sources I follow, then allows chatting about these articles with full context. This eliminates hallucinations about recent developments by providing the AI with the actual article content.
+2. **News Integration** - Automatically collects and aggregates news from specific sources I follow using GitHub MCP and RSS feeds, then allows chatting about these articles with full context. This eliminates hallucinations about recent developments by providing the AI with the actual article content.
 
 ## Technologies Used
 
 ### Backend
+
 - ASP.NET Core 9.0 (Minimal APIs)
 - Entity Framework Core 9.0 with MySQL
 - SignalR for WebSocket communication
 - OpenAI API (gpt-4.1 + text-embedding-3-small)
 - Redis Stack with NRedisStack for vector similarity search
+- Custom .NET AI MCP Server (dotnet-ai-mcp-server) via HTTP/SSE
 - Model Context Protocol SDK (0.4.0-preview.1)
+- GitHub MCP Server (for news aggregation only)
 - ASP.NET Identity with JWT authentication
 - Google OAuth2
 - Serilog for logging
 - AutoMapper for DTO mapping
 
 ### Frontend
+
 - React 19.1.1
 - Vite 7.1.0
 - Redux Toolkit 2.8.2 (client state)
@@ -35,14 +39,16 @@ This project provides two main features:
 - CSS Modules
 
 ### Infrastructure
-- Docker (Redis Stack, MCP GitHub server)
+
+- Docker (Redis Stack, GitHub MCP server for news)
 - MySQL 8.0
 - n8n for workflow automation
-- Tavily MCP server (Node.js)
+- Custom .NET AI MCP Server (HTTP/SSE endpoint)
 
 ## News Sources
 
 ### GitHub Repositories (via MCP)
+
 - [microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel)
 - [microsoft/kernel-memory](https://github.com/microsoft/kernel-memory)
 - [microsoft/autogen](https://github.com/microsoft/autogen)
@@ -51,12 +57,14 @@ This project provides two main features:
 - [modelcontextprotocol/csharp-sdk](https://github.com/modelcontextprotocol/csharp-sdk)
 
 ### RSS Feeds
+
 - [Microsoft .NET DevBlog](https://devblogs.microsoft.com/dotnet/feed/)
 - [Semantic Kernel Blog](https://devblogs.microsoft.com/semantic-kernel/feed/)
 - [Azure AI/ML Blog](https://azure.microsoft.com/en-us/blog/category/ai-machine-learning/feed/)
 - [GitHub AI/ML Blog](https://github.blog/ai-and-ml/feed/)
 
 ### YouTube Channels
+
 - Microsoft Developer (@MicrosoftDeveloper)
 - .NET (@dotnet)
 - OpenAI (@OpenAI)
@@ -66,8 +74,11 @@ This project provides two main features:
 ## Key Features
 
 **Chat System:**
+
 - Real-time streaming with SignalR
-- MCP integration for GitHub and Tavily search
+- Custom .NET AI MCP server integration for accurate .NET AI information
+- Access to 14+ .NET AI repositories (Semantic Kernel, OpenAI SDK, MCP SDK, etc.)
+- Microsoft Learn documentation integration as fallback
 - Semantic caching with vector similarity (0.85 threshold)
 - Dual-layer cache (exact match + semantic)
 - Context window management
@@ -75,6 +86,7 @@ This project provides two main features:
 - 10 chat limit per user
 
 **News System:**
+
 - Daily automated collection (every 24 hours)
 - AI-powered filtering for relevance
 - Timeline view with search and date filtering
@@ -82,6 +94,7 @@ This project provides two main features:
 - Newsletter distribution via n8n
 
 **Other:**
+
 - JWT and Google OAuth2 authentication
 - Rate limiting on all endpoints
 - Structured logging with Serilog
@@ -105,24 +118,27 @@ This project provides two main features:
 ### Installation
 
 **1. Clone repository:**
+
 ```bash
 git clone <repository-url>
 cd "Ai Track"
 ```
 
 **2. Start Docker services:**
+
 ```bash
 # Redis Stack
 docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
 
-# GitHub MCP Server
+# GitHub MCP Server (for news aggregation only)
 docker run -d --name mcp-github \
   -e GITHUB_TOKEN=your_github_token \
   -p 8080:8080 \
-  modelcontextprotocol/github-server
+  ghcr.io/github/github-mcp-server
 ```
 
 **3. Set up MySQL:**
+
 ```bash
 mysql -u root -p
 CREATE DATABASE ai_track_db;
@@ -130,6 +146,7 @@ EXIT;
 ```
 
 **4. Configure and run backend:**
+
 ```bash
 cd backend
 
@@ -144,6 +161,7 @@ dotnet run
 Backend runs at: `https://localhost:7197` or `http://localhost:5170`
 
 **5. Configure and run frontend:**
+
 ```bash
 cd frontend
 

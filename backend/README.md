@@ -22,6 +22,7 @@ A robust, AI-powered .NET 9.0 backend application that leverages the **Model Con
 ## 🚀 Key Features
 
 ### AI Chat System with Real-time Streaming
+
 - **Real-time bidirectional communication** via SignalR for instant message streaming
 - **Context-aware conversations** with automatic context window management
 - **10 chat limit per user** with intelligent quota enforcement
@@ -29,6 +30,7 @@ A robust, AI-powered .NET 9.0 backend application that leverages the **Model Con
 - **AI-powered chat titles** automatically generated based on conversation content
 
 ### Semantic Caching & LLM Response Optimization
+
 - **Dual-layer caching strategy**:
   - **Semantic caching**: Vector-based similarity search using OpenAI embeddings (0.85 similarity threshold)
   - **Exact match caching**: Fast retrieval for identical queries
@@ -37,14 +39,16 @@ A robust, AI-powered .NET 9.0 backend application that leverages the **Model Con
 - **Redis Stack integration** with NRedisStack for advanced caching features
 
 ### Model Context Protocol (MCP) Integration
-- **Official MCP SDK**: Using ModelContextProtocol.AspNetCore v0.4.0-preview.1
+
+- **Custom .NET AI MCP Server**: Using dotnet-ai-mcp-server via HTTP/SSE for LLM interactions
 - **Connected MCP Servers**:
-  - **GitHub Server** (Docker): Repository access, releases, files, commits monitoring
-  - **Tavily Server** (Node.js): Web search and research capabilities
-- **Intelligent tool selection**: Keyword-based triggers ("github", "repo", "repository") for relevant tool usage
-- **Tool orchestration**: Seamless integration of multiple MCP servers with prefixed naming
+  - **DotNet AI MCP Server** (HTTP): Provides access to 14+ .NET AI repositories and Microsoft Learn documentation
+  - **GitHub Server** (Docker): Repository monitoring for news aggregation only
+- **Intelligent agentic workflow**: Start_DotNet_Reasoning triggers automatic navigation through repos → folders → files → code
+- **Microsoft Learn fallback**: Searches official documentation when GitHub code examples are insufficient
 
 ### News Aggregation System
+
 - **Multi-source intelligence**:
   - **GitHub**: Monitors 6 key repositories (semantic-kernel, kernel-memory, autogen, openai-dotnet, extensions, mcp-csharp-sdk)
   - **RSS Feeds**: Microsoft .NET DevBlog, Semantic Kernel Blog, and AI/tech blogs
@@ -54,12 +58,14 @@ A robust, AI-powered .NET 9.0 backend application that leverages the **Model Con
 - **News caching**: 2-hour TTL for improved performance
 
 ### n8n Workflow Integration
+
 - **Automated newsletter distribution**: Triggers n8n workflows for email delivery
 - **Webhook-based communication**: Sends news and subscriber lists to n8n
 - **Subscription management**: User newsletter preferences with email list caching
 - **Daily newsletter**: Automatically sends today's and yesterday's news to subscribers
 
 ### Authentication & Authorization
+
 - **JWT-based authentication**: Secure stateless token management
 - **Google OAuth2 integration**: Seamless social login
 - **Account security**:
@@ -69,18 +75,21 @@ A robust, AI-powered .NET 9.0 backend application that leverages the **Model Con
 - **Token refresh**: Automatic JWT regeneration on profile updates
 
 ### User Profile Management
+
 - Update email, full name, and password
 - Newsletter subscription preferences
 - Complete account deletion with cascade
 - JWT token regeneration on updates
 
 ### Message Management
+
 - **Star important messages**: Mark and retrieve favorite responses
 - **Report problematic messages**: Flag inappropriate content with reason
 - **Message metadata**: Token counting for context tracking
 - **Timezone-aware timestamps**: Consistent time handling across the application
 
 ### Rate Limiting & Security
+
 - **Endpoint-specific rate limits**:
   - General: 100 req/min (queue: 10)
   - Chat: 20 req/min (queue: 5)
@@ -95,34 +104,40 @@ A robust, AI-powered .NET 9.0 backend application that leverages the **Model Con
 ## 🛠️ Tech Stack
 
 ### Core Framework
+
 - **ASP.NET Core 9.0**: Modern web API framework with minimal APIs
 - **C# 12+**: Latest language features with nullable reference types
 - **.NET 9.0 SDK**: Latest runtime and SDK
 
 ### Database & ORM
+
 - **MySQL**: Production-ready relational database with connection pooling (100 connections)
 - **Entity Framework Core 9.0**: Code-first ORM with migrations
 - **Pomelo.EntityFrameworkCore.MySql 9.0.0-rc.1**: MySQL provider for EF Core
 
 ### Caching & Real-time
+
 - **Redis Stack**: Advanced caching with vector search capabilities
 - **StackExchange.Redis 2.8.58**: High-performance Redis client
 - **NRedisStack 1.1.0**: Redis Stack extensions for semantic search
 - **SignalR**: Real-time bidirectional communication for chat streaming
 
 ### AI & External Services
+
 - **OpenAI 2.3.0**: Official OpenAI API client for GPT models
 - **ModelContextProtocol.AspNetCore 0.4.0-preview.1**: Official MCP SDK
-- **GitHub API**: Repository monitoring via MCP
-- **Tavily**: Web search integration via MCP
+- **Custom DotNet AI MCP Server**: HTTP/SSE connection to dotnet-ai-mcp-server
+- **GitHub API**: Repository monitoring via MCP (news aggregation only)
 - **n8n**: Workflow automation platform for newsletters
 
 ### Authentication & Security
+
 - **Microsoft.AspNetCore.Identity.EntityFrameworkCore 9.0.8**: User management
 - **Microsoft.AspNetCore.Authentication.JwtBearer 9.0.8**: JWT authentication
 - **Microsoft.AspNetCore.Authentication.Google 9.0.0**: Google OAuth2
 
 ### Additional Libraries
+
 - **AutoMapper 12.0.1**: Object-to-object mapping for DTOs
 - **Serilog 9.0.0**: Structured logging with MySQL sink
 - **FluentAssertions 8.8.0**: Fluent test assertions
@@ -173,22 +188,26 @@ backend/
 **Clean Architecture with Separation of Concerns:**
 
 1. **Presentation Layer** (`Controllers/`, `Hubs/`)
+
    - API endpoints with RESTful design
    - SignalR hubs for real-time communication
    - Request/response DTOs
 
 2. **Business Logic Layer** (`Services/`)
+
    - Domain logic and orchestration
    - Cache management (LLM, Chat, News, EmailList)
    - Authentication and authorization logic
    - OpenAI integration with streaming support
 
 3. **Data Access Layer** (`Repository/`)
+
    - Entity Framework Core repositories
    - Redis repository for caching
    - Database operations and queries
 
 4. **Domain Layer** (`Models/Domain/`)
+
    - Entity models with navigation properties
    - Business rules and validation
 
@@ -213,7 +232,8 @@ Database (MySQL)
 
 External Services:
     OpenAI API ← → Services
-    MCP Servers (GitHub, Tavily) ← → McpClientService
+    DotNet AI MCP Server (HTTP/SSE) ← → McpClientService
+    GitHub MCP (Docker - news only) ← → Background Services
     n8n Webhooks ← → N8NIntegration
 ```
 
@@ -223,8 +243,7 @@ Ensure you have the following installed on your local machine:
 
 - **[.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)** - Required for building and running the application
 - **[MySQL Server](https://dev.mysql.com/downloads/mysql/)** - Version 8.0+ recommended
-- **[Docker Desktop](https://www.docker.com/products/docker-desktop)** - Required for Redis Stack and MCP GitHub server
-- **[Node.js](https://nodejs.org/)** (v18+) - Required for Tavily MCP server (via npx)
+- **[Docker Desktop](https://www.docker.com/products/docker-desktop)** - Required for Redis Stack and GitHub MCP server (news only)
 - **[Redis Stack](https://redis.io/docs/getting-started/install-stack/)** - Can be run via Docker
 - **API Keys**:
   - OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
@@ -256,28 +275,45 @@ docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:lat
 ```
 
 Verify Redis is running:
+
 ```bash
 docker ps | grep redis-stack
 ```
 
 #### MCP Servers
 
-**GitHub MCP Server (Docker):**
+**GitHub MCP Server (Docker - for news aggregation only):**
+
 ```bash
 docker run -d --name mcp-github \
-  -e GITHUB_TOKEN=your_github_token \
-  -p 8080:8080 \
-  modelcontextprotocol/github-server
+  -e GITHUB_PERSONAL_ACCESS_TOKEN=your_github_token \
+  -i --rm \
+  ghcr.io/github/github-mcp-server
 ```
 
-**Tavily MCP Server (Node.js):**
+**DotNet AI MCP Server (for LLM chat):**
+
+This server is hosted publicly at `https://dotnetaimcp.net` and requires no setup. It provides:
+
+- Access to 14+ .NET AI repositories (Semantic Kernel, OpenAI SDK, MCP SDK, etc.)
+- Microsoft Learn documentation search
+- Code sample search
+- Agentic workflow for finding relevant code
+
+For local development or self-hosting:
+
 ```bash
-npx @modelcontextprotocol/server-tavily
+git clone https://github.com/Ahod26/dotnet-ai-mcp-server
+cd dotnet-ai-mcp-server/DotNetMCPServer
+dotnet user-secrets set "GitHub:Token" "your_github_token"
+dotnet run
+# Server runs at http://localhost:5000
 ```
 
 ### 4. Database Setup
 
 **Create MySQL Database:**
+
 ```bash
 mysql -u root -p
 CREATE DATABASE ai_track_db;
@@ -285,6 +321,7 @@ EXIT;
 ```
 
 **Apply Migrations:**
+
 ```bash
 dotnet ef database update
 ```
@@ -337,12 +374,14 @@ dotnet run
 ```
 
 The backend API will start at:
+
 - HTTPS: `https://localhost:7197`
 - HTTP: `http://localhost:5197`
 
 ### 7. Verify Setup
 
 **Check API Health:**
+
 ```bash
 curl https://localhost:7197/auth/status
 ```
@@ -421,12 +460,14 @@ Navigate to: `https://localhost:7197/openapi/v1.json`
 ### Configuration Sections Explained
 
 #### OpenAI Settings
+
 - **ApiKey**: Your OpenAI API key (required)
 - **Model**: GPT model to use (default: `gpt-4o-mini` for cost efficiency)
 - **MaxToken**: Maximum tokens per response (4096 recommended)
 - **Temperature**: Response creativity (0.0-1.0, default: 0.7)
 
 #### LLM Cache Settings
+
 - **MaxCacheableMessageCountSemantic**: Max messages for semantic caching (8)
 - **MaxCacheableMessageCountExactMatch**: Max messages for exact match (2)
 - **SemanticSimilarityThreshold**: Cosine similarity threshold (0.85 = 85% similar)
@@ -434,24 +475,29 @@ Navigate to: `https://localhost:7197/openapi/v1.json`
 - **CacheDecayFactor**: Decay multiplier for older messages (0.7)
 
 #### Chat Cache Settings
+
 - **CacheDurationHours**: How long to cache recent chats (2 hours)
 
 #### MCP Settings
-- **GithubToken**: GitHub Personal Access Token with repo read access
-- **TavilyApiKey**: Tavily API key for web search
-- **YouTubeApiKey**: YouTube Data API v3 key (optional)
+
+- **GitHub.Token**: GitHub Personal Access Token with repo read access (for news aggregation)
+- **DotNetAIMcp.Endpoint**: DotNet AI MCP Server endpoint (default: https://dotnetaimcp.net)
+- **YouTubeApiKey**: YouTube Data API v3 key (optional, for YouTube news)
 
 #### JWT Settings
+
 - **Issuer**: Token issuer identifier
 - **Audience**: Token audience identifier
 - **Key**: Secret key (must be at least 32 characters)
 - **ExpirationInMinutes**: Token lifetime (10000 = ~7 days)
 
 #### Google OAuth2
+
 - **ClientId**: OAuth 2.0 Client ID from Google Cloud Console
 - **ClientSecret**: OAuth 2.0 Client Secret
 
 #### n8n Integration
+
 - **NewsletterWebhookUrl**: n8n webhook endpoint for newsletter
 - **ApiKey**: Authentication token for n8n webhook
 
@@ -463,8 +509,8 @@ You can also use environment variables instead of appsettings.json:
 export ConnectionStrings__AINetTrack="Server=localhost;..."
 export OpenAI__ApiKey="sk-proj-..."
 export JwtSettings__Key="YOUR_SECRET_KEY"
-export McpSettings__GithubToken="ghp_..."
-export McpSettings__TavilyApiKey="tvly-..."
+export MCP__GitHub__Token="ghp_..."
+export MCP__DotNetAIMcp__Endpoint="https://dotnetaimcp.net"
 export Authentication__Google__ClientId="..."
 export Authentication__Google__ClientSecret="..."
 ```
@@ -478,19 +524,21 @@ cd backend
 dotnet user-secrets init
 dotnet user-secrets set "OpenAI:ApiKey" "sk-proj-..."
 dotnet user-secrets set "JwtSettings:Key" "YOUR_SECRET_KEY"
-dotnet user-secrets set "McpSettings:GithubToken" "ghp_..."
-dotnet user-secrets set "McpSettings:TavilyApiKey" "tvly-..."
+dotnet user-secrets set "MCP:GitHub:Token" "ghp_..."
+dotnet user-secrets set "MCP:DotNetAIMcp:Endpoint" "https://dotnetaimcp.net"
 ```
 
 ## 📚 API Documentation
 
 ### Base URL
+
 - Development: `https://localhost:7197`
 - Production: Configure in deployment
 
 ### Authentication
 
 All protected endpoints require JWT token in cookies or Authorization header:
+
 ```
 Authorization: Bearer <jwt_token>
 ```
@@ -500,6 +548,7 @@ Authorization: Bearer <jwt_token>
 ### Auth Controller (`/auth`)
 
 #### Register User
+
 ```http
 POST /auth
 Content-Type: application/json
@@ -512,6 +561,7 @@ Content-Type: application/json
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "message": "User created successfully"
@@ -519,6 +569,7 @@ Content-Type: application/json
 ```
 
 **Validation:**
+
 - Email must be unique and valid format
 - Password: minimum 6 characters, must contain digits and lowercase
 - FullName: required
@@ -526,6 +577,7 @@ Content-Type: application/json
 ---
 
 #### Login
+
 ```http
 POST /auth/login
 Content-Type: application/json
@@ -537,6 +589,7 @@ Content-Type: application/json
 ```
 
 **Response:** `200 OK` + HttpOnly cookie with JWT
+
 ```json
 {
   "message": "Login successful"
@@ -548,11 +601,13 @@ Content-Type: application/json
 ---
 
 #### Check Authentication Status
+
 ```http
 GET /auth/status
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "isAuthenticated": true,
@@ -564,11 +619,13 @@ GET /auth/status
 ---
 
 #### Logout
+
 ```http
 POST /auth/logout
 ```
 
 **Response:** `200 OK` + clears auth cookie
+
 ```json
 {
   "message": "Logout successful"
@@ -578,6 +635,7 @@ POST /auth/logout
 ---
 
 #### Google OAuth Login
+
 ```http
 GET /auth/google-login
 ```
@@ -587,6 +645,7 @@ GET /auth/google-login
 ---
 
 #### Google OAuth Callback
+
 ```http
 GET /auth/google-response
 ```
@@ -600,6 +659,7 @@ GET /auth/google-response
 **Rate Limit:** 20 requests/minute per user
 
 #### Create Chat with First Message
+
 ```http
 POST /chat
 Authorization: Bearer <token>
@@ -612,6 +672,7 @@ Content-Type: application/json
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -623,6 +684,7 @@ Content-Type: application/json
 ```
 
 **Constraints:**
+
 - Maximum 10 chats per user (enforced via `MaxChatsAttribute`)
 - First message creates the chat
 - AI automatically generates chat title
@@ -630,12 +692,14 @@ Content-Type: application/json
 ---
 
 #### Get User's Chats
+
 ```http
 GET /chat
 Authorization: Bearer <token>
 ```
 
 **Response:** `200 OK`
+
 ```json
 [
   {
@@ -654,12 +718,14 @@ Authorization: Bearer <token>
 ---
 
 #### Delete Chat
+
 ```http
 DELETE /chat/{chatId}
 Authorization: Bearer <token>
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "message": "Chat deleted successfully"
@@ -671,6 +737,7 @@ Authorization: Bearer <token>
 ---
 
 #### Update Chat Title
+
 ```http
 PATCH /chat/{chatId}/title
 Authorization: Bearer <token>
@@ -692,12 +759,14 @@ Content-Type: application/json
 **Rate Limit:** 15 requests/minute per user
 
 #### Get Starred Messages
+
 ```http
 GET /messages/starred
 Authorization: Bearer <token>
 ```
 
 **Response:** `200 OK`
+
 ```json
 [
   {
@@ -716,12 +785,14 @@ Authorization: Bearer <token>
 ---
 
 #### Toggle Star Status
+
 ```http
 PATCH /messages/{messageId}/starred
 Authorization: Bearer <token>
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "isStarred": true
@@ -731,6 +802,7 @@ Authorization: Bearer <token>
 ---
 
 #### Report Message
+
 ```http
 PATCH /messages/{messageId}/report
 Authorization: Bearer <token>
@@ -742,6 +814,7 @@ Content-Type: application/json
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "isReported": true,
@@ -757,18 +830,21 @@ Content-Type: application/json
 **Rate Limit:** 30 requests/minute per user
 
 #### Get News by Date and Type
+
 ```http
 GET /news?dateTime=2025-12-23T00:00:00Z&newsType=1
 Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `dateTime` (optional): Filter by date
 - `newsType` (optional): 1=GitHub, 2=RSS, 3=YouTube
 - `startDate` (optional): Date range start
 - `endDate` (optional): Date range end
 
 **Response:** `200 OK`
+
 ```json
 [
   {
@@ -790,6 +866,7 @@ Authorization: Bearer <token>
 ---
 
 #### Search News
+
 ```http
 GET /news/search?searchTerm=semantic+kernel
 Authorization: Bearer <token>
@@ -804,6 +881,7 @@ Authorization: Bearer <token>
 **Rate Limit:** 10 requests/10 minutes per IP
 
 #### Update Email
+
 ```http
 PUT /profile/email
 Authorization: Bearer <token>
@@ -815,6 +893,7 @@ Content-Type: application/json
 ```
 
 **Response:** `200 OK` + new JWT token
+
 ```json
 {
   "message": "Email updated successfully"
@@ -824,6 +903,7 @@ Content-Type: application/json
 ---
 
 #### Update Full Name
+
 ```http
 PUT /profile/username
 Authorization: Bearer <token>
@@ -839,6 +919,7 @@ Content-Type: application/json
 ---
 
 #### Change Password
+
 ```http
 PUT /profile/password
 Authorization: Bearer <token>
@@ -857,6 +938,7 @@ Content-Type: application/json
 ---
 
 #### Toggle Newsletter Subscription
+
 ```http
 PUT /profile/newsletter
 Authorization: Bearer <token>
@@ -868,6 +950,7 @@ Content-Type: application/json
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "isSubscribedToNewsletter": true
@@ -877,12 +960,14 @@ Content-Type: application/json
 ---
 
 #### Delete Account
+
 ```http
 DELETE /profile
 Authorization: Bearer <token>
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "message": "User deleted successfully"
@@ -900,16 +985,19 @@ Authorization: Bearer <token>
 #### Hub Methods (Client → Server)
 
 **JoinChat**
+
 ```javascript
 connection.invoke("JoinChat", chatId);
 ```
 
 **SendMessage**
+
 ```javascript
 connection.invoke("SendMessage", chatId, messageContent);
 ```
 
 **StopGeneration**
+
 ```javascript
 connection.invoke("StopGeneration", chatId);
 ```
@@ -917,6 +1005,7 @@ connection.invoke("StopGeneration", chatId);
 #### Client Methods (Server → Client)
 
 **ReceiveMessage**
+
 ```javascript
 connection.on("ReceiveMessage", (message) => {
   // message: { id, chatId, content, type, createdAt, tokenCount }
@@ -924,6 +1013,7 @@ connection.on("ReceiveMessage", (message) => {
 ```
 
 **ChatJoined**
+
 ```javascript
 connection.on("ChatJoined", (chatId, messages) => {
   // Confirmation of chat connection + message history
@@ -931,6 +1021,7 @@ connection.on("ChatJoined", (chatId, messages) => {
 ```
 
 **Error**
+
 ```javascript
 connection.on("Error", (errorMessage) => {
   // Error notification
@@ -949,17 +1040,18 @@ connection.on("Error", (errorMessage) => {
 
 ### Rate Limiting Policies
 
-| Endpoint | Limit | Window | Queue Limit |
-|----------|-------|--------|-------------|
-| General | 100 req | 1 min | 10 |
-| Chat | 20 req | 1 min | 5 |
-| News | 30 req | 1 min | 10 |
-| Messages | 15 req | 1 min | 0 |
-| Auth | 20 req | 5 min | 0 |
-| Profile | 10 req | 10 min | 0 |
-| Global | 1000 req | 1 hour | - |
+| Endpoint | Limit    | Window | Queue Limit |
+| -------- | -------- | ------ | ----------- |
+| General  | 100 req  | 1 min  | 10          |
+| Chat     | 20 req   | 1 min  | 5           |
+| News     | 30 req   | 1 min  | 10          |
+| Messages | 15 req   | 1 min  | 0           |
+| Auth     | 20 req   | 5 min  | 0           |
+| Profile  | 10 req   | 10 min | 0           |
+| Global   | 1000 req | 1 hour | -           |
 
 **Rate Limit Headers:**
+
 ```
 X-RateLimit-Limit: 20
 X-RateLimit-Remaining: 15
@@ -967,6 +1059,7 @@ X-RateLimit-Reset: 1640000000
 ```
 
 **429 Response:**
+
 ```json
 {
   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.29",
@@ -981,6 +1074,7 @@ X-RateLimit-Reset: 1640000000
 ### Entity Models
 
 #### ApiUser (extends IdentityUser)
+
 ```csharp
 public class ApiUser : IdentityUser
 {
@@ -993,6 +1087,7 @@ public class ApiUser : IdentityUser
 ```
 
 **Inherits from IdentityUser:**
+
 - Id (string - PK)
 - Email
 - UserName
@@ -1007,6 +1102,7 @@ public class ApiUser : IdentityUser
 ---
 
 #### Chat
+
 ```csharp
 public class Chat
 {
@@ -1028,16 +1124,19 @@ public class Chat
 ```
 
 **Indexes:**
+
 - `IX_Chats_UserId` (non-clustered)
 - `IX_Chats_UserId_LastMessageAt` (composite, non-clustered)
 
 **Constraints:**
+
 - Maximum 10 chats per user (enforced in application layer)
 - Cascade delete: Deleting user deletes all their chats
 
 ---
 
 #### ChatMessage
+
 ```csharp
 public class ChatMessage
 {
@@ -1064,15 +1163,18 @@ public enum MessageType
 ```
 
 **Indexes:**
+
 - `IX_ChatMessages_ChatId` (non-clustered)
 - `IX_ChatMessages_ChatId_CreatedAt` (composite, non-clustered)
 
 **Constraints:**
+
 - Cascade delete: Deleting chat deletes all its messages
 
 ---
 
 #### NewsItem
+
 ```csharp
 public class NewsItem
 {
@@ -1096,6 +1198,7 @@ public enum NewsSourceType
 ```
 
 **Indexes:**
+
 - `IX_NewsItems_SourceType` (non-clustered)
 - `IX_NewsItems_PublishedDate` (non-clustered)
 - `IX_NewsItems_SourceType_PublishedDate` (composite, non-clustered)
@@ -1118,31 +1221,37 @@ NewsItem (independent, no FK relationships)
 ### Migration Commands
 
 **Create new migration:**
+
 ```bash
 dotnet ef migrations add MigrationName
 ```
 
 **Update database:**
+
 ```bash
 dotnet ef database update
 ```
 
 **Rollback to specific migration:**
+
 ```bash
 dotnet ef database update MigrationName
 ```
 
 **Remove last migration:**
+
 ```bash
 dotnet ef migrations remove
 ```
 
 **Generate SQL script:**
+
 ```bash
 dotnet ef migrations script
 ```
 
 **List migrations:**
+
 ```bash
 dotnet ef migrations list
 ```
@@ -1171,16 +1280,19 @@ OpenAI API (GPT-4o-mini)
 **Key Features:**
 
 1. **Streaming Responses:**
+
    - Uses `IAsyncEnumerable<string>` for chunked streaming
    - Real-time token-by-token delivery via SignalR
    - Cancellation support with `CancellationToken`
 
 2. **Context Management:**
+
    - Tracks token count per message
    - Marks chat as `IsContextFull` when nearing limit
    - Automatically includes relevant history in requests
 
 3. **Chat Limits:**
+
    - Maximum 10 chats per user (enforced via `MaxChatsAttribute`)
    - Prevents resource exhaustion
    - Clear error messages when limit reached
@@ -1191,6 +1303,7 @@ OpenAI API (GPT-4o-mini)
    - Updates chat entity asynchronously
 
 **Code Example (ChatHub.cs:70-150):**
+
 ```csharp
 public async Task SendMessage(Guid chatId, string content)
 {
@@ -1222,15 +1335,18 @@ The semantic caching system dramatically reduces API costs and latency by cachin
 **How It Works:**
 
 1. **Message Grouping:**
+
    - Groups last N messages into a single query string
    - Configurable: 8 messages for semantic, 2 for exact match
 
 2. **Exact Match Check (Fast Path):**
+
    - MD5 hash of query for O(1) lookup
    - Returns cached response immediately if found
    - Shortest TTL (for frequent, identical queries)
 
 3. **Semantic Similarity Search (Slow Path):**
+
    - Generates embedding using OpenAI `text-embedding-3-small`
    - Stores vector in Redis with NRedisStack
    - Performs cosine similarity search
@@ -1242,6 +1358,7 @@ The semantic caching system dramatically reduces API costs and latency by cachin
    - Calculates TTL with decay factor
 
 **TTL Calculation:**
+
 ```csharp
 TimeSpan ttl = TimeSpan.FromDays(
     baseDays * Math.Pow(decayFactor, messageCount - minMessages)
@@ -1268,6 +1385,7 @@ Response
 ```
 
 **Redis Keys:**
+
 ```
 llm_cache:{md5_hash}                    # Exact match
 llm_cache:semantic:{embedding_id}       # Semantic vector
@@ -1275,6 +1393,7 @@ llm_cache:embedding:{embedding_id}      # Vector data
 ```
 
 **Benefits:**
+
 - **Cost Reduction**: 40-60% reduction in OpenAI API calls (estimated)
 - **Latency Improvement**: <5ms for cache hits vs ~2-5s for API calls
 - **Semantic Understanding**: Matches similar questions with different wording
@@ -1285,40 +1404,58 @@ llm_cache:embedding:{embedding_id}      # Vector data
 
 ### Model Context Protocol (MCP) Integration
 
-MCP extends the LLM's capabilities by connecting it to external tools and data sources, enabling the AI to perform actions beyond text generation.
+MCP extends the LLM's capabilities by connecting it to external tools and data sources, enabling the AI to access real-time code and documentation.
 
 **Connected MCP Servers:**
 
-1. **GitHub MCP Server** (Docker: `modelcontextprotocol/github-server`)
-   - **Tools:**
-     - `github_list_releases`: Get repository releases
-     - `github_get_file_contents`: Read file contents
-     - `github_search_code`: Search code in repositories
-     - `github_create_issue`: Create issues (if needed)
-   - **Monitored Repositories:**
-     - microsoft/semantic-kernel
-     - microsoft/kernel-memory
-     - microsoft/autogen
-     - openai/openai-dotnet
-     - microsoft/extensions
-     - modelcontextprotocol/csharp-sdk
+1. **DotNet AI MCP Server** (HTTP/SSE: `https://dotnetaimcp.net`)
 
-2. **Tavily MCP Server** (npx: `@modelcontextprotocol/server-tavily`)
-   - **Tools:**
-     - `tavily_search`: Web search with AI-optimized results
-     - `tavily_extract`: Extract content from URLs
-     - `tavily_qna`: Question-answering over web content
+   - **Purpose**: Provides accurate, up-to-date .NET AI information for chat interactions
+   - **Transport**: HTTP with Streamable HTTP protocol
+   - **Tools**:
+     - `Start_DotNet_Reasoning`: REQUIRED entry point for .NET AI questions (agentic workflow)
+     - `github_get_folders`: Navigate repository structure
+     - `github_list_files`: List files in specific folders
+     - `github_fetch_files`: Fetch actual code examples
+     - `microsoft_docs_search`: Search Microsoft Learn documentation (fallback)
+     - `microsoft_docs_fetch`: Fetch complete documentation pages
+     - `microsoft_code_sample_search`: Find official code samples
+   - **Tracked Repositories** (14+):
+     - AI Frameworks: semantic-kernel, autogen, kernel-memory, extensions, csharp-sdk, langchain
+     - LLM SDKs: openai-dotnet, dotnet-genai, anthropic-sdk-csharp
+     - Vector DBs: pinecone-dotnet-client, qdrant-dotnet, weaviate-dotnet-client, nredisstack
+     - Local LLM: ollamasharp
 
-**Tool Selection Logic:**
+2. **GitHub MCP Server** (Docker: `ghcr.io/github/github-mcp-server`)
+   - **Purpose**: Repository monitoring for news aggregation ONLY (not used in chat)
+   - **Tools**:
+     - `github_list_releases`: Get repository releases for news
+     - `github_get_file_contents`: Read file contents for news context
 
-The `McpClientService` uses keyword triggers to determine when to use MCP tools:
+**Agentic Workflow for Chat:**
 
-```csharp
-// ToolTriggers.cs
-public static readonly string[] GithubTriggers =
-    { "github", "repo", "repository", "code", "release" };
-public static readonly string[] WebSearchTriggers =
-    { "search", "find", "lookup", "web", "internet" };
+The DotNet AI MCP server uses an intelligent agentic workflow that automatically:
+
+1. Identifies available .NET AI repositories
+2. Navigates to relevant folders (e.g., `/samples/`, `/docs/`)
+3. Lists files to find specific examples
+4. Fetches actual code files (.cs) and documentation (.md)
+5. Falls back to Microsoft Learn docs if needed
+
+Example flow:
+
+```
+User: "How do I create an MCP server in C#?"
+  ↓
+LLM calls: Start_DotNet_Reasoning
+  ↓ (returns available repos)
+LLM calls: github_get_folders → modelcontextprotocol::csharp-sdk
+  ↓ (finds /samples/ folder)
+LLM calls: github_list_files → /samples/QuickstartWeatherServer/
+  ↓ (finds Program.cs)
+LLM calls: github_fetch_files → actual working code
+  ↓
+LLM generates response with real code examples
 ```
 
 **Architecture:**
@@ -1326,41 +1463,44 @@ public static readonly string[] WebSearchTriggers =
 ```
 OpenAIService
     ↓
-[Analyze user query]
+[User asks .NET AI question]
     ↓
-McpClientService
-    ↓ (keyword match)
-[Select relevant MCP servers]
-    ↓
-[Discover available tools]
+GetEssentialTools() → DotNet AI MCP tools only
     ↓
 OpenAI (with tool definitions)
-    ↓ (tool call request)
-[Execute tool via MCP]
+    ↓ (tool call: Start_DotNet_Reasoning)
+McpClientService → HTTP POST to dotnetaimcp.net
     ↓
-[Return tool result to OpenAI]
+[Agentic workflow executes]
+    ↓ (returns repos → folders → files → code)
+OpenAI synthesizes final response
     ↓
-Final Response
+User receives accurate answer with real code
 ```
 
-**Tool Execution Flow:**
+**Benefits:**
 
-1. User asks: "What's the latest release of semantic-kernel?"
-2. System detects "github" + "release" keywords
-3. Adds GitHub MCP tools to OpenAI request
-4. OpenAI decides to call `github_list_releases`
-5. McpClientService executes tool via GitHub MCP server
-6. Result returned to OpenAI for final response generation
+- **No hallucinations**: Real code from actual repositories
+- **Always current**: Fetches latest code, not training data
+- **Token efficient**: Gradual exposure (repos → folders → files)
+- **Automatic workflow**: LLM orchestrates tools intelligently
 
-**Prefixed Tool Names:**
+**Configuration:**
 
-To avoid conflicts, tools are prefixed with server name:
+```json
+{
+  "MCP": {
+    "GitHub": {
+      "Token": "ghp_..." // For news aggregation only
+    },
+    "DotNetAIMcp": {
+      "Endpoint": "https://dotnetaimcp.net" // For chat interactions
+    }
+  }
+}
 ```
-github_list_releases
-tavily_search
-```
 
-**Code Reference:** `MCP/Classes/McpClientService.cs:40-200`
+**Code Reference:** `MCP/Classes/McpClientService.cs:80-115`
 
 ---
 
@@ -1389,12 +1529,14 @@ N8NIntegration.TriggerNewsletterWorkflowAsync()
 **News Sources:**
 
 1. **GitHub (6 repositories):**
+
    - Monitors releases via `github_list_releases` MCP tool
    - Gets last 5 releases per repo
    - AI filters for relevance (e.g., excludes minor bug fixes)
    - Extracts: title, description, URL, release date
 
 2. **RSS Feeds:**
+
    - Microsoft .NET DevBlog
    - Semantic Kernel Blog
    - AI/ML tech blogs
@@ -1577,6 +1719,7 @@ public interface INewsSourceService
 ```
 
 **GitHubService:**
+
 ```csharp
 public async Task<List<NewsItem>> GetLatestNewsAsync()
 {
@@ -1604,6 +1747,7 @@ public async Task<List<NewsItem>> GetLatestNewsAsync()
 ```
 
 **RssService:**
+
 ```csharp
 public async Task<List<NewsItem>> GetLatestNewsAsync()
 {
@@ -1692,17 +1836,20 @@ public async Task<List<NewsItem>> GetLatestNewsAsync()
 ### Password Security
 
 **Password Policy:**
+
 - Minimum 6 characters
 - Must contain at least one digit
 - Must contain at least one lowercase letter
 - No uppercase or special character requirement (for user convenience)
 
 **Account Lockout:**
+
 - 5 failed login attempts triggers lockout
 - Lockout duration: 5 minutes
 - Lockout end time stored in `ApiUser.LockoutEnd`
 
 **Implementation:**
+
 ```csharp
 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
 options.Lockout.MaxFailedAccessAttempts = 5;
@@ -1712,12 +1859,14 @@ options.Lockout.AllowedForNewUsers = true;
 ### JWT Token Security
 
 **Token Configuration:**
+
 - Algorithm: HS256 (HMAC-SHA256)
 - Secret key: Minimum 32 characters (configured in appsettings)
 - Expiration: 10,000 minutes (~7 days)
 - Issuer/Audience validation enabled
 
 **Token Validation:**
+
 ```csharp
 options.TokenValidationParameters = new TokenValidationParameters
 {
@@ -1734,6 +1883,7 @@ options.TokenValidationParameters = new TokenValidationParameters
 ```
 
 **Token Refresh:**
+
 - Automatic refresh on profile updates
 - Old token invalidated (via cookie replacement)
 - New token issued with updated claims
@@ -1741,6 +1891,7 @@ options.TokenValidationParameters = new TokenValidationParameters
 ### Cookie Security
 
 **Cookie Configuration:**
+
 ```csharp
 options.Cookie.HttpOnly = true;       // Prevents XSS access
 options.Cookie.Secure = true;         // HTTPS only
@@ -1753,6 +1904,7 @@ options.ExpireTimespan = TimeSpan.FromMinutes(10000);
 ### CORS Configuration
 
 **Allowed Origins:**
+
 ```csharp
 builder.Services.AddCors(options =>
 {
@@ -1771,6 +1923,7 @@ builder.Services.AddCors(options =>
 ### Rate Limiting Configuration
 
 **Implementation:**
+
 ```csharp
 [EnableRateLimiting("GeneralRateLimit")]
 public class ChatController : ControllerBase
@@ -1803,6 +1956,7 @@ options.AddFixedWindowLimiter("AuthRateLimit", opt =>
 ```
 
 **Custom Rate Limit Responses:**
+
 ```csharp
 options.OnRejected = async (context, token) =>
 {
@@ -1817,6 +1971,7 @@ options.OnRejected = async (context, token) =>
 ### Request Timeouts
 
 **Configuration:**
+
 ```csharp
 builder.Services.AddRequestTimeouts(options =>
 {
@@ -1833,6 +1988,7 @@ builder.Services.AddRequestTimeouts(options =>
 ### Global Exception Handling
 
 **Middleware:**
+
 ```csharp
 public class GlobalExceptionHandler : IExceptionHandler
 {
@@ -1861,6 +2017,7 @@ public class GlobalExceptionHandler : IExceptionHandler
 ```
 
 **Benefits:**
+
 - Consistent error responses
 - Centralized logging
 - Prevents sensitive exception details from leaking
@@ -1876,6 +2033,7 @@ public class GlobalExceptionHandler : IExceptionHandler
 ### Unit Tests
 
 **Structure:**
+
 ```
 backend.UnitTests/
 ├── Services/
@@ -1887,6 +2045,7 @@ backend.UnitTests/
 ```
 
 **Example Test:**
+
 ```csharp
 public class ChatServiceTests
 {
@@ -1974,6 +2133,7 @@ public class ChatControllerIntegrationTests : IClassFixture<WebApplicationFactor
 ```
 
 **Testcontainers Setup:**
+
 ```csharp
 services.AddSingleton<IContainer>(sp =>
 {
@@ -1989,28 +2149,33 @@ services.AddSingleton<IContainer>(sp =>
 ### Running Tests
 
 **All tests:**
+
 ```bash
 dotnet test
 ```
 
 **Specific project:**
+
 ```bash
 dotnet test backend.UnitTests
 dotnet test backend.IntegrationTests
 ```
 
 **With coverage:**
+
 ```bash
 dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 ```
 
 **Filter by category:**
+
 ```bash
 dotnet test --filter Category=Unit
 dotnet test --filter Category=Integration
 ```
 
 **Verbose output:**
+
 ```bash
 dotnet test --logger "console;verbosity=detailed"
 ```
@@ -2018,6 +2183,7 @@ dotnet test --logger "console;verbosity=detailed"
 ### Test Coverage
 
 Current coverage areas:
+
 - Authentication flow (register, login, OAuth)
 - Chat creation and management
 - Message operations (star, report)
@@ -2028,6 +2194,7 @@ Current coverage areas:
 ### Mocking External Services
 
 **OpenAI:**
+
 ```csharp
 _mockOpenAI
     .Setup(x => x.GetChatCompletionAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -2035,6 +2202,7 @@ _mockOpenAI
 ```
 
 **Redis:**
+
 ```csharp
 _mockRedis
     .Setup(x => x.GetAsync(It.IsAny<string>()))
@@ -2042,6 +2210,7 @@ _mockRedis
 ```
 
 **MCP Client:**
+
 ```csharp
 _mockMcp
     .Setup(x => x.ExecuteToolAsync("github_list_releases", It.IsAny<object>()))
@@ -2053,6 +2222,7 @@ _mockMcp
 ### Project Conventions
 
 **Naming:**
+
 - Controllers: `{Resource}Controller` (e.g., `ChatController`)
 - Services: `{Domain}Service` (e.g., `ChatService`)
 - Repositories: `{Entity}Repository` (e.g., `ChatRepository`)
@@ -2060,6 +2230,7 @@ _mockMcp
 - Interfaces: `I{ClassName}` (e.g., `IChatService`)
 
 **Code Style:**
+
 - Use `sealed` records for DTOs (immutable, performance)
 - Enable nullable reference types (`<Nullable>enable</Nullable>`)
 - Use `var` for local variables when type is obvious
@@ -2067,6 +2238,7 @@ _mockMcp
 - Use dependency injection for all services
 
 **File Organization:**
+
 - Group by feature/domain, not by type
 - Keep related files together
 - Use `Classes/` and `Interfaces/` subfolders in `Services/`, `Repository/`, etc.
@@ -2076,6 +2248,7 @@ _mockMcp
 **Example: Adding a "Favorite Chats" feature**
 
 1. **Create DTO:**
+
 ```csharp
 // Models/Dtos/Chat/FavoriteChatDto.cs
 public sealed record FavoriteChatDto(
@@ -2085,6 +2258,7 @@ public sealed record FavoriteChatDto(
 ```
 
 2. **Update Entity:**
+
 ```csharp
 // Models/Domain/Chat.cs
 public class Chat
@@ -2095,12 +2269,14 @@ public class Chat
 ```
 
 3. **Create Migration:**
+
 ```bash
 dotnet ef migrations add AddFavoriteToChat
 dotnet ef database update
 ```
 
 4. **Add Repository Method:**
+
 ```csharp
 // Repository/Interfaces/IChatRepository.cs
 Task<bool> ToggleFavoriteAsync(Guid chatId, string userId);
@@ -2120,6 +2296,7 @@ public async Task<bool> ToggleFavoriteAsync(Guid chatId, string userId)
 ```
 
 5. **Add Service Method:**
+
 ```csharp
 // Services/Interfaces/IChatService.cs
 Task<FavoriteChatDto> ToggleFavoriteAsync(Guid chatId, string userId);
@@ -2138,6 +2315,7 @@ public async Task<FavoriteChatDto> ToggleFavoriteAsync(Guid chatId, string userI
 ```
 
 6. **Add Controller Endpoint:**
+
 ```csharp
 // Controllers/ChatController.cs
 [HttpPatch("{chatId:guid}/favorite")]
@@ -2151,6 +2329,7 @@ public async Task<IActionResult> ToggleFavorite(Guid chatId)
 ```
 
 7. **Add Tests:**
+
 ```csharp
 // backend.UnitTests/Services/ChatServiceTests.cs
 [Fact]
@@ -2187,6 +2366,7 @@ public static IServiceCollection AddBusinessServices(this IServiceCollection ser
 ```
 
 **Lifetime Guidelines:**
+
 - **Singleton**: Stateless services, caching (e.g., `LLMCacheService`)
 - **Scoped**: Per-request services (e.g., `ChatService`, repositories)
 - **Transient**: Lightweight, stateless utilities (rarely used)
@@ -2203,6 +2383,7 @@ public static IServiceCollection AddBusinessServices(this IServiceCollection ser
 6. Commit migration files to source control
 
 **Migration Tips:**
+
 - Use descriptive names: `AddFavoriteToChat`, not `Update1`
 - Review SQL in `Up()` and `Down()` methods
 - Test rollback: `dotnet ef database update PreviousMigration`
@@ -2211,6 +2392,7 @@ public static IServiceCollection AddBusinessServices(this IServiceCollection ser
 ### Debugging Tips
 
 **Enable detailed logging:**
+
 ```json
 // appsettings.Development.json
 {
@@ -2224,6 +2406,7 @@ public static IServiceCollection AddBusinessServices(this IServiceCollection ser
 ```
 
 **Debug SignalR:**
+
 ```csharp
 // Program.cs
 builder.Services.AddSignalR(options =>
@@ -2233,6 +2416,7 @@ builder.Services.AddSignalR(options =>
 ```
 
 **Test MCP tools directly:**
+
 ```bash
 # List available tools
 curl http://localhost:8080/mcp/tools
@@ -2244,6 +2428,7 @@ curl -X POST http://localhost:8080/mcp/execute \
 ```
 
 **Redis debugging:**
+
 ```bash
 # Connect to Redis CLI
 docker exec -it redis-stack redis-cli
@@ -2265,11 +2450,13 @@ MONITOR
 #### 1. Database Connection Errors
 
 **Error:**
+
 ```
 MySql.Data.MySqlClient.MySqlException: Unable to connect to any of the specified MySQL hosts.
 ```
 
 **Solutions:**
+
 - Verify MySQL is running: `mysql -u root -p`
 - Check connection string in `appsettings.json`
 - Ensure database exists: `CREATE DATABASE ai_track_db;`
@@ -2280,11 +2467,13 @@ MySql.Data.MySqlClient.MySqlException: Unable to connect to any of the specified
 #### 2. Redis Connection Failures
 
 **Error:**
+
 ```
 StackExchange.Redis.RedisConnectionException: It was not possible to connect to the redis server(s).
 ```
 
 **Solutions:**
+
 - Verify Redis Stack is running: `docker ps | grep redis-stack`
 - Test connection: `docker exec -it redis-stack redis-cli PING` (should return `PONG`)
 - Check Redis configuration in appsettings
@@ -2295,11 +2484,13 @@ StackExchange.Redis.RedisConnectionException: It was not possible to connect to 
 #### 3. MCP Server Not Found
 
 **Error:**
+
 ```
 HttpRequestException: No connection could be made because the target machine actively refused it.
 ```
 
 **Solutions:**
+
 - **GitHub MCP**: Verify Docker container is running: `docker ps | grep mcp-github`
 - **Tavily MCP**: Ensure npx process is running
 - Check MCP server logs: `docker logs mcp-github`
@@ -2310,11 +2501,13 @@ HttpRequestException: No connection could be made because the target machine act
 #### 4. OpenAI API Rate Limits
 
 **Error:**
+
 ```
 OpenAI.OpenAIException: Rate limit exceeded
 ```
 
 **Solutions:**
+
 - Check your OpenAI usage dashboard
 - Implement exponential backoff in `OpenAIService`
 - Reduce request frequency in background services
@@ -2326,11 +2519,13 @@ OpenAI.OpenAIException: Rate limit exceeded
 #### 5. Migration Failures
 
 **Error:**
+
 ```
 The migration '20250101000000_MigrationName' has already been applied to the database.
 ```
 
 **Solutions:**
+
 - Check applied migrations: `dotnet ef migrations list`
 - Rollback: `dotnet ef database update PreviousMigration`
 - If corrupted, delete database and reapply all: `dotnet ef database update`
@@ -2340,11 +2535,13 @@ The migration '20250101000000_MigrationName' has already been applied to the dat
 #### 6. SignalR Connection Issues
 
 **Error:**
+
 ```
 Failed to start the connection: Error: WebSocket failed to connect.
 ```
 
 **Solutions:**
+
 - Verify CORS configuration includes `AllowCredentials()`
 - Check frontend SignalR URL matches backend
 - Enable SignalR detailed errors in development
@@ -2356,11 +2553,13 @@ Failed to start the connection: Error: WebSocket failed to connect.
 #### 7. JWT Token Validation Errors
 
 **Error:**
+
 ```
 Microsoft.IdentityModel.Tokens.SecurityTokenException: IDX10205: Issuer validation failed.
 ```
 
 **Solutions:**
+
 - Verify `JwtSettings:Issuer` matches in token and validation
 - Ensure `JwtSettings:Key` is at least 32 characters
 - Check token expiration (`exp` claim)
@@ -2372,11 +2571,13 @@ Microsoft.IdentityModel.Tokens.SecurityTokenException: IDX10205: Issuer validati
 #### 8. Chat Limit Exceeded
 
 **Error:**
+
 ```
 { "error": "Chat limit exceeded. Maximum 10 chats allowed per user." }
 ```
 
 **Solutions:**
+
 - Delete old chats: `DELETE /chat/{chatId}`
 - Increase limit in `MaxChatsAttribute` (not recommended for production)
 - Implement chat archiving feature
@@ -2388,6 +2589,7 @@ Microsoft.IdentityModel.Tokens.SecurityTokenException: IDX10205: Issuer validati
 **Symptom:** News not being collected daily
 
 **Solutions:**
+
 - Check logs for service startup
 - Verify `NewsAggregationService` is registered: `services.AddHostedService<NewsAggregationService>()`
 - Test manual trigger in development
@@ -2399,11 +2601,13 @@ Microsoft.IdentityModel.Tokens.SecurityTokenException: IDX10205: Issuer validati
 #### 10. n8n Webhook Failures
 
 **Error:**
+
 ```
 HttpRequestException: The SSL connection could not be established.
 ```
 
 **Solutions:**
+
 - For development, disable SSL validation (not for production!)
 - Verify webhook URL in `N8N:NewsletterWebhookUrl`
 - Test webhook manually with curl
@@ -2423,6 +2627,7 @@ Logs appear in console during `dotnet run`
 Logs are persisted to MySQL via Serilog
 
 Query logs:
+
 ```sql
 SELECT * FROM Logs
 WHERE Level = 'Error'
@@ -2431,6 +2636,7 @@ LIMIT 50;
 ```
 
 **Filter by context:**
+
 ```sql
 SELECT * FROM Logs
 WHERE Message LIKE '%ChatService%'
@@ -2442,6 +2648,7 @@ ORDER BY Timestamp DESC;
 ### Performance Profiling
 
 **Enable detailed EF Core logging:**
+
 ```csharp
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -2452,12 +2659,14 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 ```
 
 **Profile Redis operations:**
+
 ```bash
 docker exec -it redis-stack redis-cli --latency
 ```
 
 **Monitor API performance:**
 Use `dotnet-counters`:
+
 ```bash
 dotnet-counters monitor --process-id <pid> --counters System.Runtime,Microsoft.AspNetCore.Hosting
 ```
@@ -2467,6 +2676,7 @@ dotnet-counters monitor --process-id <pid> --counters System.Runtime,Microsoft.A
 ### Reset Development Environment
 
 **Complete reset:**
+
 ```bash
 # Stop all services
 docker stop redis-stack mcp-github
@@ -2509,5 +2719,3 @@ This project leverages amazing open-source technologies and services:
 - **[AutoMapper](https://automapper.org/)** - Object mapping
 - **[xUnit](https://xunit.net/)**, **[FluentAssertions](https://fluentassertions.com/)**, **[Moq](https://github.com/moq/moq4)** - Testing frameworks
 - **[Testcontainers](https://dotnet.testcontainers.org/)** - Integration testing with containers
-
-

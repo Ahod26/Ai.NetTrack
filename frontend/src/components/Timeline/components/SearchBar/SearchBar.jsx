@@ -18,22 +18,23 @@ export default function SearchBar({ searchQuery, onSearchChange }) {
         <div className={styles.searchIcon}></div>
         <input
           type="text"
-        className={styles.searchInput}
-        placeholder="Search news content..."
-        value={searchQuery}
-        onChange={handleInputChange}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-      />
-      {searchQuery && (
-        <button
-          className={styles.clearButton}
-          onClick={clearSearch}
-          title="Clear search"
-        >
-          ×
-        </button>
-      )}
+          className={styles.searchInput}
+          placeholder="Search news content..."
+          value={searchQuery}
+          onChange={handleInputChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+        />
+        {searchQuery && (
+          <button
+            className={styles.clearButton}
+            onClick={clearSearch}
+            title="Clear search"
+          >
+            ×
+          </button>
+        )}
+      </div>
     </div>
   );
 }

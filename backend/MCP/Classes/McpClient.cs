@@ -30,7 +30,7 @@ public class McpClientService(
     try
     {
       await InitializeGitHubClient();
-      await InitializeTavilyClient();
+      await InitializeDotNetAIMcpClient();
 
       _initialized = true;
       logger.LogInformation($"Successfully initialized {clients.Count} MCP clients");
@@ -80,44 +80,38 @@ public class McpClientService(
     }
   }
 
-  private async Task InitializeTavilyClient()
+  private async Task InitializeDotNetAIMcpClient()
   {
-    const string serverName = "tavily";
+    const string serverName = "dotnet-ai";
 
     try
     {
-      var apiKey = settings.Tavily.Token;
-      logger.LogWarning($"Tavily API Key (first 10 chars): {apiKey.Substring(0, Math.Min(10, apiKey.Length))}...");
-      if (string.IsNullOrEmpty(apiKey))
+      var endpoint = settings.DotNetAIMcp.Endpoint;
+      if (string.IsNullOrEmpty(endpoint))
       {
-        logger.LogWarning("Tavily API key not configured, skipping Tavily MCP server");
+        logger.LogWarning("DotNet AI MCP endpoint not configured, skipping DotNet AI MCP server");
         return;
       }
 
-      var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
-      {
-        Name = "TavilyServer",
-        Command = "npx",
-        Arguments = [
-          "-y",
-          "tavily-mcp@latest"
-        ],
-        EnvironmentVariables = new Dictionary<string, string>
+      // Use HTTP transport for streamable HTTP connection
+      var clientTransport = new HttpClientTransport(
+        new HttpClientTransportOptions
         {
-          { "TAVILY_API_KEY", apiKey }  // API key as environment variable
-        }!
-      });
+          Name = "DotNetAIMcpServer",
+          Endpoint = new Uri(endpoint),
+          TransportMode = HttpTransportMode.StreamableHttp
+        });
 
       var client = await McpClient.CreateAsync(clientTransport);
 
       clients.TryAdd(serverName, client);
       await RegisterToolsForServer(client, serverName);
 
-      logger.LogInformation($"Tavily MCP server '{serverName}' initialized successfully");
+      logger.LogInformation($"DotNet AI MCP server '{serverName}' initialized successfully at {endpoint}");
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, $"Failed to initialize Tavily MCP server '{serverName}'");
+      logger.LogError(ex, $"Failed to initialize DotNet AI MCP server '{serverName}'");
     }
   }
 
@@ -155,20 +149,14 @@ public class McpClientService(
 
   public List<McpClientTool> GetEssentialTools()
   {
-    var essentialToolNames = new[]
-    {
-      "tavily-search",        // Web search - always useful
-      "get_file_contents",    // Read specific files from GitHub
-      "list_files",           // Browse repository structure  
-      "get_readme",           // Quick repo overview
-      "get_recent_commits"    // Check latest changes
-    };
-
-    return toolToServerMap.Values
-      .Where(tool => essentialToolNames.Contains(tool.Name))
+    // Only return tools from dotnet-ai MCP server (exclude github server tools)
+    return toolToServerMap
+      .Where(kvp => kvp.Key.StartsWith("dotnet-ai_") ||
+                    (!kvp.Key.StartsWith("github_") &&
+                     !toolToServerMap.ContainsKey($"github_{kvp.Key}")))
+      .Select(kvp => kvp.Value)
       .Distinct()
       .ToList();
-
   }
 
   public async Task<CallToolResult> CallToolAsync(string toolName, Dictionary<string, object?> parameters)
@@ -226,6 +214,4 @@ public class McpClientService(
 
 }
 
-// GitHub MCP server - https://github.com/github/github-mcp-server
-// YouTube MCP server - https://github.com/icraft2170/youtube-data-mcp-server 
-// Microsoft Docs MCP server - https://github.com/microsoftdocs/mcp
+

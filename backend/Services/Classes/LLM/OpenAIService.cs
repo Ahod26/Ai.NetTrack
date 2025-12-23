@@ -38,7 +38,6 @@ public class OpenAIService(
     try
     {
       var messages = BuildBaseMessages(userMessage, context, isChatRelatedToNewsSource, relatedNewsSourceContent);
-      bool isExtendedToolCallNeeded = ToolTriggers.ShouldUseAllMcpTools(userMessage);
 
       // Early return for news-related chats without tool calling 
       if (isChatRelatedToNewsSource && isInitialMessage)
@@ -46,8 +45,8 @@ public class OpenAIService(
         return await StreamSimpleResponseAsync(messages, onChunkReceived, cancellationToken);
       }
 
-      // Get available tools
-      var availableTools = isExtendedToolCallNeeded ? mcpClient.GetAllAvailableToolsAsync() : mcpClient.GetEssentialTools();
+      // Get available tools from dotnet-ai-mcp-server only
+      var availableTools = mcpClient.GetEssentialTools();
       logger.LogInformation($"Available MCP tools count: {availableTools.Count}");
 
       if (availableTools.Count == 0)
@@ -342,7 +341,7 @@ public class OpenAIService(
     Func<string, Task>? onChunkReceived,
     CancellationToken cancellationToken)
   {
-    const int MAX_TOOL_ROUNDS = 5; 
+    const int MAX_TOOL_ROUNDS = 5;
     int toolRound = 0;
 
     while (state.RequiresToolExecution && toolRound < MAX_TOOL_ROUNDS)
@@ -356,7 +355,8 @@ public class OpenAIService(
 
       foreach (var toolCall in toolCalls)
       {
-        await onChunkReceived!($"[TOOL_START:{toolCall.FunctionName}]");
+        var displayName = GetToolDisplayName(toolCall.FunctionName);
+        await onChunkReceived!($"[TOOL_START:{displayName}]");
         await ExecuteToolAndAddResultMessage(messages, toolCall);
       }
 
@@ -504,6 +504,21 @@ public class OpenAIService(
     catch
     { }
     return "{}";
+  }
+
+  private string GetToolDisplayName(string toolName)
+  {
+    return toolName switch
+    {
+      "Start_DotNet_Reasoning" => "Analyzing .NET AI repositories",
+      "github_get_folders" => "Exploring repository structure",
+      "github_list_files" => "Finding relevant code files",
+      "github_fetch_files" => "Fetching code examples",
+      "microsoft_docs_search" => "Searching Microsoft documentation",
+      "microsoft_docs_fetch" => "Fetching documentation page",
+      "microsoft_code_sample_search" => "Finding code samples",
+      _ => toolName
+    };
   }
 
   private ChatCompletionOptions CreateChatOptionsWithTools(IList<McpClientTool> availableTools)

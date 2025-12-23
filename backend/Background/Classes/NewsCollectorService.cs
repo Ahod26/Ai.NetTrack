@@ -9,11 +9,11 @@ public class NewsCollectorService(
 {
   public async Task<int> CollectAllNews()
   {
-    var gitHubCollectedNews = await gitHubService.GetGitHubAIUpdatesAsync();
-    var youtubeCollectedNews = await youTubeService.GetYouTubeAIUpdatesAsync();
-    var rssCollectedNews = await rssService.GetRSSUpdatesAsync();
+    //var gitHubCollectedNews = await gitHubService.GetGitHubAIUpdatesAsync();
+    //var youtubeCollectedNews = await youTubeService.GetYouTubeAIUpdatesAsync();
+    //var rssCollectedNews = await rssService.GetRSSUpdatesAsync();
 
-    return //0;
-      rssCollectedNews.Count() + youtubeCollectedNews.Count() + gitHubCollectedNews.Count();
+    return 0;
+      //rssCollectedNews.Count() + youtubeCollectedNews.Count() + gitHubCollectedNews.Count();
   }
 }
