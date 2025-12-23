@@ -1,150 +1,79 @@
 # AI Track
 
-> A production-ready AI-powered chat platform for .NET and AI developers, providing accurate, hallucination-free responses with real-time news integration and semantic caching.
+A chat application with automated news aggregation for .NET and AI topics. Built to learn about LLM integration, semantic caching, and real-time web applications.
 
-## 🎯 Project Overview
+## Project Overview
 
-**AI Track** is a sophisticated chat application designed specifically for .NET and AI developers who need accurate, up-to-date information without the typical LLM hallucinations. The platform combines real-time AI chat with intelligent news aggregation, allowing developers to stay informed about the latest .NET and AI developments while having context-aware conversations grounded in factual, curated content.
+I built this to address a specific need: getting accurate, up-to-date information about .NET and AI developments without LLM hallucinations. The application aggregates news from specific GitHub repositories, RSS feeds, and YouTube channels I follow, then allows me to chat about these updates with full article context.
 
-### The Problem
+### Why I Built This
 
-Traditional AI assistants often provide outdated information or hallucinate facts about rapidly evolving technologies like .NET and AI frameworks. Developers need a solution that:
-- Provides **accurate, verifiable information** from trusted sources
-- Stays **up-to-date** with the latest releases, updates, and best practices
-- Allows **context-aware discussions** about specific news articles and releases
-- Reduces costs through **intelligent caching** of similar queries
+- Learn how to integrate OpenAI API with streaming responses
+- Implement semantic caching using vector embeddings to reduce API costs
+- Work with Model Context Protocol (MCP) for external tool integration
+- Build a real-time application using SignalR
+- Practice full-stack development with .NET 9 and React 19
 
-### The Solution
+### What It Does
 
-AI Track addresses these challenges through:
+1. Collects news daily from 6 GitHub repos, RSS feeds, and YouTube channels
+2. Filters content using AI to keep only .NET/AI-related items
+3. Provides a timeline view with search and filtering
+4. Allows chatting with AI about specific news articles (full context included)
+5. Caches similar queries using vector similarity to reduce costs
+6. Sends daily newsletter to subscribers via n8n automation
 
-1. **Curated News Aggregation** - Daily automated collection from trusted sources:
-   - **GitHub Repositories**: semantic-kernel, kernel-memory, autogen, openai-dotnet, dotnet/extensions, mcp-csharp-sdk
-   - **RSS Feeds**: Microsoft .NET DevBlog, Semantic Kernel Blog, AI/ML tech blogs
-   - **YouTube**: AI tutorial channels and conference talks
+## Technologies Used
 
-2. **Chat-from-News Integration** - Users can click "Chat with AI" on any news item to discuss it with full article context, eliminating hallucinations about recent developments.
+### Backend
+- ASP.NET Core 9.0 (Minimal APIs)
+- Entity Framework Core 9.0 with MySQL
+- SignalR for WebSocket communication
+- OpenAI API (GPT-4o-mini + text-embedding-3-small)
+- Redis Stack with NRedisStack for vector similarity search
+- Model Context Protocol SDK (0.4.0-preview.1)
+- ASP.NET Identity with JWT authentication
+- Google OAuth2
+- Serilog for logging
+- AutoMapper for DTO mapping
 
-3. **Semantic Caching** - Dual-layer caching (vector similarity + exact match) reduces redundant API calls by 40-60%, cutting costs while maintaining accuracy.
+### Frontend
+- React 19.1.1
+- Vite 7.1.0
+- Redux Toolkit 2.8.2 (client state)
+- TanStack Query 5.84.2 (server state)
+- @microsoft/signalr 9.0.6
+- React Router DOM 7.8.0
+- react-markdown with syntax highlighting
+- CSS Modules
 
-4. **MCP Tool Integration** - Real-time access to GitHub repositories and web search via Model Context Protocol, providing verifiable, current information.
+### Infrastructure
+- Docker (Redis Stack, MCP GitHub server)
+- MySQL 8.0
+- n8n for workflow automation
+- Tavily MCP server (Node.js)
 
-## 🚀 Key Features
-
-- **Real-Time AI Chat** with SignalR streaming and context-aware conversations
-- **News Timeline** with infinite scroll, search, and date filtering (GitHub releases, RSS, YouTube)
-- **Chat-from-News** integration for discussing specific articles with full context
-- **Semantic Caching** with vector similarity search (0.85 threshold) for cost optimization
-- **MCP Servers** integration (GitHub + Tavily) for external tool access
-- **Google OAuth2** and email/password authentication
-- **Newsletter System** via n8n automation for daily digest emails
-- **Rate Limiting** and global exception handling for production readiness
-- **10 chat limit** per user with intelligent context window management
-
-## 🛠️ Technology Stack
-
-### Backend (.NET 9.0)
-
-| Category | Technology | Purpose |
-|----------|-----------|---------|
-| **Framework** | ASP.NET Core 9.0 | Web API with minimal APIs |
-| **Database** | MySQL 8.0+ | Relational data storage |
-| **ORM** | Entity Framework Core 9.0 | Code-first migrations |
-| **Caching** | Redis Stack | Semantic cache with vector search |
-| **Real-Time** | SignalR | WebSocket-based streaming |
-| **AI** | OpenAI API (GPT-4o-mini) | LLM for chat responses |
-| **MCP** | ModelContextProtocol.AspNetCore 0.4.0 | GitHub & Tavily integration |
-| **Auth** | ASP.NET Identity + JWT | Authentication & authorization |
-| **Automation** | n8n Webhooks | Newsletter distribution |
-| **Logging** | Serilog | Structured logging to MySQL |
-
-### Frontend (React 19)
-
-| Category | Technology | Purpose |
-|----------|-----------|---------|
-| **Framework** | React 19.1.1 | Modern UI with concurrent features |
-| **Build Tool** | Vite 7.1.0 | Fast bundling with HMR |
-| **Routing** | React Router DOM 7.8.0 | SPA navigation |
-| **State (Client)** | Redux Toolkit 2.8.2 | Auth & UI state |
-| **State (Server)** | TanStack Query 5.84.2 | API caching & sync |
-| **Real-Time** | @microsoft/signalr 9.0.6 | SignalR client |
-| **Content** | react-markdown, react-syntax-highlighter | Markdown & code rendering |
-| **Styling** | CSS Modules | Scoped component styles |
-
-## 💡 Skills Demonstrated
-
-### Software Architecture
-- **Clean Architecture** with clear separation of concerns (Controllers → Services → Repositories)
-- **Dual-state management strategy** (Redux for client state, TanStack Query for server state)
-- **Singleton pattern** for SignalR connection management
-- **Repository pattern** with dependency injection
-- **MCP tool orchestration** with keyword-based selection
-
-### Advanced .NET Development
-- **ASP.NET Core 9.0** minimal APIs with global exception handling
-- **Entity Framework Core** with 23+ migrations and complex relationships
-- **SignalR** for bidirectional real-time communication
-- **Background Services** with PeriodicTimer for scheduled tasks
-- **Rate limiting** with fixed window policies
-- **JWT authentication** with cookie-based session management
-- **Google OAuth2** integration
-
-### AI & Machine Learning Integration
-- **OpenAI Streaming API** with IAsyncEnumerable for real-time responses
-- **Semantic caching** using vector embeddings (text-embedding-3-small)
-- **Cosine similarity search** with 0.85 threshold for cache hits
-- **TTL decay algorithm** (21 days base × 0.7^message_count)
-- **Model Context Protocol** integration for external tool access
-- **AI-powered filtering** for news relevance determination
-
-### Frontend Engineering
-- **React 19** with functional components and custom hooks
-- **SignalR chunk accumulation** for streaming message display
-- **Optimistic updates** with rollback on error
-- **Infinite scroll** with IntersectionObserver
-- **Debounced search** (500ms) for efficient API usage
-- **CSS Modules** with camelCase convention
-
-### Database & Caching
-- **MySQL** connection pooling (100 connections)
-- **Redis Stack** with vector search capabilities
-- **NRedisStack** for semantic similarity queries
-- **Composite indexes** for optimized queries
-- **Timezone-aware** timestamp handling
-
-### DevOps & Production Readiness
-- **Docker** for Redis and MCP servers
-- **Rate limiting** across multiple endpoints
-- **Global exception handling** with ProblemDetails format
-- **Structured logging** with Serilog to MySQL
-- **API versioning** and OpenAPI documentation
-- **CORS configuration** for frontend integration
-
-## 📰 Monitored Resources
-
-The platform automatically aggregates news from the following trusted sources:
+## News Sources
 
 ### GitHub Repositories (via MCP)
-- **[microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel)** - AI orchestration framework
-- **[microsoft/kernel-memory](https://github.com/microsoft/kernel-memory)** - RAG and memory management
-- **[microsoft/autogen](https://github.com/microsoft/autogen)** - Multi-agent conversations
-- **[openai/openai-dotnet](https://github.com/openai/openai-dotnet)** - Official OpenAI .NET SDK
-- **[dotnet/extensions](https://github.com/dotnet/extensions)** - .NET extensions and libraries
-- **[modelcontextprotocol/csharp-sdk](https://github.com/modelcontextprotocol/csharp-sdk)** - MCP C# SDK
+- [microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel)
+- [microsoft/kernel-memory](https://github.com/microsoft/kernel-memory)
+- [microsoft/autogen](https://github.com/microsoft/autogen)
+- [openai/openai-dotnet](https://github.com/openai/openai-dotnet)
+- [dotnet/extensions](https://github.com/dotnet/extensions)
+- [modelcontextprotocol/csharp-sdk](https://github.com/modelcontextprotocol/csharp-sdk)
 
 ### RSS Feeds
-- **[Microsoft .NET DevBlog](https://devblogs.microsoft.com/dotnet/feed/)** - Official .NET announcements
-- **[Semantic Kernel Blog](https://devblogs.microsoft.com/semantic-kernel/feed/)** - SK updates and tutorials
-- **AI/ML Technology Blogs** - Industry news and research updates
+- [Microsoft .NET DevBlog](https://devblogs.microsoft.com/dotnet/feed/)
+- [Semantic Kernel Blog](https://devblogs.microsoft.com/semantic-kernel/feed/)
 
-### YouTube Channels
-- **AI Tutorial Channels** - Hands-on coding tutorials and demos
-- **Conference Talks** - .NET Conf, Build, Ignite presentations
-- **Tech Update Channels** - Weekly AI and .NET news roundups
+### YouTube
+- AI tutorial channels
+- .NET conference talks
 
-News is collected daily at startup and every 24 hours thereafter, with AI-powered filtering to ensure relevance to .NET and AI developers.
+News collection runs daily (every 24 hours) with AI filtering for relevance.
 
-## 🏗️ Architecture Overview
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -236,7 +165,7 @@ External Integrations:
 8. Return response to user
 ```
 
-## 🚀 Quick Start
+## Setup
 
 ### Prerequisites
 
@@ -307,41 +236,18 @@ Frontend runs at: `http://localhost:5173`
 - Sign up or use Google OAuth
 - Start chatting or browse the news timeline!
 
-## 📖 Documentation
+## Documentation
 
-- **[Backend README](./backend/README.md)** - Comprehensive backend documentation (API, architecture, database)
-- **[Frontend README](./frontend/README.md)** - Frontend architecture, components, and hooks
+- [Backend README](./backend/README.md) - API endpoints, database schema, configuration
+- [Frontend README](./frontend/README.md) - Component architecture, hooks, state management
 
-## 🎓 Learning Outcomes
+## What I Learned
 
-This project demonstrates:
-
-- **Full-stack development** with modern .NET and React
-- **Real-time communication** using SignalR WebSockets
-- **AI integration** with streaming responses and semantic caching
-- **MCP implementation** for external tool orchestration
-- **Production-ready patterns** (rate limiting, logging, error handling)
-- **News aggregation** with multi-source data collection
-- **Database design** with complex relationships and migrations
-- **Authentication** with multiple providers (JWT + OAuth2)
-- **Background services** for scheduled tasks
-- **State management** with dual-strategy approach
-- **Deployment-ready** architecture with Docker support
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
-## 🙏 Acknowledgments
-
-Built with amazing open-source technologies:
-
-**Backend:** ASP.NET Core, Entity Framework Core, SignalR, OpenAI SDK, Redis Stack, Serilog, AutoMapper
-
-**Frontend:** React, Vite, Redux Toolkit, TanStack Query, SignalR Client, react-markdown
-
-**Infrastructure:** MySQL, Docker, n8n, Model Context Protocol
-
----
-
-**Created for .NET and AI developers who value accuracy, timeliness, and verifiable information.**
+- Implementing OpenAI streaming API with IAsyncEnumerable
+- Building semantic cache using vector embeddings (cosine similarity)
+- Working with Model Context Protocol for external tools
+- Real-time communication with SignalR (chunk accumulation, reconnection strategies)
+- Background services in .NET with PeriodicTimer
+- Dual-state management (Redux + TanStack Query)
+- Rate limiting strategies
+- Clean architecture with dependency injection
