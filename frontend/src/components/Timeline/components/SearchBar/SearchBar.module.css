@@ -5,11 +5,15 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.825rem 1.1rem;
   transition: all 0.2s ease;
-  min-width: 250px;
-  max-width: 400px;
-  flex: 1;
+  width: 330px; /* Fixed width to match other controls better */
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .searchBar:hover {
@@ -34,7 +38,7 @@
   border: none;
   outline: none;
   color: var(--text-primary);
-  font-size: 0.875rem;
+  font-size: 0.96rem;
   padding: 0;
 }
 

@@ -14,15 +14,19 @@
   position: relative;
   display: flex;
   align-items: center;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: rgba(30, 30, 30, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
   transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .inputWrapper:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.1);
+  box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.1), 0 8px 30px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
 }
 
 .messageInput {

@@ -8,7 +8,9 @@ export default function SidebarToggle() {
 
   return (
     <button
-      className={styles.fixedToggleSidebarBtn}
+      className={`${styles.fixedToggleSidebarBtn} ${
+        !isSidebarOpen ? styles.closedToggleBtn : ""
+      }`}
       onClick={() => dispatch(sidebarActions.toggleSidebar())}
       title={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
     >

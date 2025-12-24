@@ -56,11 +56,7 @@ const MainChat = memo(function MainChat() {
   if (isLoading) {
     // Preserve full layout so skeleton occupies exact future positions
     return (
-      <div
-        className={`${styles.chatContainer} ${
-          isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
-        }`}
-      >
+      <div className={styles.chatContainer}>
         <div className={styles.messagesContainer}>
           <MessageListSkeleton inline count={3} />
         </div>
@@ -82,11 +78,7 @@ const MainChat = memo(function MainChat() {
   }
 
   return (
-    <div
-      className={`${styles.chatContainer} ${
-        isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
-      }`}
-    >
+    <div className={styles.chatContainer}>
       <ErrorPopup message={errorMessage} />
       <MessageList
         messages={messages}

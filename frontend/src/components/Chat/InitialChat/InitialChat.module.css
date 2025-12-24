@@ -62,7 +62,7 @@
   background: var(--bg-primary);
   position: relative;
   overflow: hidden;
-  /* Remove sidebar margins - let the content center naturally */
+  width: 100%;
 }
 
 .welcomeScreen {
@@ -71,19 +71,15 @@
   align-items: flex-start;
   justify-content: center;
   padding: 2rem;
-  padding-top: 12%;
+  padding-top: 10px; /* 10px space from top */
   overflow: hidden;
-  position: fixed; /* Position relative to viewport, not container */
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 50; /* Below sidebar */
-  transition: transform 0.3s ease;
+  position: relative;
+  width: 100%;
 }
 
 /* When sidebar is open, shift content to center in remaining space */
 .welcomeScreen.sidebarOpen {
-  transform: translateX(120px); /* Half of sidebar width (240px / 2) */
+  transform: none;
 }
 
 .welcomeContent {
@@ -92,21 +88,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 120px; /* Account for header height */
+  margin-top: 10px; /* 10px space from top */
+  padding-top: 10vh; /* Add some visual spacing for the content itself */
 }
 
 .welcomeTitle {
-  font-size: 2rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-  letter-spacing: -0.025em;
+  display: none; /* Hidden in favor of AnimatedGreeting */
 }
 
 .welcomeInputContainer {
-  margin-top: 2rem;
+  margin-top: 1rem;
   width: 100%;
-  max-width: 680px; /* 15% smaller than 800px (800 * 0.85 = 680) */
+  max-width: 680px;
   margin-left: auto;
   margin-right: auto;
 }

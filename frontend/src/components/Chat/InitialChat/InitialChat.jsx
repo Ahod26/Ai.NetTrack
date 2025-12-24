@@ -20,11 +20,7 @@ export default function InitialChat() {
   }
 
   return (
-    <div
-      className={`${styles.chatContainer} ${
-        !isSidebarOpen ? styles.sidebarClosed : ""
-      }`}
-    >
+    <div className={styles.chatContainer}>
       <ErrorPopup message={errorMessage} />
       <WelcomeMessage
         greeting={getPersonalizedGreeting()}

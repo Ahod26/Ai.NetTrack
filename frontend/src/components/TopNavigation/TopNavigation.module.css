@@ -1,0 +1,57 @@
+.topNavContainer {
+  position: relative;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
+  background: var(--bg-primary);
+}
+
+.nav {
+  display: flex;
+  background: rgba(30, 30, 30, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0.3rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.navItem {
+  position: relative;
+  padding: 0.6rem 1.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navItem:hover {
+  color: var(--text-primary);
+  text-decoration: none !important;
+}
+
+.navItem.active {
+  color: #fff;
+}
+
+.navLabel {
+  position: relative;
+  z-index: 2;
+}
+
+.activeBackground {
+  position: absolute;
+  inset: 0;
+  background: rgba(187, 134, 252, 0.15);
+  border-radius: 12px;
+  z-index: 1;
+  border: 1px solid rgba(187, 134, 252, 0.3);
+}

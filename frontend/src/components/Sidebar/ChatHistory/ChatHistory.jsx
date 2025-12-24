@@ -16,7 +16,6 @@ const ChatHistory = memo(function ChatHistory({
   if (!chats || isLoadingChats) {
     return (
       <div className={styles.chatHistory}>
-        <div className={styles.sectionTitle}>Recent Chats</div>
         <div className={styles.chatList}>
           <ChatListSkeleton count={5} />
         </div>
@@ -27,7 +26,6 @@ const ChatHistory = memo(function ChatHistory({
   if (chats.length === 0) {
     return (
       <div className={styles.chatHistory}>
-        <div className={styles.sectionTitle}>Recent Chats</div>
         <div className={styles.chatList}>
           <div className={styles.noChats}>
             No chats yet. Start a new conversation!
@@ -39,7 +37,6 @@ const ChatHistory = memo(function ChatHistory({
 
   return (
     <div className={styles.chatHistory}>
-      <div className={styles.sectionTitle}>Recent Chats</div>
       <div className={styles.chatList}>
         {chats.map((chat) => {
           const isActive = currentChatId === chat.id.toString();

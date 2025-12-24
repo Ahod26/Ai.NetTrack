@@ -1,4 +1,5 @@
 import ChatInput from "../ChatInput/ChatInput";
+import AnimatedGreeting from "../AnimatedGreeting/AnimatedGreeting";
 import styles from "./InitialChat.module.css";
 
 export default function WelcomeMessage({
@@ -14,7 +15,7 @@ export default function WelcomeMessage({
       }`}
     >
       <div className={styles.welcomeContent}>
-        <h1 className={styles.welcomeTitle}>{greeting}</h1>
+        <AnimatedGreeting />
         <div className={styles.welcomeInputContainer}>
           <ChatInput
             onSendMessage={onSendMessage}

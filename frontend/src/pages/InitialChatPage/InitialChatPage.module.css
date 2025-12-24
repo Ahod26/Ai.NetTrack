@@ -1,12 +1,11 @@
 .chatPage {
   display: flex;
-  height: calc(100vh - 140px); /* Subtract header height */
+  height: 100vh;
   overflow: hidden;
 }
 
 .chatContent {
   flex: 1;
-  margin-left: 240px; /* Account for fixed sidebar width */
   overflow: hidden;
   background: var(--bg-primary);
 }

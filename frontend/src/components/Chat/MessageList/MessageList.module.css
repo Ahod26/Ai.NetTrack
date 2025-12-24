@@ -2,15 +2,13 @@
   flex: 1;
   overflow-y: auto;
   padding: 2rem;
-  padding-top: calc(
-    120px + 2rem
-  ); /* Account for header height + normal padding */
+  padding-top: 10px; /* 10px space from top as requested */
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   min-height: 0;
-  max-width: 1200px; /* Match header container max-width */
-  margin: 0 auto; /* Center like header */
+  max-width: 1200px;
+  margin: 0 auto;
   width: 100%;
 }
 

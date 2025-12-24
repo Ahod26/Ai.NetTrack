@@ -3,27 +3,8 @@
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
-  position: fixed; /* Position relative to viewport like InitialChat */
-  top: 0;
-  left: 0;
-  right: 0;
   overflow: hidden;
-  transition: transform 0.3s ease;
-  z-index: 50; /* Below sidebar */
-}
-
-/* When sidebar is open, shift content to center in remaining space */
-.chatContainer.sidebarOpen {
-  transform: translateX(120px); /* Half of sidebar width (240px / 2) */
-}
-
-.chatContainer.sidebarClosed {
-  transform: translateX(0); /* No transform when sidebar is closed */
-}
-
-/* Messages expand when sidebar is closed */
-.chatContainer.sidebarClosed .message {
-  max-width: 960px; /* 1.2x the input width (800px * 1.2) */
+  width: 100%;
 }
 
 .welcomeScreen {

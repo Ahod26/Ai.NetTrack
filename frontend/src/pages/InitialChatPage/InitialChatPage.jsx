@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Sidebar from "../../components/Sidebar/Sidebar";
 import InitialChat from "../../components/Chat/InitialChat/InitialChat";
 import ErrorPopup from "../../components/ErrorPopup";
 import styles from "./InitialChatPage.module.css";
@@ -28,7 +27,6 @@ export default function InitialChatPage() {
 
   return (
     <div className={styles.chatPage}>
-      <Sidebar />
       <div className={styles.chatContent}>
         <InitialChat />
       </div>

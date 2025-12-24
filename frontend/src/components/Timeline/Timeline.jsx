@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { sidebarActions } from "../../store/sidebarSlice";
 import { getNewsByDate, getNewsBySearch } from "../../api/news";
 import { useDatePagination } from "../../hooks/useDatePagination";
@@ -31,7 +31,7 @@ export default function Timeline() {
   const [selectedNewsItem, setSelectedNewsItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+  const [, setIsSearching] = useState(false);
   const errorTimeoutRef = useRef(null);
   const searchTimeoutRef = useRef(null);
 
@@ -178,8 +178,7 @@ export default function Timeline() {
         const data = await getNewsByDate(firstBatch, selectedNewsType);
         setNewsItems(data || []);
 
-        if (dateBatches.length > 1) {
-        }
+        if (dateBatches.length > 1) { /* empty */ }
       } catch (err) {
         setError("Failed to load news. Please try again.");
         console.error("Error loading news:", err);

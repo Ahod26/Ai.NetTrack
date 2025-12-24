@@ -1,6 +1,5 @@
 import { useState, useEffect, memo } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import Sidebar from "../../components/Sidebar/Sidebar";
 import MarkdownRenderer from "../../components/MarkdownRenderer/MarkdownRenderer";
 import { MessageListSkeleton } from "../../components/Skeleton";
 import { messagesSliceActions } from "../../store/messagesSlice";
@@ -13,7 +12,6 @@ const StarredMessagesPage = memo(function StarredMessagesPage() {
   const starredMessages = useSelector(
     (state) => state.messages.starredMessages
   );
-  const isSidebarOpen = useSelector((state) => state.sidebar.isOpen);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
@@ -98,12 +96,7 @@ const StarredMessagesPage = memo(function StarredMessagesPage() {
   if (isLoading) {
     return (
       <div className={styles.pageContainer}>
-        <Sidebar />
-        <div
-          className={`${styles.chatContainer} ${
-            isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
-          }`}
-        >
+        <div className={styles.chatContainer}>
           <div className={styles.messagesContainer}>
             <MessageListSkeleton inline count={4} showStarredActions={true} />
           </div>
@@ -115,12 +108,7 @@ const StarredMessagesPage = memo(function StarredMessagesPage() {
   if (messages.length === 0) {
     return (
       <div className={styles.pageContainer}>
-        <Sidebar />
-        <div
-          className={`${styles.chatContainer} ${
-            isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
-          }`}
-        >
+        <div className={styles.chatContainer}>
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}>
               <svg
@@ -147,12 +135,7 @@ const StarredMessagesPage = memo(function StarredMessagesPage() {
 
   return (
     <div className={styles.pageContainer}>
-      <Sidebar />
-      <div
-        className={`${styles.chatContainer} ${
-          isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
-        }`}
-      >
+      <div className={styles.chatContainer}>
         <div className={styles.messagesContainer}>
           {messages.map((msg, index) => (
             <div key={msg.id}>

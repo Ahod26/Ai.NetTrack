@@ -34,31 +34,28 @@ export default function Sidebar() {
     <>
       <SidebarToggle />
 
-      {isSidebarOpen && (
-        <div className={styles.sidebar}>
-          <SidebarHeader
-            isUserLoggedIn={isUserLoggedIn}
-            onNewChat={handleNewChat}
-          />
+      <div
+        className={`${styles.sidebar} ${!isSidebarOpen ? styles.closed : ""}`}
+      >
+        <SidebarHeader
+          isUserLoggedIn={isUserLoggedIn}
+          onNewChat={handleNewChat}
+        />
 
-          {isUserLoggedIn && (
-            <ChatHistory
-              chats={chats}
-              isLoadingChats={isLoadingChats}
-              currentChatId={currentChatId}
-              openDropdown={openDropdown}
-              onToggleDropdown={toggleDropdown}
-              onDeleteChat={handleDeleteChat}
-              onRenameChat={handleRenameChat}
-            />
-          )}
-
-          <UserSection
-            isUserLoggedIn={isUserLoggedIn}
-            onLogout={handleLogout}
+        {isUserLoggedIn && (
+          <ChatHistory
+            chats={chats}
+            isLoadingChats={isLoadingChats}
+            currentChatId={currentChatId}
+            openDropdown={openDropdown}
+            onToggleDropdown={toggleDropdown}
+            onDeleteChat={handleDeleteChat}
+            onRenameChat={handleRenameChat}
           />
-        </div>
-      )}
+        )}
+
+        <UserSection isUserLoggedIn={isUserLoggedIn} onLogout={handleLogout} />
+      </div>
 
       <DeleteModal
         isOpen={deleteModal.isOpen}

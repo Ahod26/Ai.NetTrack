@@ -9,15 +9,15 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.825rem 1.1rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.875rem;
-  min-width: 160px;
+  font-size: 0.96rem;
+  min-width: 176px;
 }
 
 .selectorButton:hover {

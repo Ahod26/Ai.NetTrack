@@ -1,8 +1,10 @@
 .sidebar {
-  width: 240px;
+  width: 216px;
   height: 100vh;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border);
+  background: rgba(18, 18, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -10,50 +12,58 @@
   top: 0;
   left: 0;
   z-index: 150;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.closed {
+  transform: translateX(-100%);
 }
 
 /* Fixed toggle button positioned outside sidebar */
 .fixedToggleSidebarBtn {
   position: fixed;
   top: 20px;
-  left: 260px; /* 240px sidebar width + 20px margin */
-  background: rgba(139, 90, 159, 0.1); /* Light purple background */
-  border: 1px solid rgba(139, 90, 159, 0.3); /* Purple border */
-  color: #8b5a9f; /* Purple color */
+  left: 236px; /* 216px sidebar width + 20px margin */
+  background: rgba(18, 18, 18, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 0.75rem;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 160; /* Higher than sidebar */
-  box-shadow: 0 2px 8px rgba(139, 90, 159, 0.15); /* Subtle purple shadow */
+}
+
+.closedToggleBtn {
+  left: 20px;
 }
 
 .fixedToggleSidebarBtn:hover {
-  background: rgba(139, 90, 159, 0.2); /* Darker purple background on hover */
-  color: #9148ae; /* Lighter purple on hover */
-  border-color: rgba(139, 90, 159, 0.5); /* Stronger border on hover */
-  box-shadow: 0 4px 12px rgba(139, 90, 159, 0.25); /* Enhanced shadow on hover */
+  background: rgba(187, 134, 252, 0.1);
+  color: var(--accent);
+  border-color: var(--accent);
   transform: translateY(-1px); /* Subtle lift effect */
 }
 
 .header {
   padding: 1.5rem 1rem 1rem 1rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: transparent;
 }
 
 .title {
   font-size: 1.25rem;
   font-weight: 700;
-  background: linear-gradient(165deg, #ffffff, #d1d5db, #686b71);
+  background: linear-gradient(135deg, #fff 0%, #bb86fc 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 1rem;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.5px;
 }
 
 .headerButtons {
@@ -65,27 +75,28 @@
 .newChatBtn {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: transparent;
-  color: var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, #9965f4 100%);
+  color: #000;
   border: none;
-  border-radius: 8px;
-  font-weight: 700;
+  border-radius: 12px;
+  font-weight: 600;
   font-size: 0.875rem;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.75rem;
+  justify-content: center;
+  gap: 0.5rem;
   transition: all 0.2s ease;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(187, 134, 252, 0.25);
 }
 
 .starredBtn {
   width: 100%;
   padding: 0.75rem 1rem;
   background: transparent;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 500;
   font-size: 0.875rem;
   display: flex;
@@ -97,21 +108,19 @@
   text-decoration: none;
 }
 
-.newChatBtn:hover,
+.newChatBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(187, 134, 252, 0.35);
+}
+
 .starredBtn:hover {
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
   text-decoration: none;
 }
 
 .newChatIcon {
-  width: 24px;
-  height: 24px;
-  background: var(--accent);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  display: none; /* Hide the circle icon, use simple icon in button */
 }
 
 .starredIcon {
@@ -159,6 +168,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 1rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .sectionTitle {
@@ -187,7 +197,7 @@
 }
 
 .chatItemWrapper:hover {
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .chatItem {
@@ -198,7 +208,19 @@
   border-radius: 6px;
   display: flex;
   align-items: center;
-  text-decoration: none !important; /* Force remove underline */
+  color: var(--text-secondary);
+}
+
+.activeChatItem {
+  background: rgba(187, 134, 252, 0.15);
+  color: var(--accent);
+}
+
+/* User Section */
+.userSection {
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* Force remove underline on hover for all states */
@@ -493,18 +515,21 @@
     top: 0;
     left: 0;
     z-index: 200;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    /* transform is handled by .closed class now */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .sidebar.open {
-    transform: translateX(0);
-  }
+  /* .closed class will handle hiding it */
 
   .fixedToggleSidebarBtn {
     top: 20px;
     right: 20px; /* Position from right edge on mobile */
     left: auto; /* Override left positioning */
+  }
+
+  .closedToggleBtn {
+    left: auto; /* Keep it on the right even when closed on mobile */
+    right: 20px;
   }
 }
 

@@ -9,15 +9,21 @@ import styles from "./NewsTypeFilter.module.css";
       icon: "",
     },
     {
-      id: "news",
-      label: "News",
-      color: "#10b981",
+      id: 1,
+      label: "GitHub",
+      color: "#24292e",
       icon: "",
     },
     {
-      id: "youtube",
-      label: "Videos",
-      color: "#ef4444",
+      id: 2,
+      label: "RSS",
+      color: "#ee802f",
+      icon: "",
+    },
+    {
+      id: 3,
+      label: "YouTube",
+      color: "#ff0000",
       icon: "",
     },
   ];
