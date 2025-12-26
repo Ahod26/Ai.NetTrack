@@ -1,32 +1,32 @@
 import { useState, useRef, useEffect } from "react";
 import styles from "./NewsTypeFilter.module.css";
 
-  const newsTypes = [
-    {
-      id: "all",
-      label: "All Updates",
-      color: "#6366f1",
-      icon: "",
-    },
-    {
-      id: 1,
-      label: "GitHub",
-      color: "#24292e",
-      icon: "",
-    },
-    {
-      id: 2,
-      label: "RSS",
-      color: "#ee802f",
-      icon: "",
-    },
-    {
-      id: 3,
-      label: "YouTube",
-      color: "#ff0000",
-      icon: "",
-    },
-  ];
+const newsTypes = [
+  {
+    id: "all",
+    label: "All Updates",
+    color: "#6366f1",
+    icon: "",
+  },
+  {
+    id: 1,
+    label: "GitHub",
+    color: "#24292e",
+    icon: "",
+  },
+  {
+    id: 2,
+    label: "RSS",
+    color: "#ee802f",
+    icon: "",
+  },
+  {
+    id: 3,
+    label: "YouTube",
+    color: "#ff0000",
+    icon: "",
+  },
+];
 
 export default function NewsTypeFilter({ selectedType, onTypeChange }) {
   const [isOpen, setIsOpen] = useState(false);

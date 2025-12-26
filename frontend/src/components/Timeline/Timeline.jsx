@@ -178,7 +178,9 @@ export default function Timeline() {
         const data = await getNewsByDate(firstBatch, selectedNewsType);
         setNewsItems(data || []);
 
-        if (dateBatches.length > 1) { /* empty */ }
+        if (dateBatches.length > 1) {
+          /* empty */
+        }
       } catch (err) {
         setError("Failed to load news. Please try again.");
         console.error("Error loading news:", err);
