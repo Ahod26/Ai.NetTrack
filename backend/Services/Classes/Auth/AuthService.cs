@@ -1,14 +1,13 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
 using backend.Repository.Interfaces;
 using backend.Models.Dtos;
 using backend.Models.Domain;
-
 using backend.Services.Interfaces.Auth;
 using Microsoft.AspNetCore.Authentication;
 using AutoMapper;
 using backend.Services.Interfaces;
-using Org.BouncyCastle.Crypto.Engines;
+using backend.Extensions;
+
 
 namespace backend.Services.Classes.Auth;
 
@@ -153,7 +152,7 @@ public class AuthService(
       Roles: user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList(),
       ApiUserDto: new ApiUserDto
       (
-        FullName: user.FindFirst(ClaimTypes.Name)?.Value ?? "",
+        FullName: user.GetUserId() ?? "",
         Email: user.FindFirst(ClaimTypes.Email)?.Value ?? "",
         IsSubscribedToNewsletter: user.FindFirst("IsNewsletterSubscribed")?.Value == "True"
       )

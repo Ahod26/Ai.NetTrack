@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import {} from "framer-motion";
 import styles from "./TopNavigation.module.css";
 
 const navItems = [

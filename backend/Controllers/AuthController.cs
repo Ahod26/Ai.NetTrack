@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
-using backend.Extensions;
 
 namespace backend.Controllers;
 
@@ -21,18 +20,18 @@ public class AuthController
   {
     logger.LogInformation("Register attempt for email: {Email}", registerDTO.Email);
 
-      var result = await authService.RegisterAsync(registerDTO);
+    var result = await authService.RegisterAsync(registerDTO);
 
-      if (result.Success)
-      {
-        logger.LogInformation("Registration successful for email: {Email}", registerDTO.Email);
-        return Ok(result);
-      }
+    if (result.Success)
+    {
+      logger.LogInformation("Registration successful for email: {Email}", registerDTO.Email);
+      return Ok(result);
+    }
 
-      logger.LogWarning("Registration failed for email: {Email}. Errors: {Errors}",
-          registerDTO.Email, string.Join(", ", result.Errors));
+    logger.LogWarning("Registration failed for email: {Email}. Errors: {Errors}",
+        registerDTO.Email, string.Join(", ", result.Errors));
 
-      return BadRequest(result);
+    return BadRequest(result);
   }
 
   [HttpPost("login")]
@@ -40,28 +39,28 @@ public class AuthController
   {
     logger.LogInformation("Login attempt for email: {Email}", loginDTO.Email);
 
-      var result = await authService.LoginAsync(loginDTO);
-      if (result.Success)
-      {
-        logger.LogInformation("Login successful for email: {Email}", loginDTO.Email);
-        return Ok(result);
-      }
+    var result = await authService.LoginAsync(loginDTO);
+    if (result.Success)
+    {
+      logger.LogInformation("Login successful for email: {Email}", loginDTO.Email);
+      return Ok(result);
+    }
 
-      logger.LogWarning("Login failed for email: {Email}", loginDTO.Email);
-      return Unauthorized(new { message = result.Message });
+    logger.LogWarning("Login failed for email: {Email}", loginDTO.Email);
+    return Unauthorized(new { message = result.Message });
   }
 
   [HttpGet("status")]
   [Authorize]
   public IActionResult UserStatusCheck()
   {
-      var userInfo = authService.GetCurrentUserFromClaims(User);
+    var userInfo = authService.GetCurrentUserFromClaims(User);
 
-      return Ok(new
-      {
-        isAuthenticated = true,
-        user = userInfo
-      });
+    return Ok(new
+    {
+      isAuthenticated = true,
+      user = userInfo
+    });
   }
 
   [HttpPost("logout")]

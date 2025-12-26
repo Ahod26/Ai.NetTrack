@@ -15,7 +15,7 @@ namespace backend.Controllers;
 [Route("[controller]")]
 [Authorize]
 [EnableRateLimiting("chat")]
-[RequestTimeout(5000)] 
+[RequestTimeout(5000)]
 public class ChatController
 (IChatService chatService) : ControllerBase
 {
@@ -23,34 +23,34 @@ public class ChatController
   [TypeFilter(typeof(MaxChatsAttribute))]
   public async Task<IActionResult> CreateChat([FromBody] CreateChatDTO createChatDTO, [FromQuery] int? timezoneOffset = null, [FromQuery] string? relatedNewsSource = null)
   {
-      var userId = User.GetUserId();
-      var chat = await chatService.CreateChatAsync(userId, createChatDTO.FirstMessage, timezoneOffset, relatedNewsSource);
+    var userId = User.GetUserId();
+    var chat = await chatService.CreateChatAsync(userId, createChatDTO.FirstMessage, timezoneOffset, relatedNewsSource);
 
-      return Ok(chat);
+    return Ok(chat);
   }
 
   [HttpGet]
   public async Task<IActionResult> GetUserChatsMetaData([FromQuery] int? timezoneOffset = null)
   {
-      var userId = User.GetUserId();
-      var chats = await chatService.GetUserChatsMetadataAsync(userId, timezoneOffset);
+    var userId = User.GetUserId();
+    var chats = await chatService.GetUserChatsMetadataAsync(userId, timezoneOffset);
 
-      return Ok(chats);
+    return Ok(chats);
   }
 
   [HttpDelete("{chatId:guid:required}")]
   public async Task<IActionResult> DeleteChat(Guid chatId)
   {
-      var userId = User.GetUserId();
-      var chat = await chatService.GetUserChatAsync(chatId, userId);
-      if (chat == null)
-      {
-        return NotFound("Chat not found");
-      }
+    var userId = User.GetUserId();
+    var chat = await chatService.GetUserChatAsync(chatId, userId);
+    if (chat == null)
+    {
+      return NotFound("Chat not found");
+    }
 
-      await chatService.DeleteChatByIdAsync(chatId, userId);
+    await chatService.DeleteChatByIdAsync(chatId, userId);
 
-      return Ok(new { message = "Chat deleted successfully" });
+    return Ok(new { message = "Chat deleted successfully" });
   }
 
   [HttpPatch("{chatId:guid:required}/title")]
@@ -60,16 +60,16 @@ public class ChatController
   [StringLength(20, MinimumLength = 1, ErrorMessage = "Title must be between 1 and 20 characters")]
   string title)
   {
-      var userId = User.GetUserId();
-      var chat = await chatService.GetUserChatAsync(chatId, userId);
-      if (chat == null)
-      {
-        return NotFound("Chat not found");
-      }
+    var userId = User.GetUserId();
+    var chat = await chatService.GetUserChatAsync(chatId, userId);
+    if (chat == null)
+    {
+      return NotFound("Chat not found");
+    }
 
-      await chatService.ChangeChatTitle(chatId, title, userId);
+    await chatService.ChangeChatTitle(chatId, title, userId);
 
-      return Ok(new { message = "Title changed successfully" });
+    return Ok(new { message = "Title changed successfully" });
   }
 
 }

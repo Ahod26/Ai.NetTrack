@@ -1,11 +1,9 @@
-using System.Net.WebSockets;
 using AutoMapper;
 using backend.Models.Dtos;
 using backend.Repository.Interfaces;
 using backend.Services.Interfaces;
 using backend.Services.Interfaces.Auth;
 using Microsoft.AspNetCore.Identity;
-using OpenAI.Audio;
 
 namespace backend.Services.Classes;
 
