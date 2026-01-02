@@ -1,11 +1,33 @@
 using System.Text.Json.Serialization;
 using backend.Background;
 using backend.Mapping;
+using Serilog;
+using Serilog.Events;
 
 namespace backend.Extensions.Services;
 
 public static class InfrastructureExtensions
 {
+  public static WebApplicationBuilder AddSerilog(this WebApplicationBuilder builder)
+  {
+    builder.Host.UseSerilog((context, configuration) =>
+    {
+      configuration
+        .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("Application", "AiTrack")
+        .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName)
+        .WriteTo.Console()
+        .WriteTo.Debug()
+        .WriteTo.Seq("http://localhost:5341");
+    });
+
+    return builder;
+  }
+
   public static IServiceCollection AddInfrastructure(this IServiceCollection services)
   {
     services.AddHttpContextAccessor();
@@ -35,6 +57,7 @@ public static class InfrastructureExtensions
           });
     });
 
+    services.AddHostedService<SeqDockerService>();
     services.AddHostedService<NewsAggregationService>();
     services.AddHttpClient();
     services.AddRequestTimeouts();

@@ -1,8 +1,11 @@
 using backend.Extensions.Services;
 using backend.Middleware;
 using backend.Hubs.Classes;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddSerilog();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -27,6 +30,8 @@ builder.Services.AddBusinessServices();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+
+app.UseSerilogRequestLogging();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
