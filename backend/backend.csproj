@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>92e63778-fa4a-478a-96c8-0a81b97fd2c8</UserSecretsId>
     <DefaultItemExcludes>$(DefaultItemExcludes);backend.UnitTests/**;backend.IntegrationTests/**;backend.E2ETests/**</DefaultItemExcludes>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,6 +37,7 @@
     <PackageReference Include="NRedisStack" Version="1.1.0" />
     <PackageReference Include="OpenAI" Version="2.3.0" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-rc.1.efcore.9.0.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.11.10" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />

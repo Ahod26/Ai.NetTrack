@@ -2,6 +2,7 @@ using backend.Extensions.Services;
 using backend.Middleware;
 using backend.Hubs.Classes;
 using Serilog;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,7 @@ app.UseSerilogRequestLogging();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
