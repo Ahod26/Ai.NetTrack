@@ -5,15 +5,15 @@
   background: var(--bg-primary);
   padding: 2.5rem 0 2rem 0;
   transition: all 0.2s ease;
-  margin-left: 240px; /* Default sidebar width */
+  margin-left: var(--sidebar-width, 240px);
 }
 
 .header.sidebarClosed {
-  margin-left: 0; /* No margin when sidebar is closed */
+  margin-left: 0;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: var(--content-max-width, 1200px);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -63,10 +63,22 @@
   box-shadow: 0 1px 3px var(--shadow);
 }
 
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+  .header {
+    margin-left: 200px;
+  }
+
+  .navigation {
+    transform: scale(1.1);
+  }
+}
+
+/* Mobile breakpoint */
 @media (max-width: 768px) {
   .header {
-    padding: 3rem 0 1.5rem 0;
-    margin-left: 0; /* No sidebar margin on mobile */
+    padding: 3.5rem 0 1.25rem 0;
+    margin-left: 0;
   }
 
   .header.sidebarClosed {
@@ -74,11 +86,70 @@
   }
 
   .container {
-    padding: 0 1.5rem;
+    padding: 0 1rem;
+  }
+
+  .navigation {
+    transform: scale(1);
+    width: 100%;
+    max-width: 320px;
   }
 
   .navLink {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.8125rem;
+    flex: 1;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    min-width: auto;
+    min-height: var(--touch-target-min, 44px);
+  }
+}
+
+/* Small mobile breakpoint */
+@media (max-width: 480px) {
+  .header {
+    padding: 0.75rem 0 0.75rem 0;
+  }
+
+  .container {
+    padding: 0 0.75rem;
+    justify-content: flex-end;
+    padding-left: 60px; /* Space for toggle button */
+  }
+
+  .navigation {
+    max-width: none;
+    width: auto;
+    flex: 1;
+  }
+
+  .navLink {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
+    min-height: 40px;
+  }
+}
+
+/* Extra small mobile breakpoint */
+@media (max-width: 320px) {
+  .header {
+    padding: 0.5rem 0 0.5rem 0;
+  }
+
+  .container {
+    padding: 0 0.5rem;
+    padding-left: 50px; /* Space for toggle button */
+  }
+
+  .navigation {
+    width: auto;
+    flex: 1;
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .navLink {
+    padding: 0.375rem 0.375rem;
+    font-size: 0.6875rem;
+    min-height: 36px;
   }
 }

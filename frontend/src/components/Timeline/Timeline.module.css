@@ -5,12 +5,12 @@
   background: var(--bg-primary);
   position: relative;
   overflow: hidden;
-  margin-left: 240px; /* Default sidebar width */
+  margin-left: var(--sidebar-width, 240px);
   transition: margin-left 0.3s ease;
 }
 
 .timelineContainer.sidebarClosed {
-  margin-left: 0; /* No margin when sidebar is closed */
+  margin-left: 0;
 }
 
 .controls {
@@ -117,31 +117,35 @@
 }
 
 .newsGrid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
-  max-width: 1200px;
+  max-width: var(--content-max-width, 1200px);
   margin: 0 auto;
   padding: 0 2rem 2rem;
-  justify-content: center;
 }
 
-.newsGrid > * {
-  flex: 0 0 400px;
-  max-width: 400px;
-}
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+  .timelineContainer {
+    margin-left: 200px;
+  }
 
-/* Responsive design */
-@media (max-width: 1200px) {
+  .controls {
+    padding: 1.5rem 1.5rem 1rem;
+  }
+
   .newsGrid {
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 1.25rem;
+    padding: 0 1.5rem 1.5rem;
   }
 }
 
+/* Mobile breakpoint */
 @media (max-width: 768px) {
   .timelineContainer {
-    margin-left: 0; /* No sidebar margin on mobile */
+    margin-left: 0;
   }
 
   .timelineContainer.sidebarClosed {
@@ -158,16 +162,20 @@
   }
 
   .controls {
+    flex-direction: column;
+    align-items: stretch;
     gap: 0.75rem;
+    padding: 1.25rem 1rem 1rem;
   }
 
   .content {
-    padding: 1rem;
+    padding: 0;
   }
 
   .newsGrid {
     grid-template-columns: 1fr;
     gap: 1rem;
+    padding: 0 1rem 1.5rem;
   }
 
   .loadingContainer,
@@ -176,13 +184,20 @@
     height: 300px;
     padding: 1rem;
   }
+
+  .retryButton {
+    min-height: var(--touch-target-min, 44px);
+    padding: 0.875rem 1.5rem;
+  }
 }
 
+/* Small mobile breakpoint */
 @media (max-width: 480px) {
   .controls {
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
+    padding: 1rem 0.75rem;
   }
 
   .header {
@@ -191,5 +206,59 @@
 
   .title {
     font-size: 1.5rem;
+  }
+
+  .newsGrid {
+    gap: 0.875rem;
+    padding: 0 0.75rem 1.25rem;
+  }
+
+  .loadingContainer,
+  .errorContainer,
+  .emptyContainer {
+    height: 250px;
+  }
+
+  .errorText,
+  .emptyText {
+    font-size: 0.9375rem;
+    max-width: 100%;
+    padding: 0 0.5rem;
+  }
+
+  .endMessage {
+    font-size: 0.9375rem;
+  }
+}
+
+/* Extra small mobile breakpoint */
+@media (max-width: 320px) {
+  .controls {
+    padding: 0.875rem 0.5rem;
+    gap: 0.625rem;
+  }
+
+  .newsGrid {
+    gap: 0.75rem;
+    padding: 0 0.5rem 1rem;
+  }
+
+  .loadingContainer,
+  .errorContainer,
+  .emptyContainer {
+    height: 200px;
+    padding: 0.75rem;
+  }
+
+  .loadingText,
+  .errorText,
+  .emptyText,
+  .endMessage {
+    font-size: 0.875rem;
+  }
+
+  .retryButton {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
   }
 }

@@ -6,6 +6,7 @@
   align-items: center;
   justify-content: center;
   min-height: 120px;
+  padding: 0 1rem;
 }
 
 .staticTitle {
@@ -14,6 +15,7 @@
   background: linear-gradient(135deg, #fff 0%, #bb86fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 1rem;
   letter-spacing: -1px;
 }
@@ -32,4 +34,80 @@
   position: absolute;
   width: 100%;
   text-align: center;
+}
+
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+  .staticTitle {
+    font-size: 2.25rem;
+  }
+
+  .dynamicText {
+    font-size: 1.125rem;
+  }
+}
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+  .container {
+    margin-bottom: 2rem;
+    min-height: 100px;
+  }
+
+  .staticTitle {
+    font-size: 1.875rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .dynamicWrapper {
+    height: 26px;
+  }
+
+  .dynamicText {
+    font-size: 1rem;
+  }
+}
+
+/* Small mobile breakpoint */
+@media (max-width: 480px) {
+  .container {
+    margin-bottom: 1.5rem;
+    min-height: 85px;
+    padding: 0 0.75rem;
+  }
+
+  .staticTitle {
+    font-size: 1.625rem;
+    letter-spacing: -0.5px;
+  }
+
+  .dynamicWrapper {
+    height: 24px;
+  }
+
+  .dynamicText {
+    font-size: 0.9375rem;
+  }
+}
+
+/* Extra small mobile breakpoint */
+@media (max-width: 320px) {
+  .container {
+    margin-bottom: 1.25rem;
+    min-height: 75px;
+    padding: 0 0.5rem;
+  }
+
+  .staticTitle {
+    font-size: 1.375rem;
+    letter-spacing: 0;
+  }
+
+  .dynamicWrapper {
+    height: 22px;
+  }
+
+  .dynamicText {
+    font-size: 0.875rem;
+  }
 }

@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { userAuthSliceAction } from "../store/userAuth";
 import { chatSliceActions } from "../store/chat";
+import { sidebarActions } from "../store/sidebarSlice";
 import { logoutUser } from "../api/auth";
 import {
   getUserChatsMetaData,
@@ -10,16 +11,52 @@ import {
   changeChatTitle,
 } from "../api/chat";
 
+// Mobile breakpoint constant
+const MOBILE_BREAKPOINT = 768;
+
 export const useSidebar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { chatId: currentChatId } = useParams();
   const { isUserLoggedIn } = useSelector((state) => state.userAuth);
+  const isSidebarOpen = useSelector((state) => state.sidebar.isOpen);
   const {
     chats,
     isLoading: isLoadingChats,
     hasInitialized,
   } = useSelector((state) => state.chat);
+
+  // Track if initial mount check has been done
+  const hasInitialMountCheck = useRef(false);
+  // Track previous pathname for navigation detection
+  const previousPathname = useRef(location.pathname);
+
+  // Check if we're on mobile
+  const isMobile = useCallback(() => {
+    return window.innerWidth <= MOBILE_BREAKPOINT;
+  }, []);
+
+  // Close sidebar by default on mobile when component mounts
+  useEffect(() => {
+    if (!hasInitialMountCheck.current) {
+      hasInitialMountCheck.current = true;
+      if (isMobile()) {
+        dispatch(sidebarActions.closeSidebar());
+      }
+    }
+  }, [dispatch, isMobile]);
+
+  // Auto-close sidebar on navigation for mobile devices
+  useEffect(() => {
+    // Only close if pathname actually changed (not on initial mount)
+    if (previousPathname.current !== location.pathname) {
+      previousPathname.current = location.pathname;
+      if (isMobile() && isSidebarOpen) {
+        dispatch(sidebarActions.closeSidebar());
+      }
+    }
+  }, [location.pathname, dispatch, isMobile, isSidebarOpen]);
 
   const [openDropdown, setOpenDropdown] = useState(null);
   const [deleteModal, setDeleteModal] = useState({

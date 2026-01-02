@@ -222,8 +222,27 @@
   margin: 1.5rem 0;
 }
 
-/* Responsive adjustments */
+/* Mobile breakpoint */
 @media (max-width: 768px) {
+  .tableWrapper {
+    margin: 1.5rem 0;
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .table {
+    font-size: 0.875rem;
+  }
+
+  .tableHead th,
+  .tableCell {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .codeBlock {
+    border-radius: 6px;
+  }
+
   .codeHeader {
     padding: 0.5rem 0.75rem;
   }
@@ -233,14 +252,128 @@
   }
 
   .copyButton {
-    padding: 0.125rem;
+    padding: 0.25rem;
+    min-width: 32px;
+    min-height: 32px;
   }
 
   .heading1 {
     font-size: 1.25rem;
+    margin: 1.25rem 0 0.75rem 0;
   }
 
   .heading2 {
     font-size: 1.1rem;
+    margin: 1rem 0 0.5rem 0;
+  }
+
+  .heading3 {
+    font-size: 1rem;
+  }
+
+  .paragraph {
+    margin: 0 0 0.875rem 0;
+  }
+
+  .blockquote {
+    padding: 0.625rem 0.875rem;
+    margin: 0.875rem 0;
+  }
+
+  .unorderedList,
+  .orderedList {
+    padding-left: 1.25rem;
+  }
+
+  .inlineCode {
+    font-size: 0.85em;
+    padding: 0.1rem 0.35rem;
+  }
+}
+
+/* Small mobile breakpoint */
+@media (max-width: 480px) {
+  .tableWrapper {
+    margin: 1rem 0;
+    padding: 0.5rem;
+  }
+
+  .table {
+    font-size: 0.8125rem;
+  }
+
+  .tableHead th,
+  .tableCell {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .codeHeader {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .codeLanguage {
+    font-size: 0.65rem;
+  }
+
+  .heading1 {
+    font-size: 1.125rem;
+  }
+
+  .heading2 {
+    font-size: 1rem;
+  }
+
+  .heading3 {
+    font-size: 0.9375rem;
+  }
+
+  .paragraph {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9375rem;
+  }
+
+  .unorderedList,
+  .orderedList {
+    padding-left: 1rem;
+  }
+
+  .listItem {
+    font-size: 0.9375rem;
+  }
+}
+
+/* Extra small mobile breakpoint */
+@media (max-width: 320px) {
+  .tableWrapper {
+    padding: 0.375rem;
+  }
+
+  .table {
+    font-size: 0.75rem;
+  }
+
+  .tableHead th,
+  .tableCell {
+    padding: 0.25rem 0.375rem;
+  }
+
+  .heading1 {
+    font-size: 1rem;
+  }
+
+  .heading2 {
+    font-size: 0.9375rem;
+  }
+
+  .heading3 {
+    font-size: 0.875rem;
+  }
+
+  .paragraph {
+    font-size: 0.875rem;
+  }
+
+  .inlineCode {
+    font-size: 0.8em;
   }
 }

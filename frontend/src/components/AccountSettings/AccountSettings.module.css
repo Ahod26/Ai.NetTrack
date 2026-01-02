@@ -254,22 +254,150 @@
   transform: translateY(0);
 }
 
-/* Responsive Design */
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+  .container {
+    max-width: 700px;
+    padding: 1.75rem;
+  }
+}
+
+/* Mobile breakpoint */
 @media (max-width: 768px) {
   .container {
-    padding: 1.5rem;
+    max-width: 100%;
+    padding: 1.25rem;
+  }
+
+  .header {
+    margin-bottom: 2rem;
   }
 
   .title {
     font-size: 1.5rem;
   }
 
+  .subtitle {
+    font-size: 0.9375rem;
+  }
+
+  .sections {
+    gap: 1.5rem;
+  }
+
   .section {
-    padding: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 10px;
+  }
+
+  .sectionTitle {
+    font-size: 1.125rem;
+  }
+
+  .backButton {
+    min-height: var(--touch-target-min, 44px);
+    padding: 0.625rem 1rem;
+  }
+
+  .input {
+    min-height: var(--touch-target-min, 44px);
+    font-size: 1rem; /* Prevent iOS zoom */
   }
 
   .saveBtn,
   .deleteBtn {
     width: 100%;
+    min-height: var(--touch-target-min, 44px);
+    padding: 0.875rem 1.5rem;
+  }
+
+  .togglePasswordBtn {
+    min-width: var(--touch-target-min, 44px);
+    min-height: var(--touch-target-min, 44px);
+  }
+}
+
+/* Small mobile breakpoint */
+@media (max-width: 480px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header {
+    margin-bottom: 1.5rem;
+  }
+
+  .title {
+    font-size: 1.375rem;
+  }
+
+  .subtitle {
+    font-size: 0.875rem;
+  }
+
+  .sections {
+    gap: 1.25rem;
+  }
+
+  .section {
+    padding: 1rem;
+  }
+
+  .sectionHeader {
+    margin-bottom: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1rem;
+  }
+
+  .sectionDescription {
+    font-size: 0.8125rem;
+  }
+
+  .backButton {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  .input {
+    padding: 0.625rem 0.875rem;
+  }
+
+  .message {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Extra small mobile breakpoint */
+@media (max-width: 320px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .section {
+    padding: 0.875rem;
+    border-radius: 8px;
+  }
+
+  .sectionTitle {
+    font-size: 0.9375rem;
+  }
+
+  .input {
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+  }
+
+  .saveBtn,
+  .deleteBtn {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
   }
 }

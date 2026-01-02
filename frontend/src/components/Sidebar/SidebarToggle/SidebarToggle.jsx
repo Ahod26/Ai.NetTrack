@@ -6,11 +6,13 @@ export default function SidebarToggle() {
   const dispatch = useDispatch();
   const isSidebarOpen = useSelector((state) => state.sidebar.isOpen);
 
+  // On mobile, only show the toggle button when sidebar is closed
+  // When sidebar is open on mobile, the close button inside sidebar handles closing
   return (
     <button
       className={`${styles.fixedToggleSidebarBtn} ${
         !isSidebarOpen ? styles.closedToggleBtn : ""
-      }`}
+      } ${isSidebarOpen ? styles.hideOnMobile : ""}`}
       onClick={() => dispatch(sidebarActions.toggleSidebar())}
       title={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
     >

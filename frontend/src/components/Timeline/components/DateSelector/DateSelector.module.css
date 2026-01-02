@@ -309,14 +309,19 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .dateSelector {
+    width: 100%;
+  }
+
   .selectorButton {
-    min-width: 140px;
-    padding: 0.625rem 0.75rem;
-    font-size: 0.8rem;
+    width: 100%;
+    min-width: unset;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
   }
 
   .selectedDates {
-    max-width: 280px;
+    max-width: 100%;
   }
 
   .dropdown {
@@ -339,5 +344,16 @@
 
   .actionButtons {
     padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .selectorButton {
+    padding: 0.875rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .dropdown {
+    min-width: 260px;
   }
 }

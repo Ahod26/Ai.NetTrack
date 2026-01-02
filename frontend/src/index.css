@@ -38,6 +38,38 @@ body {
   --accent-hover: #9965f4;
   --border: #333333;
   --shadow: rgba(0, 0, 0, 0.3);
+
+  /* Responsive layout variables */
+  --sidebar-width: 216px;
+  --sidebar-collapsed-width: 0px;
+  --content-max-width: 1200px;
+  --chat-max-width: 800px;
+
+  /* Responsive spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Responsive font sizes */
+  --font-xs: 0.75rem;
+  --font-sm: 0.875rem;
+  --font-base: 1rem;
+  --font-lg: 1.125rem;
+  --font-xl: 1.25rem;
+  --font-2xl: 1.5rem;
+  --font-3xl: 1.875rem;
+
+  /* Touch target minimum */
+  --touch-target-min: 44px;
+
+  /* Z-index scale */
+  --z-sidebar: 150;
+  --z-sidebar-mobile: 200;
+  --z-overlay: 190;
+  --z-modal: 1000;
+  --z-toast: 1100;
 }
 
 /* Remove default button and input styles */
@@ -95,4 +127,49 @@ a:hover {
 *:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Responsive base adjustments */
+@media (max-width: 768px) {
+  :root {
+    --spacing-lg: 1.25rem;
+    --spacing-xl: 1.5rem;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --spacing-md: 0.875rem;
+    --spacing-lg: 1rem;
+    --spacing-xl: 1.25rem;
+    --font-2xl: 1.375rem;
+    --font-3xl: 1.625rem;
+  }
+}
+
+@media (max-width: 320px) {
+  :root {
+    --spacing-sm: 0.5rem;
+    --spacing-md: 0.75rem;
+    --spacing-lg: 0.875rem;
+    --font-xl: 1.125rem;
+    --font-2xl: 1.25rem;
+    --font-3xl: 1.5rem;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Improve touch interactions */
+@media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
 }

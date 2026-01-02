@@ -106,3 +106,82 @@
 .cancelButton:hover:not(:disabled) {
   background: var(--danger-hover, #c9302c);
 }
+
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+  .inputForm {
+    max-width: 700px;
+  }
+}
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+  .inputContainer {
+    padding: 1rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .inputForm {
+    max-width: 100%;
+  }
+
+  .inputWrapper {
+    border-radius: 12px;
+  }
+
+  .messageInput {
+    padding: 0.875rem 1rem;
+    font-size: 1rem; /* Prevent iOS zoom on focus */
+  }
+
+  .sendButton {
+    min-width: var(--touch-target-min, 44px);
+    min-height: var(--touch-target-min, 44px);
+    padding: 0.875rem;
+  }
+}
+
+/* Small mobile breakpoint */
+@media (max-width: 480px) {
+  .inputContainer {
+    padding: 0.75rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .inputWrapper {
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .messageInput {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .sendButton {
+    margin: 0.375rem;
+    padding: 0.75rem;
+  }
+}
+
+/* Extra small mobile breakpoint */
+@media (max-width: 320px) {
+  .inputContainer {
+    padding: 0.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .inputWrapper {
+    border-radius: 8px;
+  }
+
+  .messageInput {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .sendButton {
+    margin: 0.25rem;
+    padding: 0.625rem;
+    min-width: 40px;
+    min-height: 40px;
+  }
+}

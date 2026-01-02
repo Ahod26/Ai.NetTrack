@@ -177,10 +177,15 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .newsTypeFilter {
+    width: 100%;
+  }
+
   .filterButton {
-    min-width: 140px;
-    padding: 0.625rem 0.75rem;
-    font-size: 0.8rem;
+    width: 100%;
+    min-width: unset;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
   }
 
   .dropdown {
@@ -191,5 +196,12 @@
 
   .typeItem {
     padding: 0.625rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .filterButton {
+    padding: 0.875rem 1rem;
+    font-size: 0.9rem;
   }
 }
